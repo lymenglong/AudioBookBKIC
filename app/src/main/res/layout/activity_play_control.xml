@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background">
+
+    <include layout="@layout/action_bar"></include>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:orientation="vertical"
+            android:padding="5dp"
+            android:id="@+id/linearLayout">
+
+            <Button
+                android:id="@+id/btn_add_favorite"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="#dbfffa"
+                android:text="@string/add_to_favorite" />
+
+
+            <Button
+                android:id="@+id/btn_play"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="#dbfffa"
+                android:text="@string/play" />
+
+
+            <Button
+                android:id="@+id/btn_pause"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="#dbfffa"
+                android:text="@string/pause" />
+
+            <Button
+                android:id="@+id/btn_stop"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="#dbfffa"
+                android:text="@string/stop" />
+
+            <Button
+                android:id="@+id/btn_previous"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:layout_marginTop="12dp"
+                android:text="@string/previous"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btn_next"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:layout_marginTop="7dp"
+                android:text="@string/next"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/btn_backward"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#dbfffa"
+                android:layout_marginTop="12dp"
+                android:text="@string/backward" />
+
+
+            <Button
+                android:id="@+id/btn_ffw"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="9dp"
+                android:background="#dbfffa"
+                android:text="@string/forward" />
+
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:visibility="gone"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:visibility="gone">
+                <TextView
+                    android:id="@+id/text_current_duration_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="18sp"
+                    android:gravity="start"
+                    android:text="@string/time" />
+
+                <TextView
+                    android:id="@+id/text_total_duration_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="18sp"
+                    android:gravity="end"
+                    android:text="@string/time" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+
+</RelativeLayout>
