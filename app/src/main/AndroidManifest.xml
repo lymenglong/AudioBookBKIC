@@ -25,7 +25,7 @@ package="com.bkic.lymenglong.audiobookbkic">
         </intent-filter>
     </activity>
     <activity
-        android:name=".Views.Login.ViewLoginActivity"
+        android:name=".Views.Account.Login.ViewLoginActivity"
         android:label="@string/hint_login"
         android:screenOrientation="portrait">
         <intent-filter>
@@ -35,7 +35,7 @@ package="com.bkic.lymenglong.audiobookbkic">
         </intent-filter>
     </activity>
     <activity
-        android:name=".MainActivity"
+        android:name=".Views.Main.MainActivity"
         android:label="@string/hint_home_screen"
         android:screenOrientation="portrait">
         <intent-filter>
@@ -45,7 +45,7 @@ package="com.bkic.lymenglong.audiobookbkic">
         </intent-filter>
     </activity>
     <activity
-        android:name=".Views.Register.ViewRegisterActivity"
+        android:name=".Views.Account.Register.ViewRegisterActivity"
         android:label="@string/hint_register"
         android:screenOrientation="portrait">
     <intent-filter>
@@ -54,5 +54,44 @@ package="com.bkic.lymenglong.audiobookbkic">
         <category android:name="android.intent.category.LAUNCHER" />
     </intent-filter>
     </activity>
+    <activity
+        android:name=".Views.HandleLists.ListMenu.ListMenu"
+        android:windowSoftInputMode="adjustResize|stateHidden" />
+    <activity
+        android:name=".Views.HandleLists.ListCategory.ListCategory"
+        android:windowSoftInputMode="adjustResize|stateHidden" />
+    <activity
+        android:name=".Views.HandleLists.ListBook.ListBook"
+        android:windowSoftInputMode="adjustResize|stateHidden" />
+    <activity
+        android:name=".Views.Help.HelpActivity"
+        android:label="@string/hint_help"
+        android:screenOrientation="portrait">
+        <intent-filter>
+            <action android:name="android.intent.action.RUN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+
+    <activity
+        android:name=".Views.Account.ShowUserInfo.UserInfoActivity"
+        android:label="@string/hint_accountInfo"
+        android:screenOrientation="portrait">
+        <intent-filter>
+            <action android:name="android.intent.action.RUN" />
+
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+    <activity
+        android:name=".PlayControl"
+        android:screenOrientation="portrait">
+    </activity>
+    <activity
+        android:name=".ViewReading"
+        android:screenOrientation="portrait">
+    </activity>
+
 </application>
 </manifest>

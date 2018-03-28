@@ -10,7 +10,7 @@ import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.TextView;
 
-import com.bkic.lymenglong.audiobookbkic.Views.Login.ViewLoginActivity;
+import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
 
 public class SplashScreen extends AppCompatActivity {
     static private int SPLASH_TIME = 1500;

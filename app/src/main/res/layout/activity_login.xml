@@ -10,7 +10,7 @@
     android:paddingRight="20dp"
     android:paddingTop="20dp"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".Views.Login.ViewLoginActivity">
+    tools:context=".Views.Account.Login.ViewLoginActivity">
 
     <android.support.v7.widget.LinearLayoutCompat
         android:layout_width="match_parent"
