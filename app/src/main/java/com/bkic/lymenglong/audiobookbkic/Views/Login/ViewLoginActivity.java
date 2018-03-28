@@ -18,6 +18,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Login.InputValidation;
 import com.bkic.lymenglong.audiobookbkic.Models.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Login.PresenterLoginLogic;
 import com.bkic.lymenglong.audiobookbkic.R;
+import com.bkic.lymenglong.audiobookbkic.Views.Register.ViewRegisterActivity;
 
 
 public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp, View.OnClickListener{
@@ -112,7 +113,9 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
 
                 break;
             case R.id.textViewLinkRegister:
-                //todo: Intent to register activity
+                Intent intentRegister = new Intent(getApplicationContext(), ViewRegisterActivity.class);
+                startActivity(intentRegister);
+                activity.finish();
                 break;
         }
     }

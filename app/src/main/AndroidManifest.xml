@@ -44,5 +44,15 @@ package="com.bkic.lymenglong.audiobookbkic">
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
     </activity>
+    <activity
+        android:name=".Views.Register.ViewRegisterActivity"
+        android:label="@string/hint_register"
+        android:screenOrientation="portrait">
+    <intent-filter>
+        <action android:name="android.intent.action.RUN" />
+
+        <category android:name="android.intent.category.LAUNCHER" />
+    </intent-filter>
+    </activity>
 </application>
 </manifest>
