@@ -20,7 +20,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpServicesClass;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.MainAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Home;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Menu;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Main.PresenterMain;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
@@ -33,17 +33,15 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements MainImp{
     PresenterMain presenterMain = new PresenterMain(this);
+    private static final String TAG = "MainActivity";
     private RecyclerView homeList;
-    private ArrayList<Home> homes;
-    private Home homeModel;
     private MainAdapter mainAdapter;
     private Activity activity = MainActivity.this;
-    private static final String URL = "http://20121969.tk/audiobook/books/getAllBooks.php";
-    String HttpUrl = "http://20121969.tk/SachNoiBKIC/AllMenuData.php";
     DBHelper dbHelper;
     private static ArrayList<Chapter> menuList;
     private ProgressBar progressBar;
     private ProgressDialog pDialog;
+    private Menu menuModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements MainImp{
         initObject();
         GetCursorData();
         //get data from json parsing
-        new GetHttpResponse(this).execute();
+        presenterMain.GetHttpResponse();
     }
 
     // to make application remember pass LoginActivity in to MainActivity
@@ -86,10 +84,10 @@ public class MainActivity extends AppCompatActivity implements MainImp{
     }
 
     private void initObject() {
-//        homes = databaseHelper.getHomeList();
+//        menus = databaseHelper.getHomeList();
         menuList = new ArrayList<>();
         mainAdapter = new MainAdapter(MainActivity.this, menuList);
-//        mainAdapter = new MainAdapter(MainActivity.this, homes);
+//        mainAdapter = new MainAdapter(MainActivity.this, menus);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         homeList.setLayoutManager(mLinearLayoutManager);
         homeList.setAdapter(mainAdapter);
@@ -110,98 +108,30 @@ public class MainActivity extends AppCompatActivity implements MainImp{
 
     @Override
     public void ShowListMenu() {
-
+        pDialog.dismiss();
+        progressBar.setVisibility(View.GONE);
+        GetCursorData();
+        Log.d("MyTagView", "onPostExecute: " + getTitle());
     }
 
-    //region JSON parse class started from here.
-    private class GetHttpResponse extends AsyncTask<Void, Void, Void> {
-
-        public Context context;
-        String JSonResult;
-        ArrayList<Home> home;
-
-        public GetHttpResponse(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            pDialog = ProgressDialog.show(activity, "Load Data", "Please wait...", true, true);
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0) {
-            // Passing HTTP URL to HttpServicesClass Class.
-            HttpServicesClass httpServicesClass = new HttpServicesClass(HttpUrl);
-            try {
-                httpServicesClass.ExecutePostRequest();
-
-                if (httpServicesClass.getResponseCode() == 200) {
-                    JSonResult = httpServicesClass.getResponse();
-
-                    if (JSonResult != null) {
-                        JSONArray jsonArray = null;
-
-                        try {
-                            jsonArray = new JSONArray(JSonResult);
-
-                            JSONObject jsonObject;
-
-                            Home homeModel;
-//                            Student student;
-
-//                            studentList = new ArrayList<Student>();
-                            home = new ArrayList<Home>();
-
-                            for (int i = 0; i < jsonArray.length(); i++) {
-//                                student = new Student();
-                                homeModel = new Home();
-
-                                jsonObject = jsonArray.getJSONObject(i);
-
-                                // Adding Student Id TO IdList Array.
-//                                IdList.add(jsonObject.getString("Id").toString());
-                                homeModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-
-                                //Adding Student Name.
-//                                student.StudentName = jsonObject.getString("Name").toString();
-                                homeModel.setTitle(jsonObject.getString("Name"));
-                                home.add(homeModel);
-                                int Id = homeModel.getId();
-                                String Name = homeModel.getTitle();
-                                if (menuList.size() >= home.size()) {
-                                    if (!homeModel.getTitle().equals(menuList.get(i).getTitle())) {
-                                        String UPDATE_DATA = "UPDATE menu SET Name = '" + Name + "' WHERE Id = '" + Id + "'";
-                                        dbHelper.QueryData(UPDATE_DATA);
-                                    }
-                                } else {
-                                    String INSERT_DATA = "INSERT INTO menu VALUES('" + Id + "','" + Name + "')";
-                                    dbHelper.QueryData(INSERT_DATA);
-                                }
-                            }
-                        } catch (JSONException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-                } else {
-                    Toast.makeText(context, httpServicesClass.getErrorMessage(), Toast.LENGTH_SHORT).show();
-                }
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            pDialog.dismiss();
-            progressBar.setVisibility(View.GONE);
-            GetCursorData();
-            Log.d("MyTagView", "onPostExecute: " + getTitle());
+    @Override
+    public void SetMenuData(JSONObject jsonObject) throws JSONException {
+        menuModel = new Menu();
+        menuModel.setId(Integer.parseInt(jsonObject.getString("Id")));
+        menuModel.setTitle(jsonObject.getString("Name"));
+        int Id = menuModel.getId();
+        String Name = menuModel.getTitle();
+        try {
+            String INSERT_DATA = "INSERT INTO menu VALUES('"+Id+"','"+Name+"')";
+            dbHelper.QueryData(INSERT_DATA);
+        } catch (Exception e) {
+            String UPDATE_DATA = "UPDATE menu SET Name = '" + Name + "' WHERE Id = '" + Id + "'";
+            dbHelper.QueryData(UPDATE_DATA);
         }
     }
-    //endregion
+
+    @Override
+    public void ShowProgressDialog() {
+        pDialog = ProgressDialog.show(activity, "Load Data", "Please wait...", true, true);
+    }
 }

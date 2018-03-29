@@ -1,14 +1,14 @@
 package com.bkic.lymenglong.audiobookbkic.Models.HandleLists;
 
 
-public class Home {
+public class Menu {
     private int id;
     private String title;
 
-    public Home() {
+    public Menu() {
     }
 
-    public Home(int id, String title) {
+    public Menu(int id, String title) {
         this.id = id; this.title = title;
     }
 
