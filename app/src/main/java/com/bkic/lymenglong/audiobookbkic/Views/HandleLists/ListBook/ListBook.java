@@ -14,7 +14,6 @@ import android.widget.ProgressBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
@@ -28,9 +27,7 @@ import java.util.ArrayList;
 public class ListBook extends AppCompatActivity implements ListBookImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
-    private Book bookModel;
     private BookAdapter bookAdapter;
-    private CustomActionBar actionBar;
     private String titleChapter;
     private int idChapter;
     private Activity activity = ListBook.this;
@@ -65,7 +62,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
      * Khai báo các view và khởi tạo giá trị
      */
     private void initView() {
-        actionBar = new CustomActionBar();
+        CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, titleChapter, true);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
@@ -149,11 +146,11 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
 
-        bookModel = new Book();
+        Book bookModel = new Book();
 
         bookModel.setId(Integer.parseInt(jsonObject.getString("Id")));
 
-        bookModel.setTitle(jsonObject.getString("Name").toString());
+        bookModel.setTitle(jsonObject.getString("Name"));
 
         bookModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
 
