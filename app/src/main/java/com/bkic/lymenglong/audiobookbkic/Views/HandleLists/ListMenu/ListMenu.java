@@ -2,10 +2,8 @@ package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListMenu;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewCompat;
@@ -15,15 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
-import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
-import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpServicesClass;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.FavoriteAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.HistoryAdapter;
@@ -31,7 +21,6 @@ import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.MenuAdapter
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
-import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowListImp;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.ShowUserInfo.UserInfoActivity;
 import com.bkic.lymenglong.audiobookbkic.Views.Help.HelpActivity;
@@ -41,21 +30,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class ListMenu extends AppCompatActivity implements ListMenuImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private View imRefresh;
-    private ArrayList<Chapter> chapters;
     private MenuAdapter adapter;
     private HistoryAdapter historyAdapter;
     private FavoriteAdapter favoriteAdapter;
-    private CustomActionBar actionBar;
     private String titleHome;
     private int idMenu;
-    private TextView tvStory;
-    private Chapter chapterModel;
     private Activity activity = ListMenu.this;
     private Session session;
     private ProgressBar progressBar;
@@ -76,6 +60,80 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
         initObject();
     }
 
+    /**
+     * Lấy dữ liệu thông qua intent
+     */
+    private void getDataFromIntent() {
+        titleHome = getIntent().getStringExtra("titleHome");
+        idMenu = getIntent().getIntExtra("idHome", -1);
+    }
+
+    /**
+     * Khai báo các view và khởi tạo giá trị
+     */
+    private void initView() {
+        session = new Session(activity);
+        progressBar = findViewById(R.id.progressBar);
+        imRefresh = findViewById(R.id.imRefresh);
+        CustomActionBar actionBar = new CustomActionBar();
+        actionBar.eventToolbar(this, titleHome, true);
+        listChapter = findViewById(R.id.listView);
+    }
+
+    private void SetTempModel(Chapter tempModel, JSONObject jsonObject, String tableSwitched) throws JSONException {
+        switch (tableSwitched){
+            case "history":
+                tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
+                tempModel.setTitle(jsonObject.getString("Name"));
+                tempModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
+                tempModel.setPauseTime(Integer.parseInt(jsonObject.getString("PauseTime")));
+                tempModel.setInsertTime(Integer.parseInt(jsonObject.getString("InsertTime")));
+                tempModel.setContent(jsonObject.getString("TextContent"));
+                tempModel.setFileUrl(jsonObject.getString("FileUrl"));
+                break;
+            case "favorite":
+                tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
+                tempModel.setTitle(jsonObject.getString("Name"));
+                tempModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
+                tempModel.setStatus(Integer.parseInt(jsonObject.getString("Status")));
+                tempModel.setInsertTime(Integer.parseInt(jsonObject.getString("InsertTime")));
+                tempModel.setContent(jsonObject.getString("TextContent"));
+                tempModel.setFileUrl(jsonObject.getString("FileUrl"));
+                break;
+        }
+    }
+
+    private void SetUpdateTableData(Chapter arrayModel, String tableName) {
+        String UPDATE_DATA;
+        switch (tableName){
+            case "booktype":
+                UPDATE_DATA = "UPDATE '"+tableName+"' SET Name = '"+arrayModel.getTitle()+"' WHERE Id = '"+arrayModel.getId()+"';";
+                dbHelper.QueryData(UPDATE_DATA);
+                break;
+            case "history":
+                UPDATE_DATA = "UPDATE history SET " +
+                        "InsertTime = '"+arrayModel.getInsertTime()+"', " +
+                        "PauseTime = '"+arrayModel.getPauseTime()+"' " +
+                        "WHERE " +
+                        "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
+                dbHelper.QueryData(UPDATE_DATA);
+                break;
+            case "favorite":
+                try {
+                    UPDATE_DATA = "UPDATE favorite SET " +
+                            "InsertTime = '"+arrayModel.getInsertTime()+"', " +
+                            "Status = '"+arrayModel.getStatus()+"' " +
+                            "WHERE " +
+                            "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
+                    dbHelper.QueryData(UPDATE_DATA);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+
+        }
+
+    }
 
     private void initDatabase() {
         String DB_NAME = "menu.sqlite";
@@ -123,8 +181,8 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
             case "history":
                 cursor = dbHelper.GetData("SELECT * FROM history, book WHERE history.IdBook = book.Id");
                 while (cursor.moveToNext()){
-                    int userId = cursor.getInt(0);
-                    int historybookId = cursor.getInt(1);
+//                    int userId = cursor.getInt(0);
+//                    int historybookId = cursor.getInt(1);
                     int insertTime = cursor.getInt(2);
                     int pauseTime = cursor.getInt(3);
                     int bookId = cursor.getInt(4);
@@ -140,8 +198,8 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
             case "favorite":
                 cursor = dbHelper.GetData("SELECT * FROM favorite, book WHERE favorite.IdBook = book.Id");
                 while (cursor.moveToNext()) {
-                    int userId = cursor.getInt(0);
-                    int historybookId = cursor.getInt(1);
+//                    int userId = cursor.getInt(0);
+//                    int historybookId = cursor.getInt(1);
                     int insertTime = cursor.getInt(2);
                     int status = cursor.getInt(3);
                     int bookId = cursor.getInt(4);
@@ -271,11 +329,8 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
         return tableName;
     }
 
-
-
-
     private void SetInsertTableData(Chapter arrayModel, String tableName) {
-        String INSERT_DATA = null;
+        String INSERT_DATA;
         switch (tableName){
             case "booktype":
                 INSERT_DATA = "INSERT INTO '"+tableName+"' VALUES('"+arrayModel.getId()+"','"+arrayModel.getTitle()+"')";
@@ -323,42 +378,6 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
 
     }
 
-    private void SetUpdateTableData(Chapter arrayModel, String tableName) {
-        String UPDATE_DATA = null;
-        switch (tableName){
-            case "booktype":
-                UPDATE_DATA = "UPDATE '"+tableName+"' SET Name = '"+arrayModel.getTitle()+"' WHERE Id = '"+arrayModel.getId()+"';";
-                dbHelper.QueryData(UPDATE_DATA);
-                break;
-            case "history":
-                UPDATE_DATA = "UPDATE history SET " +
-                        "InsertTime = '"+arrayModel.getInsertTime()+"', " +
-                        "PauseTime = '"+arrayModel.getPauseTime()+"' " +
-//                            "book.Name = '"+arrayModel.getTitle()+"', " +
-//                            "book.CategoryId = '"+arrayModel.getCategoryId()+"', " +
-//                            "book.FileUrl = '"+arrayModel.getFileUrl()+"', " +
-//                            "book.TextContent = '"+arrayModel.getContent()+"' " +
-                        "WHERE " +
-                            "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
-                dbHelper.QueryData(UPDATE_DATA);
-                break;
-             case "favorite":
-                try {
-                    UPDATE_DATA = "UPDATE favorite SET " +
-                            "InsertTime = '"+arrayModel.getInsertTime()+"', " +
-                            "Status = '"+arrayModel.getStatus()+"' " +
-                            "WHERE " +
-                                "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
-                    dbHelper.QueryData(UPDATE_DATA);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-
-        }
-
-    }
-
     @Override
     public void CompareDataPhoneWithServer(JSONArray jsonArray) {
         Cursor cursor;
@@ -366,8 +385,8 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
             cursor = dbHelper.GetData("SELECT * FROM history, book WHERE history.IdBook = book.Id");
             ArrayList<Chapter> arrayList = new ArrayList<>();
             while (cursor.moveToNext()) {
-                int userId = cursor.getInt(0);
-                int historybookId = cursor.getInt(1);
+//                int userId = cursor.getInt(0);
+//                int historybookId = cursor.getInt(1);
                 int insertTime = cursor.getInt(2);
                 int pauseTime = cursor.getInt(3);
                 int bookId = cursor.getInt(4);
@@ -385,8 +404,8 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
             cursor = dbHelper.GetData("SELECT * FROM favorite, book WHERE favorite.IdBook = book.Id");
             ArrayList<Chapter> arrayList = new ArrayList<>();
             while (cursor.moveToNext()) {
-                int userId = cursor.getInt(0);
-                int historybookId = cursor.getInt(1);
+//                int userId = cursor.getInt(0);
+//                int historybookId = cursor.getInt(1);
                 int insertTime = cursor.getInt(2);
                 int status = cursor.getInt(3);
                 int bookId = cursor.getInt(4);
@@ -424,30 +443,6 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
         Log.d("MyTagView", "onPostExecute: "+ titleHome);
     }
 
-    private Chapter SetTempModel(Chapter tempModel, JSONObject jsonObject, String tableSwitched) throws JSONException {
-        switch (tableSwitched){
-            case "history":
-                tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-                tempModel.setTitle(jsonObject.getString("Name"));
-                tempModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
-                tempModel.setPauseTime(Integer.parseInt(jsonObject.getString("PauseTime")));
-                tempModel.setInsertTime(Integer.parseInt(jsonObject.getString("InsertTime")));
-                tempModel.setContent(jsonObject.getString("TextContent"));
-                tempModel.setFileUrl(jsonObject.getString("FileUrl"));
-                break;
-            case "favorite":
-                tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-                tempModel.setTitle(jsonObject.getString("Name"));
-                tempModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
-                tempModel.setStatus(Integer.parseInt(jsonObject.getString("Status")));
-                tempModel.setInsertTime(Integer.parseInt(jsonObject.getString("InsertTime")));
-                tempModel.setContent(jsonObject.getString("TextContent"));
-                tempModel.setFileUrl(jsonObject.getString("FileUrl"));
-                break;
-        }
-        return tempModel;
-    }
-
     @Override
     public void SetTableData(JSONObject jsonObject) throws JSONException {
         tempModel = new Chapter();
@@ -477,24 +472,4 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
         Log.d("MyTagView", "onPostExecute: "+titleHome);
     }
 
-
-    /**
-     * Lấy dữ liệu thông qua intent
-     */
-    private void getDataFromIntent() {
-        titleHome = getIntent().getStringExtra("titleHome");
-        idMenu = getIntent().getIntExtra("idHome", -1);
-    }
-
-    /**
-     * Khai báo các view và khởi tạo giá trị
-     */
-    private void initView() {
-        session = new Session(activity);
-        progressBar = (ProgressBar)findViewById(R.id.progressBar);
-        imRefresh = (View) findViewById(R.id.imRefresh);
-        actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, titleHome, true);
-        listChapter = (RecyclerView) findViewById(R.id.listView);
-    }
 }
