@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.R;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListMenu.ListMenu;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType.ListBookType;
 
 import java.util.ArrayList;
 
@@ -68,7 +68,7 @@ public class MainAdapter extends RecyclerView.Adapter {
         @Override
         public void onClick(View view) {
             if(view == itemView){
-                Intent intent = new Intent(activity, ListMenu.class);
+                Intent intent = new Intent(activity, ListBookType.class);
                 intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
                 intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
                 activity.startActivity(intent);

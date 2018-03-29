@@ -16,12 +16,11 @@ import android.widget.TextView;
 
 
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.CategoryAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
-import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowListImp;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 import org.json.JSONArray;
@@ -34,7 +33,7 @@ import java.util.HashMap;
 public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
-    private ArrayList<Category> chapters;
+    private ArrayList<Chapter> chapters;
     private CategoryAdapter adapter;
     private CustomActionBar actionBar;
     private String titleChapter;
@@ -43,7 +42,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     private ProgressBar progressBar;
     private DBHelper dbHelper;
     private String HttpUrl = "http://20121969.tk/SachNoiBKIC/AllCategoryData.php";
-    private static ArrayList<Category> list;
+    private static ArrayList<Chapter> list;
     private View imRefresh;
 
     HttpParse httpParse = new HttpParse();
@@ -83,23 +82,18 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     private void init() {
         actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, titleChapter, true);
-        listChapter = (RecyclerView) findViewById(R.id.listView);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        imRefresh = (View) findViewById(R.id.imRefresh);
-
-        /*databaseHelper = new DatabaseHelper(this);
-        chapters = databaseHelper.getListSmallChapter(idChapter);
-        adapter = new CategoryAdapter(ListCategory.this, chapters);
-        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
-        listChapter.setLayoutManager(mLinearLayoutManager);
-        listChapter.setAdapter(adapter);*/
-
+        listChapter = findViewById(R.id.listView);
+        progressBar = findViewById(R.id.progressBar);
+        imRefresh = findViewById(R.id.imRefresh);
     }
 
     private void initDatabase() {
         String DB_NAME = "menu.sqlite";
         int DB_VERSION = 1;
-        String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS category(Id INTEGER, Name VARCHAR(255), TypeID INTEGER);";
+        String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS category(" +
+                "Id INTEGER PRIMARY KEY, " +
+                "Name VARCHAR(255), " +
+                "TypeID INTEGER);";
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
         //create database
         dbHelper.QueryData(CREATE_TABLE);
@@ -113,7 +107,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
             if(cursor.getInt(2)== idChapter){
                 String name = cursor.getString(1);
                 int id = cursor.getInt(0);
-                list.add(new Category(id,name));
+                list.add(new Chapter(id,name));
             }
         }
         cursor.close();
@@ -129,8 +123,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
             listChapter.setAdapter(adapter);
             // update list
             GetCursorData();
-            /*//get data from json parsing
-            new GetHttpResponse(this).execute();*/
+
             if(list.isEmpty()){
                 HttpWebCall(String.valueOf(idChapter));
             } else {
@@ -156,7 +149,6 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-
                 pDialog = ProgressDialog.show(ListCategory.this,"Loading Data","Please wait...",true,true);
             }
 
@@ -197,7 +189,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     {
         public Context context;
 
-        ArrayList<Category> categories;
+        ArrayList<Chapter> categories;
 
         public GetHttpResponse(Context context)
         {
@@ -224,35 +216,30 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
 
                         JSONObject jsonObject;
 
-                        Category categoryModel;
-//                            studentList = new ArrayList<Student>();
+                        Chapter tempModel;
+
                         categories = new ArrayList<>();
 
                         for(int i=0; i<jsonArray.length(); i++)
                         {
 //                                student = new Student();
-                            categoryModel = new Category();
+                            tempModel = new Chapter();
 
                             jsonObject = jsonArray.getJSONObject(i);
 
                             // Adding Student Id TO IdList Array.
-//                                IdList.add(jsonObject.getString("Id").toString());
-                            categoryModel.setId(Integer.parseInt(jsonObject.getString("Id")));
+                            tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
 
                             //Adding Student Name.
-//                                student.StudentName = jsonObject.getString("Name").toString();
-                            categoryModel.setTitle(jsonObject.getString("Name").toString());
-                            categories.add(categoryModel);
-                            int Id = categoryModel.getId();
-                            String Name = categoryModel.getTitle();
-                            if (list.size()>= categories.size()) {
-                                if (!categoryModel.getTitle().equals(list.get(i).getTitle())) {
-                                    String UPDATE_DATA = "UPDATE category SET Name = '"+Name+"' WHERE Id = '"+Id+"' AND TypeID = '"+idChapter+"'";
-                                    dbHelper.QueryData(UPDATE_DATA);
-                                }
-                            } else {
-                                String INSERT_DATA = "INSERT INTO category VALUES('"+Id+"','"+Name+"','"+idChapter+"')";
+                            tempModel.setTitle(jsonObject.getString("Name"));
+                            categories.add(tempModel);
+
+                            try {
+                                String INSERT_DATA = "INSERT INTO category VALUES('"+tempModel.getId()+"','"+tempModel.getTitle()+"','"+idChapter+"')";
                                 dbHelper.QueryData(INSERT_DATA);
+                            } catch (Exception e) {
+                                String UPDATE_DATA = "UPDATE category SET Name = '"+tempModel.getTitle()+"' WHERE Id = '"+tempModel.getId()+"' AND TypeID = '"+idChapter+"'";
+                                dbHelper.QueryData(UPDATE_DATA);
                             }
                         }
                     }
@@ -273,11 +260,9 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
         @Override
         protected void onPostExecute(Void result)
         {
-
             progressBar.setVisibility(View.GONE);
             GetCursorData();
             Log.d("MyTagView", "onPostExecute: "+ titleChapter);
-
         }
     }
 }

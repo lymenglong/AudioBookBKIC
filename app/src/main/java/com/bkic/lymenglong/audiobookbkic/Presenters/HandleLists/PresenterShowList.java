@@ -1,11 +1,7 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.database.Cursor;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
@@ -13,7 +9,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpServicesClass;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook.ListBook;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory.ListCategory;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListMenu.ListMenu;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType.ListBookType;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,12 +20,12 @@ import java.util.HashMap;
 
 public class PresenterShowList implements PresenterShowListImp{
 
-    ListMenu listMenuActivity;
+    ListBookType listBookTypeActivity;
     ListCategory listCategoryActivity;
     ListBook listBookActivity;
 
-    public PresenterShowList(ListMenu listMenuActivity) {
-        this.listMenuActivity = listMenuActivity;
+    public PresenterShowList(ListBookType listBookTypeActivity) {
+        this.listBookTypeActivity = listBookTypeActivity;
     }
 
     public PresenterShowList(ListCategory listCategoryActivity) {
@@ -41,13 +37,13 @@ public class PresenterShowList implements PresenterShowListImp{
     }
 
     @Override
-    public void GetBookTypeResponse(String httpUrl) {
-        new GetHttpResponse(listMenuActivity).execute(httpUrl);
+    public void GetDataResponse(String httpUrl) {
+        new GetHttpResponse(listBookTypeActivity).execute(httpUrl);
     }
 
     @Override
-    public void GetSelectedResponse(String PreviousListViewClickedItem, String HttpHolder) {
-        HttpWebCall(PreviousListViewClickedItem, HttpHolder);
+    public void GetSelectedResponse(String keyPost, String idPost, String HttpHolder) {
+        HttpWebCall(keyPost, idPost, HttpHolder);
     }
 
     //region JSON parse class started from here.
@@ -95,7 +91,7 @@ public class PresenterShowList implements PresenterShowListImp{
 
                                 jsonObject = jsonArray.getJSONObject(i);
 
-                                listMenuActivity.SetTableData(jsonObject);
+                                listBookTypeActivity.SetTableData(jsonObject);
 
                             }
                         }
@@ -121,7 +117,7 @@ public class PresenterShowList implements PresenterShowListImp{
         @Override
         protected void onPostExecute(Void result)
         {
-            listMenuActivity.ShowListBookType();
+            listBookTypeActivity.ShowListBookType();
         }
     }
     //endregion
@@ -131,14 +127,14 @@ public class PresenterShowList implements PresenterShowListImp{
     private HashMap<String, String> ResultHash = new HashMap<>();
     private String ParseResult;
     private HttpParse httpParse = new HttpParse();
-    public void HttpWebCall(final String PreviousListViewClickedItem, final String httpHolder){
+    public void HttpWebCall(final String keyPost, final String idPost, final String httpHolder){
 
         class HttpWebCallFunction extends AsyncTask<String,Void,String> {
 
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-                listMenuActivity.ShowProgressDialog();
+                listBookTypeActivity.ShowProgressDialog();
             }
 
             @Override
@@ -146,20 +142,20 @@ public class PresenterShowList implements PresenterShowListImp{
 
                 super.onPostExecute(httpResponseMsg);
 
-                listMenuActivity.DismissDialog();
+                listBookTypeActivity.DismissDialog();
 
                 //Storing Complete JSon Object into String Variable.
                 FinalJSonObject = httpResponseMsg ;
 
                 //Parsing the Stored JSOn String to GetHttpResponse Method.
-                new GetHttpResponseFromHttpWebCall(listMenuActivity).execute();
+                new GetHttpResponseFromHttpWebCall(listBookTypeActivity).execute();
 
             }
 
             @Override
             protected String doInBackground(String... params) {
 
-                ResultHash.put("UserID",params[0]);
+                ResultHash.put(keyPost,params[0]);
 
                 ParseResult = httpParse.postRequest(ResultHash, httpHolder);
 
@@ -169,7 +165,7 @@ public class PresenterShowList implements PresenterShowListImp{
 
         HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
 
-        httpWebCallFunction.execute(PreviousListViewClickedItem);
+        httpWebCallFunction.execute(idPost);
     }
 
     //region Parsing Complete JSON Object.
@@ -209,13 +205,13 @@ public class PresenterShowList implements PresenterShowListImp{
 
                         //compare if data on server is less than phone we del data from phone
 
-                        listMenuActivity.CompareDataPhoneWithServer(jsonArray);
+                        listBookTypeActivity.CompareDataPhoneWithServer(jsonArray);
 
                         for(int i=0; i<jsonArray.length(); i++)
                         {
                             jsonObject = jsonArray.getJSONObject(i);
 
-                            listMenuActivity.SetTableSelectedData(jsonObject);
+                            listBookTypeActivity.SetTableSelectedData(jsonObject);
 
                         }
                     }
@@ -236,7 +232,7 @@ public class PresenterShowList implements PresenterShowListImp{
         @Override
         protected void onPostExecute(Void result)
         {
-            listMenuActivity.ShowListFromSelected();
+            listBookTypeActivity.ShowListFromSelected();
         }
     }
     //endregion

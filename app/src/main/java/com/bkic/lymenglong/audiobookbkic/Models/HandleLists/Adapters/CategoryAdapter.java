@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook.ListBook;
 
@@ -17,11 +17,11 @@ import java.util.ArrayList;
 
 
 public class CategoryAdapter extends RecyclerView.Adapter {
-    private ArrayList<Category> chapters;
+    private ArrayList<Chapter> chapters;
     private Activity activity;
     private View view;
 
-    public CategoryAdapter(Activity activity, ArrayList<Category> chapters) {
+    public CategoryAdapter(Activity activity, ArrayList<Chapter> chapters) {
         this.chapters = chapters;
         this.activity = activity;
     }

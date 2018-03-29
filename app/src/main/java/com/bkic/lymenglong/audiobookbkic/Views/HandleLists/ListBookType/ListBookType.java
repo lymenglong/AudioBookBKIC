@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListMenu;
+package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -17,7 +17,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.FavoriteAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.HistoryAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.MenuAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookTypeAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
@@ -31,16 +31,16 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class ListMenu extends AppCompatActivity implements ListMenuImp{
+public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private View imRefresh;
-    private MenuAdapter adapter;
+    private BookTypeAdapter adapter;
     private HistoryAdapter historyAdapter;
     private FavoriteAdapter favoriteAdapter;
     private String titleHome;
     private int idMenu;
-    private Activity activity = ListMenu.this;
+    private Activity activity = ListBookType.this;
     private Session session;
     private ProgressBar progressBar;
     private DBHelper dbHelper;
@@ -225,10 +225,11 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
 //                Toast.makeText(activity, "Refresh", Toast.LENGTH_SHORT).show();
                 switch (idMenu){
                     case 1:
-                        presenterShowList.GetBookTypeResponse(HttpUrlSwitched(idMenu));
+                        presenterShowList.GetDataResponse(HttpUrlSwitched(idMenu));
                         break;
                     default:
-                        presenterShowList.GetSelectedResponse(String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
+                        String keyPost = "UserID";
+                        presenterShowList.GetSelectedResponse(keyPost,String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
                         break;
                 }
             }
@@ -238,12 +239,12 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
         Intent intent;
         switch (idMenu){
             case 1 : //book type
-                adapter = new MenuAdapter(ListMenu.this, list);
+                adapter = new BookTypeAdapter(ListBookType.this, list);
                 listChapter.setAdapter(adapter);
                 GetCursorData(TableSwitched(idMenu));
                 //get data from json parsing
                 if(list.isEmpty()){
-                    presenterShowList.GetBookTypeResponse(HttpUrlSwitched(idMenu));
+                    presenterShowList.GetDataResponse(HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -255,7 +256,8 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
                 //get data from json parsing
                 if(list.isEmpty()) {
 //                    HttpWebCall(String.valueOf(session.getUserIdLoggedIn()));
-                    presenterShowList.GetSelectedResponse(String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
+                    String keyPost = "UserID";
+                    presenterShowList.GetSelectedResponse(keyPost, String.valueOf(session.getUserIdLoggedIn()), HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -266,7 +268,8 @@ public class ListMenu extends AppCompatActivity implements ListMenuImp{
                 GetCursorData(TableSwitched(idMenu));
                 //get data from json parsing
                 if(list.isEmpty()) {
-                    presenterShowList.GetSelectedResponse(String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
+                    String keyPost = "UserID";
+                    presenterShowList.GetSelectedResponse(keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }

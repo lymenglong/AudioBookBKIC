@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListMenu;
+package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -8,7 +8,7 @@ import org.json.JSONObject;
  * Created by KHAIMINH2 on 3/28/2018.
  */
 
-public interface ListMenuImp {
+public interface ListBookTypeImp {
 
     void SetTableData(JSONObject jsonObject) throws JSONException;
 

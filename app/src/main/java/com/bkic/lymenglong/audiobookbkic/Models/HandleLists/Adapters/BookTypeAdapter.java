@@ -17,12 +17,12 @@ import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory.ListCate
 import java.util.ArrayList;
 
 
-public class MenuAdapter extends RecyclerView.Adapter {
+public class BookTypeAdapter extends RecyclerView.Adapter {
     private ArrayList<Chapter> chapters;
     private Activity activity;
     private View view;
 
-    public MenuAdapter(Activity activity, ArrayList<Chapter> chapters) {
+    public BookTypeAdapter(Activity activity, ArrayList<Chapter> chapters) {
         this.chapters = chapters;
         this.activity = activity;
     }
