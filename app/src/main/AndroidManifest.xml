@@ -89,7 +89,7 @@ package="com.bkic.lymenglong.audiobookbkic">
         android:screenOrientation="portrait">
     </activity>
     <activity
-        android:name=".ViewReading"
+        android:name=".Views.Reading.ViewReading"
         android:screenOrientation="portrait">
     </activity>
 

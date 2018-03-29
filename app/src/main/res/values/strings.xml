@@ -95,5 +95,6 @@
     <string name="creator">Creator</string>
     <string name="application_icon">Application icon</string>
     <string name="Hello">Chào bạn,</string>
+    <string name="no_data">Chưa cấp nhật dữ liệu, Vui lòng chọn sách khác</string>
 
 </resources>

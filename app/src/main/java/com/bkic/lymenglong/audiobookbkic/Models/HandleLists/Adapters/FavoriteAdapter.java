@@ -15,7 +15,7 @@ import android.widget.Toast;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
-import com.bkic.lymenglong.audiobookbkic.ViewReading;
+import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
 
 import java.util.ArrayList;
 
@@ -66,8 +66,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
 
         public ChapterHolder(View itemView) {
             super(itemView);
-            name = (TextView) itemView.findViewById(R.id.nameStory);
-            imgNext = (ImageView) itemView.findViewById(R.id.imgNext);
+            name = itemView.findViewById(R.id.nameStory);
+            imgNext = itemView.findViewById(R.id.imgNext);
 
             itemView.setOnClickListener(this);
         }
@@ -84,7 +84,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
         }
     }
 
-    public void showAlertDialog(){
+    private void showAlertDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 //        builder.setTitle("Chọn Dạng Sách");
         builder.setMessage("Bạn muốn chọn dạng nào?");
