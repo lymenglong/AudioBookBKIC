@@ -1,10 +1,7 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,10 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
-import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
@@ -30,12 +24,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class ListBook extends AppCompatActivity implements ListBookImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
-    private ArrayList<Chapter> chapters;
     private Book bookModel;
     private BookAdapter bookAdapter;
     private CustomActionBar actionBar;
@@ -46,6 +38,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     private static ArrayList<Book> list;
     private ProgressBar progressBar;
     private View imRefresh;
+    private String HttpURL = "http://20121969.tk/SachNoiBKIC/FilterBookData.php";
 
 
     @Override
@@ -53,8 +46,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
         getDataFromIntent();
-        init();
-        ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        initView();
         setTitle(titleChapter);
         initDatabase();
         initObject();
@@ -72,13 +64,13 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     /**
      * Khai báo các view và khởi tạo giá trị
      */
-    private void init() {
+    private void initView() {
         actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, titleChapter, true);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
         imRefresh = findViewById(R.id.imRefresh);
-
+        ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
     private void initDatabase() {
@@ -104,7 +96,8 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
 
         //region get data from json parsing
         if(list.isEmpty()){
-            HttpWebCall(String.valueOf(idChapter));
+            String keyPost = "CategoryID";
+            presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL);
         } else {
             progressBar.setVisibility(View.GONE);
         }
@@ -115,8 +108,8 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
             @Override
             public void onClick(View v) {
                 // todo: check internet connection before be abel to press Button Refresh
-                HttpWebCall(String.valueOf(idChapter));
-//                Toast.makeText(activity, "Refresh", Toast.LENGTH_SHORT).show();
+                String keyPost = "CategoryID";
+                presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL);
             }
         });
     }
@@ -148,153 +141,51 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     }
     //endregion
 
+    @Override
+    public void CompareDataPhoneWithServer(JSONArray jsonArray) {
 
-    //region Method to show current record Current Selected Record
-    private ProgressDialog pDialog;
-    private String FinalJSonObject;
-    private HashMap<String, String> ResultHash = new HashMap<>();
-    private String ParseResult;
-    private HttpParse httpParse = new HttpParse();
-    private String HttpURL = "http://20121969.tk/SachNoiBKIC/FilterBookData.php";
-    public void HttpWebCall(final String PreviousListViewClickedItem){
-
-        class HttpWebCallFunction extends AsyncTask<String,Void,String> {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
-            }
-
-            @Override
-            protected void onPostExecute(String httpResponseMsg) {
-
-                super.onPostExecute(httpResponseMsg);
-
-                pDialog.dismiss();
-
-                //Storing Complete JSon Object into String Variable.
-                FinalJSonObject = httpResponseMsg ;
-
-                //Parsing the Stored JSOn String to GetHttpResponse Method.
-                new GetHttpResponse(ListBook.this).execute();
-
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-
-                ResultHash.put("CategoryID",params[0]);
-
-                ParseResult = httpParse.postRequest(ResultHash, HttpURL);
-
-                return ParseResult;
-            }
-        }
-
-        HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
-
-        httpWebCallFunction.execute(PreviousListViewClickedItem);
     }
-    //endregion
 
-    //region Parsing Complete JSON Object.
-    private class GetHttpResponse extends AsyncTask<Void, Void, Void>
-    {
-        public Context context;
+    @Override
+    public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
 
-        ArrayList<Book> books;
+        bookModel = new Book();
 
-        public GetHttpResponse(Context context)
-        {
-            this.context = context;
-        }
+        bookModel.setId(Integer.parseInt(jsonObject.getString("Id")));
 
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-        }
+        bookModel.setTitle(jsonObject.getString("Name").toString());
 
-        @Override
-        protected Void doInBackground(Void... arg0)
-        {
-            try
-            {
-                if(FinalJSonObject != null && !FinalJSonObject.equals("No Results Found.")) //When no data, it will return "No Results Found." Value to String JSONObject.
-                {
-                    JSONArray jsonArray = null;
+        bookModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
 
-                    try {
-                        jsonArray = new JSONArray(FinalJSonObject);
+        bookModel.setContent(jsonObject.getString("TextContent"));
 
-                        JSONObject jsonObject;
+        bookModel.setFileUrl(jsonObject.getString("FileUrl"));
 
-                        Book bookModel;
-                        books = new ArrayList<>();
-
-                        for(int i=0; i<jsonArray.length(); i++)
-                        {
-                            bookModel = new Book();
-
-                            jsonObject = jsonArray.getJSONObject(i);
-
-                            bookModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-
-                            bookModel.setTitle(jsonObject.getString("Name").toString());
-
-                            bookModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
-
-                            bookModel.setContent(jsonObject.getString("TextContent"));
-
-                            bookModel.setFileUrl(jsonObject.getString("FileUrl"));
-
-                            books.add(bookModel);
-
-                            int Id = bookModel.getId();
-                            int CategoryId = bookModel.getCategoryId();
-                            String Name = bookModel.getTitle();
-                            String TextContent = bookModel.getContent();
-                            String FileUrl = bookModel.getFileUrl();
-                            String INSERT_DATA = null;
-                            try {
-                                INSERT_DATA = "INSERT INTO book VALUES('"+Id+"','"+Name+"','"+idChapter+"','"+FileUrl+"','"+TextContent+"')";
-                                dbHelper.QueryData(INSERT_DATA);
-                            } catch (Exception e) {
-                                Log.d("MyTagView", "SetInsertTableData: failed "+INSERT_DATA);
-                                String UPDATE_DATA = "UPDATE book SET " +
-                                        "Name = '"+Name+"', " +
-                                        "CategoryId = '"+CategoryId+"', " +
-                                        "FileUrl = '"+FileUrl+"' ," +
-                                        "TextContent = '"+TextContent+"' " +
-                                        "WHERE Id = '"+Id+"'";
-                                dbHelper.QueryData(UPDATE_DATA);
-                            }
-                        }
-                    }
-                    catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            pDialog.dismiss();
-            progressBar.setVisibility(View.GONE);
-            GetCursorData();
-            Log.d("MyTagView", "onPostExecute: "+ titleChapter);
-
+        int Id = bookModel.getId();
+        int CategoryId = bookModel.getCategoryId();
+        String Name = bookModel.getTitle();
+        String TextContent = bookModel.getContent();
+        String FileUrl = bookModel.getFileUrl();
+        String INSERT_DATA = null;
+        try {
+            INSERT_DATA = "INSERT INTO book VALUES('"+Id+"','"+Name+"','"+idChapter+"','"+FileUrl+"','"+TextContent+"')";
+            dbHelper.QueryData(INSERT_DATA);
+        } catch (Exception e) {
+            Log.d("MyTagView", "SetInsertTableData: failed "+INSERT_DATA);
+            String UPDATE_DATA = "UPDATE book SET " +
+                    "Name = '"+Name+"', " +
+                    "CategoryId = '"+CategoryId+"', " +
+                    "FileUrl = '"+FileUrl+"' ," +
+                    "TextContent = '"+TextContent+"' " +
+                    "WHERE Id = '"+Id+"'";
+            dbHelper.QueryData(UPDATE_DATA);
         }
     }
-    //endregion
+
+    @Override
+    public void ShowListFromSelected() {
+        progressBar.setVisibility(View.GONE);
+        GetCursorData();
+        Log.d("MyTagView", "onPostExecute: "+ titleChapter);
+    }
 }

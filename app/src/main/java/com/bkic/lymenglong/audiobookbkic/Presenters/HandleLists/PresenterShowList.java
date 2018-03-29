@@ -206,7 +206,7 @@ public class PresenterShowList implements PresenterShowListImp{
 
                         tempArray = new ArrayList<>();
 
-                        if (activity == listBookActivity){
+                        if (activity == listBookTypeActivity){
                             //compare if data on server is less than phone we del data from phone
                             listBookTypeActivity.CompareDataPhoneWithServer(jsonArray);
 
@@ -227,6 +227,18 @@ public class PresenterShowList implements PresenterShowListImp{
                                 jsonObject = jsonArray.getJSONObject(i);
 
                                 listCategoryActivity.SetTableSelectedData(jsonObject);
+
+                            }
+                        }
+                        if (activity == listBookActivity){
+                            //compare if data on server is less than phone we del data from phone
+                            listBookActivity.CompareDataPhoneWithServer(jsonArray);
+
+                            for(int i=0; i<jsonArray.length(); i++)
+                            {
+                                jsonObject = jsonArray.getJSONObject(i);
+
+                                listBookActivity.SetTableSelectedData(jsonObject);
 
                             }
                         }
@@ -253,6 +265,9 @@ public class PresenterShowList implements PresenterShowListImp{
             }
             if(activity == listCategoryActivity){
                 listCategoryActivity.ShowListFromSelected();
+            }
+            if(activity == listBookActivity){
+                listBookActivity.ShowListFromSelected();
             }
         }
     }
