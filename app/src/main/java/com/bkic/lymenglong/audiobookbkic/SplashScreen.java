@@ -13,11 +13,6 @@ import android.widget.TextView;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
 
 public class SplashScreen extends AppCompatActivity {
-    static private int SPLASH_TIME = 1500;
-    private TextView secretTextviewSplash;
-    private TextView secretCreatorSplash;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +27,7 @@ public class SplashScreen extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        int SPLASH_TIME = 1500;
         new Handler().postDelayed(new Runnable()
         {
             @Override
@@ -47,16 +43,16 @@ public class SplashScreen extends AppCompatActivity {
         }, SPLASH_TIME);
     }
     private void bindView() {
-        secretTextviewSplash = (TextView) findViewById(R.id.secret_textview_splash);
-        secretCreatorSplash = (TextView) findViewById(R.id.secret_creator_splash);
+        TextView secretTextViewSplash = findViewById(R.id.secret_textview_splash);
+        TextView secretCreatorSplash = findViewById(R.id.secret_creator_splash);
 
         String customHtml = getString(R.string.text_splash);
         String customHtmlCreator = getString(R.string.text_creator);
 
-        secretTextviewSplash.setText(Html.fromHtml(customHtml));
+        secretTextViewSplash.setText(Html.fromHtml(customHtml));
         secretCreatorSplash.setText(Html.fromHtml(customHtmlCreator));
 
-//        secretTextviewSplash.startAnimation(AnimationUtils.loadAnimation(SplashScreen.this, R.anim.fade_in));
+//        secretTextViewSplash.startAnimation(AnimationUtils.loadAnimation(SplashScreen.this, R.anim.fade_in));
         secretCreatorSplash.startAnimation(AnimationUtils.loadAnimation(SplashScreen.this, R.anim.fade_in));
     }
 }
