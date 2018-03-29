@@ -20,11 +20,8 @@ import com.bkic.lymenglong.audiobookbkic.R;
 
 public class HelpActivity extends AppCompatActivity implements HelpImp, View.OnClickListener{
     PresenterHelp presenterHelp = new PresenterHelp(this);
-    private final String TAG = "HelpActivity";
     private TextView tvReadFile;
-    private CustomActionBar actionBar;
     private String titleHome;
-    private int idHome;
     private View imgBack;
     private Activity activity = HelpActivity.this;
 
@@ -55,7 +52,7 @@ public class HelpActivity extends AppCompatActivity implements HelpImp, View.OnC
      */
     private void getDataFromIntent() {
         titleHome = getIntent().getStringExtra("titleHome");
-        idHome = getIntent().getIntExtra("idHome", -1);
+//        int idHome = getIntent().getIntExtra("idHome", -1);
     }
 
 
@@ -68,7 +65,7 @@ public class HelpActivity extends AppCompatActivity implements HelpImp, View.OnC
      * Khai báo các view và khởi tạo giá trị
      */
     private void initView() {
-        actionBar = new CustomActionBar();
+        CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, titleHome, false );
         tvReadFile = findViewById(R.id.tv_read_file);
         imgBack = findViewById(R.id.imBack);
@@ -76,6 +73,7 @@ public class HelpActivity extends AppCompatActivity implements HelpImp, View.OnC
 
     @Override
     public void ShowHelpDone() {
+        String TAG = "HelpActivity";
         Log.d(TAG, "ShowHelpDone");
     }
 
