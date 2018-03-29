@@ -18,7 +18,7 @@ import android.widget.TextView;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.CategoryAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Category;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowListImp;
@@ -31,7 +31,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class ListCategory extends AppCompatActivity implements PresenterShowListImp{
+public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private ArrayList<Category> chapters;

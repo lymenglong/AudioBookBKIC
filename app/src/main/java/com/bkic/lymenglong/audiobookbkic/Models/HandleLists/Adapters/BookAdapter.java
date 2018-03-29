@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Book;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.ViewReading;

@@ -4,15 +4,12 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Menu;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpServicesClass;
 import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.ArrayList;
 
 public class PresenterMain implements PresenterMainImp {
     MainActivity mainActivity;

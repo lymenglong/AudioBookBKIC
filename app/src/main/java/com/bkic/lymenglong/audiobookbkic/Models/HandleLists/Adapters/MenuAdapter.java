@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory.ListCategory;
 

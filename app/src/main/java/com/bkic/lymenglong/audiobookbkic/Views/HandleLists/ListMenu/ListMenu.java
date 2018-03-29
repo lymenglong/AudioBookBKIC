@@ -28,7 +28,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.FavoriteAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.HistoryAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.MenuAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowListImp;
@@ -40,14 +40,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
+public class ListMenu extends AppCompatActivity implements ListMenuImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private View imRefresh;
@@ -62,15 +58,11 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
     private Chapter chapterModel;
     private Activity activity = ListMenu.this;
     private Session session;
-    private StringRequest stringRequest;
-    private RequestQueue requestQueue;
-
-    //    private static final String getHistoryURL = "http://20121969.tk/audiobook/books/getAllBooks.php";
-    private static final String getHistoryURL = "http://20121969.tk/audiobook/books/getHistory.php";
-    private static final String getFavoriteURL = "http://20121969.tk/audiobook/books/getFavorite.php";
     private ProgressBar progressBar;
     private DBHelper dbHelper;
     private static ArrayList <Chapter> list = new ArrayList<>();
+    private Chapter tempModel;
+    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,10 +167,10 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
 //                Toast.makeText(activity, "Refresh", Toast.LENGTH_SHORT).show();
                 switch (idMenu){
                     case 1:
-                        new GetHttpResponse(activity).execute();
+                        presenterShowList.GetBookTypeResponse(HttpUrlSwitched(idMenu));
                         break;
                     default:
-                        HttpWebCall(String.valueOf(session.getUserIdLoggedIn()));
+                        presenterShowList.GetSelectedResponse(String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
                         break;
                 }
             }
@@ -193,7 +185,7 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
                 GetCursorData(TableSwitched(idMenu));
                 //get data from json parsing
                 if(list.isEmpty()){
-                    new GetHttpResponse(this).execute();
+                    presenterShowList.GetBookTypeResponse(HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -204,7 +196,8 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
                 GetCursorData(TableSwitched(idMenu));
                 //get data from json parsing
                 if(list.isEmpty()) {
-                    HttpWebCall(String.valueOf(session.getUserIdLoggedIn()));
+//                    HttpWebCall(String.valueOf(session.getUserIdLoggedIn()));
+                    presenterShowList.GetSelectedResponse(String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -215,7 +208,7 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
                 GetCursorData(TableSwitched(idMenu));
                 //get data from json parsing
                 if(list.isEmpty()) {
-                    HttpWebCall(String.valueOf(session.getUserIdLoggedIn()));
+                    presenterShowList.GetSelectedResponse(String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -239,10 +232,10 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
         }
     }
 
+    //region Switch Https Url
     private static final String HttpUrl_AllBookTypeData = "http://20121969.tk/SachNoiBKIC/AllBookTypeData.php";
     private static final String HttpUrl_FilterHistoryData = "http://20121969.tk/SachNoiBKIC/FilterHistoryData.php";
     private static final String HttpUrl_FilterFavoriteData = "http://20121969.tk/SachNoiBKIC/FilterFavoriteData.php";
-
     private String HttpUrlSwitched(int id){
         String pathUrl = null;
         switch (id){
@@ -259,6 +252,8 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
         }
         return pathUrl;
     }
+    //endregion
+
     private String TableSwitched(int id){
         String tableName = null;
         switch (id){
@@ -277,113 +272,14 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
     }
 
 
-    //region JSON parse class started from here.
-    private class GetHttpResponse extends AsyncTask<Void, Void, Void>
-    {
-        public Context context;
 
-        String JSonResult;
-
-        ArrayList<Chapter> tempArray;
-
-        public GetHttpResponse(Context context)
-        {
-            this.context = context;
-        }
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0)
-        {
-            // Passing HTTP URL to HttpServicesClass Class.
-            HttpServicesClass httpServicesClass = new HttpServicesClass(
-                    HttpUrlSwitched(idMenu));
-            try
-            {
-                httpServicesClass.ExecutePostRequest();
-
-                if(httpServicesClass.getResponseCode() == 200)
-                {
-                    JSonResult = httpServicesClass.getResponse();
-
-                    if(JSonResult != null)
-                    {
-                        JSONArray jsonArray = null;
-
-                        try {
-                            jsonArray = new JSONArray(JSonResult);
-
-                            JSONObject jsonObject;
-
-                            Chapter tempModel;
-//                            studentList = new ArrayList<Student>();
-                            tempArray = new ArrayList<>();
-
-                            for(int i=0; i<jsonArray.length(); i++)
-                            {
-//                                student = new Student();
-                                tempModel = new Chapter();
-
-                                jsonObject = jsonArray.getJSONObject(i);
-
-                                tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-                                tempModel.setTitle(jsonObject.getString("Name"));
-                                tempArray.add(tempModel);
-
-                                int Id = tempModel.getId();
-                                String Name = tempModel.getTitle();
-
-                                if (list.size()>= tempArray.size()) {
-                                    SetUpdateTableData(i, tempModel, TableSwitched(idMenu));
-                                } else {
-                                    SetInsertTableData(tempModel,TableSwitched(idMenu));
-
-                                }
-                            }
-                        }
-                        catch (JSONException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                else
-                {
-                    Toast.makeText(context, httpServicesClass.getErrorMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }
-            catch (Exception e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            progressBar.setVisibility(View.GONE);
-            GetCursorData(TableSwitched(idMenu));
-            Log.d("MyTagView", "onPostExecute: "+titleHome);
-        }
-    }
 
     private void SetInsertTableData(Chapter arrayModel, String tableName) {
         String INSERT_DATA = null;
         switch (tableName){
             case "booktype":
-                try {
-                    INSERT_DATA = "INSERT INTO '"+tableName+"' VALUES('"+arrayModel.getId()+"','"+arrayModel.getTitle()+"')";
-                    dbHelper.QueryData(INSERT_DATA);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                INSERT_DATA = "INSERT INTO '"+tableName+"' VALUES('"+arrayModel.getId()+"','"+arrayModel.getTitle()+"')";
+                dbHelper.QueryData(INSERT_DATA);
                 break;
             case "history":
                     INSERT_DATA = "INSERT INTO '"+tableName+"' VALUES(" +
@@ -427,34 +323,24 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
 
     }
 
-    private void SetUpdateTableData(int i, Chapter arrayModel, String tableName) {
+    private void SetUpdateTableData(Chapter arrayModel, String tableName) {
         String UPDATE_DATA = null;
         switch (tableName){
             case "booktype":
-                if (!list.get(i).getTitle().equals(arrayModel.getTitle())) {
-                    try {
-                        UPDATE_DATA = "UPDATE '"+tableName+"' SET Name = '"+arrayModel.getTitle()+"' WHERE Id = '"+arrayModel.getId()+"';";
-                        dbHelper.QueryData(UPDATE_DATA);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
+                UPDATE_DATA = "UPDATE '"+tableName+"' SET Name = '"+arrayModel.getTitle()+"' WHERE Id = '"+arrayModel.getId()+"';";
+                dbHelper.QueryData(UPDATE_DATA);
                 break;
             case "history":
-                try {
-                    UPDATE_DATA = "UPDATE history SET " +
-                            "InsertTime = '"+arrayModel.getInsertTime()+"', " +
-                            "PauseTime = '"+arrayModel.getPauseTime()+"' " +
+                UPDATE_DATA = "UPDATE history SET " +
+                        "InsertTime = '"+arrayModel.getInsertTime()+"', " +
+                        "PauseTime = '"+arrayModel.getPauseTime()+"' " +
 //                            "book.Name = '"+arrayModel.getTitle()+"', " +
 //                            "book.CategoryId = '"+arrayModel.getCategoryId()+"', " +
 //                            "book.FileUrl = '"+arrayModel.getFileUrl()+"', " +
 //                            "book.TextContent = '"+arrayModel.getContent()+"' " +
-                            "WHERE " +
-                                "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
-                    dbHelper.QueryData(UPDATE_DATA);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                        "WHERE " +
+                            "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
+                dbHelper.QueryData(UPDATE_DATA);
                 break;
              case "favorite":
                 try {
@@ -472,142 +358,9 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
         }
 
     }
-    //endregion
 
-    //region Method to show current record Current Selected Record
-    private ProgressDialog pDialog;
-    private String FinalJSonObject;
-    private HashMap<String, String> ResultHash = new HashMap<>();
-    private String ParseResult;
-    private HttpParse httpParse = new HttpParse();
-    public void HttpWebCall(final String PreviousListViewClickedItem){
-
-        class HttpWebCallFunction extends AsyncTask<String,Void,String> {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
-            }
-
-            @Override
-            protected void onPostExecute(String httpResponseMsg) {
-
-                super.onPostExecute(httpResponseMsg);
-
-                pDialog.dismiss();
-
-                //Storing Complete JSon Object into String Variable.
-                FinalJSonObject = httpResponseMsg ;
-
-                //Parsing the Stored JSOn String to GetHttpResponse Method.
-                new GetHttpResponseFromHttpWebCall(activity).execute();
-
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-
-                ResultHash.put("UserID",params[0]);
-
-                ParseResult = httpParse.postRequest(ResultHash, HttpUrlSwitched(idMenu));
-
-                return ParseResult;
-            }
-        }
-
-        HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
-
-        httpWebCallFunction.execute(PreviousListViewClickedItem);
-    }
-    //endregion
-
-    //region Parsing Complete JSON Object.
-    private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
-    {
-        public Context context;
-
-        ArrayList<Chapter> tempArray;
-
-        public GetHttpResponseFromHttpWebCall(Context context)
-        {
-            this.context = context;
-        }
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0)
-        {
-            try
-            {
-                if(FinalJSonObject != null && !FinalJSonObject.equals("No Results Found.")) //When no data, it will return "No Results Found." Value to String JSONObject.
-                {
-                    JSONArray jsonArray = null;
-
-                    try {
-                        jsonArray = new JSONArray(FinalJSonObject);
-
-                        JSONObject jsonObject;
-
-                        Chapter tempModel;
-                        tempArray = new ArrayList<>();
-
-                        //compare if data on server is less than phone we del data from phone
-                        CompareDataPhoneWithServer(jsonArray);
-
-
-                        for(int i=0; i<jsonArray.length(); i++)
-                        {
-//                                student = new Student();
-                            tempModel = new Chapter();
-
-                            jsonObject = jsonArray.getJSONObject(i);
-
-                            //return tempModel value from jsonObject
-                            SetTempModel(tempModel,jsonObject,TableSwitched(idMenu));
-
-                            tempArray.add(tempModel);
-
-                            try {
-                                SetInsertTableData(tempModel,TableSwitched(idMenu));
-                            } catch (Exception e) {
-                                SetUpdateTableData(i, tempModel, TableSwitched(idMenu));
-                            }
-
-
-                        }
-                    }
-                    catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            pDialog.dismiss();
-            progressBar.setVisibility(View.GONE);
-            GetCursorData(TableSwitched(idMenu));
-            Log.d("MyTagView", "onPostExecute: "+ titleHome);
-
-        }
-    }
-
-    private void CompareDataPhoneWithServer(JSONArray jsonArray) {
+    @Override
+    public void CompareDataPhoneWithServer(JSONArray jsonArray) {
         Cursor cursor;
         if(idMenu == 2) { // if list of database in sqlite on phone we delete all data in history table in sqlite phone
             cursor = dbHelper.GetData("SELECT * FROM history, book WHERE history.IdBook = book.Id");
@@ -649,6 +402,28 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
         }
     }
 
+    @Override
+    public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
+
+        tempModel = new Chapter();
+        //return tempModel value from jsonObject
+        SetTempModel(tempModel,jsonObject,TableSwitched(idMenu));
+
+        try {
+            SetInsertTableData(tempModel,TableSwitched(idMenu));
+        } catch (Exception e) {
+            SetUpdateTableData(tempModel, TableSwitched(idMenu));
+        }
+    }
+
+    @Override
+    public void ShowListFromSelected() {
+        pDialog.dismiss();
+        progressBar.setVisibility(View.GONE);
+        GetCursorData(TableSwitched(idMenu));
+        Log.d("MyTagView", "onPostExecute: "+ titleHome);
+    }
+
     private Chapter SetTempModel(Chapter tempModel, JSONObject jsonObject, String tableSwitched) throws JSONException {
         switch (tableSwitched){
             case "history":
@@ -672,7 +447,37 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
         }
         return tempModel;
     }
-    //endregion
+
+    @Override
+    public void SetTableData(JSONObject jsonObject) throws JSONException {
+        tempModel = new Chapter();
+        tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
+        tempModel.setTitle(jsonObject.getString("Name"));
+        try {
+            SetInsertTableData(tempModel,TableSwitched(idMenu));
+        } catch (Exception e) {
+            SetUpdateTableData(tempModel, TableSwitched(idMenu));
+        }
+    }
+
+    @Override
+    public void ShowProgressDialog() {
+        pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
+    }
+
+    @Override
+    public void DismissDialog() {
+        pDialog.dismiss();
+    }
+
+    @Override
+    public void ShowListBookType() {
+        progressBar.setVisibility(View.GONE);
+        GetCursorData(TableSwitched(idMenu));
+        Log.d("MyTagView", "onPostExecute: "+titleHome);
+    }
+
+
     /**
      * Lấy dữ liệu thông qua intent
      */
@@ -686,131 +491,10 @@ public class ListMenu extends AppCompatActivity implements PresenterShowListImp{
      */
     private void initView() {
         session = new Session(activity);
-        requestQueue = Volley.newRequestQueue(activity);
         progressBar = (ProgressBar)findViewById(R.id.progressBar);
         imRefresh = (View) findViewById(R.id.imRefresh);
         actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, titleHome, true);
         listChapter = (RecyclerView) findViewById(R.id.listView);
-    }
-
-    private void getJSONHistory(final String urlWebService) {
-
-        class GetJSON extends AsyncTask<Void, Void, String> {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-            }
-
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
-                try {
-                    getListHistoryFromJSON(s);
-                    progressBar.setVisibility(View.GONE);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                try {
-                    URL url = new URL(urlWebService);
-                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    StringBuilder sb = new StringBuilder();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                    String json;
-                    while ((json = bufferedReader.readLine()) != null) {
-                        sb.append(json + "\n");
-                    }
-                    return sb.toString().trim();
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-        }
-        GetJSON getJSON = new GetJSON();
-        getJSON.execute();
-    }
-
-    public void getListHistoryFromJSON(String json) throws JSONException {
-        JSONArray jsonArray = new JSONArray(json);
-        ArrayList<Chapter> chapters = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject obj = jsonArray.getJSONObject(i);
-            if(obj.getString("IdUser").equals(session.getUserIdLoggedIn())) {
-            chapterModel = new Chapter(obj.getInt("IdBook"),
-                    obj.getString("bookName"),
-                    obj.getString("bookTextContent"),
-                    obj.getString("bookFileUrl"),
-                    obj.getInt("pauseTime"));
-            chapters.add(chapterModel);
-            }
-        }
-        historyAdapter = new HistoryAdapter(activity, chapters);
-        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
-        listChapter.setLayoutManager(mLinearLayoutManager);
-        listChapter.setAdapter(historyAdapter);
-    }
-
-    private void getJSONFavorite(final String urlWebService) {
-
-        class GetJSON extends AsyncTask<Void, Void, String> {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-            }
-
-
-            @Override
-            protected void onPostExecute(String s) {
-                super.onPostExecute(s);
-                try {
-                    getListFavoriteFromJSON(s);
-                    progressBar.setVisibility(View.GONE);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            protected String doInBackground(Void... voids) {
-                try {
-                    URL url = new URL(urlWebService);
-                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                    StringBuilder sb = new StringBuilder();
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                    String json;
-                    while ((json = bufferedReader.readLine()) != null) {
-                        sb.append(json + "\n");
-                    }
-                    return sb.toString().trim();
-                } catch (Exception e) {
-                    return null;
-                }
-            }
-        }
-        GetJSON getJSON = new GetJSON();
-        getJSON.execute();
-    }
-
-    public void getListFavoriteFromJSON(String json) throws JSONException {
-        JSONArray jsonArray = new JSONArray(json);
-        ArrayList<Chapter> chapters = new ArrayList<>();
-        for (int i = 0; i < jsonArray.length(); i++) {
-            JSONObject obj = jsonArray.getJSONObject(i);
-            if(obj.getString("IdUser").equals(session.getUserIdLoggedIn())) {
-                chapterModel = new Chapter(obj.getInt("IdBook"), obj.getString("bookName"),obj.getString("bookTextContent"),obj.getString("bookFileUrl"));
-                chapters.add(chapterModel);
-            }
-        }
-        favoriteAdapter = new FavoriteAdapter(activity, chapters);
-        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
-        listChapter.setLayoutManager(mLinearLayoutManager);
-        listChapter.setAdapter(favoriteAdapter);
     }
 }

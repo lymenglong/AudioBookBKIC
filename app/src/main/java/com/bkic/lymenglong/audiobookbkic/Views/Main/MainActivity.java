@@ -2,10 +2,8 @@ package com.bkic.lymenglong.audiobookbkic.Views.Main;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -14,18 +12,15 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
-import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpServicesClass;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.MainAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Menu;
+import com.bkic.lymenglong.audiobookbkic.Models.Main.Menu;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Main.PresenterMain;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
