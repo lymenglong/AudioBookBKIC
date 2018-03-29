@@ -12,10 +12,6 @@ public interface ListBookTypeImp {
 
     void SetTableData(JSONObject jsonObject) throws JSONException;
 
-    void ShowProgressDialog();
-
-    void DismissDialog();
-
     void ShowListBookType();
 
     void CompareDataPhoneWithServer(JSONArray jsonArray);

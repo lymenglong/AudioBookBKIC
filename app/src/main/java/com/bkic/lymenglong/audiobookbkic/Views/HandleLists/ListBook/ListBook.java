@@ -42,9 +42,6 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     private String titleChapter;
     private int idChapter;
     private Activity activity = ListBook.this;
-    private static final String URL = "http://20121969.tk/audiobook/books/getAllBooks.php";
-    private StringRequest stringRequest;
-    private RequestQueue requestQueue;
     private DBHelper dbHelper;
     private static ArrayList<Book> list;
     private ProgressBar progressBar;
@@ -78,38 +75,9 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     private void init() {
         actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, titleChapter, true);
-        listChapter = (RecyclerView) findViewById(R.id.listView);
+        listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
-        imRefresh = (View) findViewById(R.id.imRefresh);
-
-        //region Get list Book Old Code
-    /*    requestQueue = Volley.newRequestQueue(this);
-        stringRequest = new StringRequest(Request.Method.POST, URL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        getJSON(URL);
-                    }
-
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(activity, "Not Response", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-        requestQueue.add(stringRequest);
-*/
-/*
-        databaseHelper = new DatabaseHelper(this);
-        chapters = databaseHelper.getListAllChapter(idChapter);
-        bookAdapter = new BookAdapter(ListBook.this, chapters);
-        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
-        listChapter.setLayoutManager(mLinearLayoutManager);
-        listChapter.setAdapter(bookAdapter);
-*/
-        //endregion
+        imRefresh = findViewById(R.id.imRefresh);
 
     }
 
@@ -263,12 +231,10 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
                         JSONObject jsonObject;
 
                         Book bookModel;
-//                            studentList = new ArrayList<Student>();
                         books = new ArrayList<>();
 
                         for(int i=0; i<jsonArray.length(); i++)
                         {
-//                                student = new Student();
                             bookModel = new Book();
 
                             jsonObject = jsonArray.getJSONObject(i);

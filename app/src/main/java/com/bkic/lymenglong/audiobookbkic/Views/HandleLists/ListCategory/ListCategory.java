@@ -1,5 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.database.Cursor;
@@ -33,27 +34,20 @@ import java.util.HashMap;
 public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
-    private ArrayList<Chapter> chapters;
     private CategoryAdapter adapter;
     private CustomActionBar actionBar;
     private String titleChapter;
     private int idChapter;
-    private TextView tvStory;
     private ProgressBar progressBar;
     private DBHelper dbHelper;
-    private String HttpUrl = "http://20121969.tk/SachNoiBKIC/AllCategoryData.php";
     private static ArrayList<Chapter> list;
     private View imRefresh;
-
-    HttpParse httpParse = new HttpParse();
 
     // Http Url For Filter Student Data from Id Sent from previous activity.
     String HttpURL = "http://20121969.tk/SachNoiBKIC/FilterCategoryData.php";
 
-    String ParseResult ;
-    HashMap<String,String> ResultHash = new HashMap<>();
-    String FinalJSonObject ;
-    private ProgressDialog pDialog;
+    private Activity activity = ListCategory.this;
+    private Chapter tempModel;
 
 
     @Override
@@ -125,7 +119,8 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
             GetCursorData();
 
             if(list.isEmpty()){
-                HttpWebCall(String.valueOf(idChapter));
+                String keyPost = "BookTypeID";
+                presenterShowList.GetSelectedResponse(this, keyPost, String.valueOf(idChapter), HttpURL);
             } else {
                 progressBar.setVisibility(View.GONE);
             }
@@ -134,135 +129,40 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
                 @Override
                 public void onClick(View v) {
                     //todo: check internet connection before be abel to press Button Refresh
-                    HttpWebCall(String.valueOf(idChapter));
-//                    Toast.makeText(ListCategory.this, "Refresh", Toast.LENGTH_SHORT).show();
+                String keyPost = "BookTypeID";
+                presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL);
                 }
             });
 
     }
 
-    //Method to show current record Current Selected Record
-    public void HttpWebCall(final String PreviousListViewClickedItem){
+    @Override
+    public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
 
-        class HttpWebCallFunction extends AsyncTask<String,Void,String> {
+        tempModel = new Chapter();
 
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                pDialog = ProgressDialog.show(ListCategory.this,"Loading Data","Please wait...",true,true);
-            }
+        tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
 
-            @Override
-            protected void onPostExecute(String httpResponseMsg) {
+        tempModel.setTitle(jsonObject.getString("Name"));
 
-                super.onPostExecute(httpResponseMsg);
-
-                pDialog.dismiss();
-
-                //Storing Complete JSon Object into String Variable.
-                FinalJSonObject = httpResponseMsg ;
-
-                //Parsing the Stored JSOn String to GetHttpResponse Method.
-                new GetHttpResponse(ListCategory.this).execute();
-
-            }
-
-            @Override
-            protected String doInBackground(String... params) {
-
-                ResultHash.put("BookTypeID",params[0]);
-
-                ParseResult = httpParse.postRequest(ResultHash, HttpURL);
-
-                return ParseResult;
-            }
+        try {
+            String INSERT_DATA = "INSERT INTO category VALUES('"+tempModel.getId()+"','"+tempModel.getTitle()+"','"+idChapter+"')";
+            dbHelper.QueryData(INSERT_DATA);
+        } catch (Exception e) {
+            String UPDATE_DATA = "UPDATE category SET Name = '"+tempModel.getTitle()+"' WHERE Id = '"+tempModel.getId()+"' AND TypeID = '"+idChapter+"'";
+            dbHelper.QueryData(UPDATE_DATA);
         }
-
-        HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
-
-        httpWebCallFunction.execute(PreviousListViewClickedItem);
     }
 
+    @Override
+    public void CompareDataPhoneWithServer(JSONArray jsonArray) {
+        //todo: CompareDataPhoneWithServer
+    }
 
-    // Parsing Complete JSON Object.
-    private class GetHttpResponse extends AsyncTask<Void, Void, Void>
-    {
-        public Context context;
-
-        ArrayList<Chapter> categories;
-
-        public GetHttpResponse(Context context)
-        {
-            this.context = context;
-        }
-
-        @Override
-        protected void onPreExecute()
-        {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0)
-        {
-            try
-            {
-                if(FinalJSonObject != null)
-                {
-                    JSONArray jsonArray = null;
-
-                    try {
-                        jsonArray = new JSONArray(FinalJSonObject);
-
-                        JSONObject jsonObject;
-
-                        Chapter tempModel;
-
-                        categories = new ArrayList<>();
-
-                        for(int i=0; i<jsonArray.length(); i++)
-                        {
-//                                student = new Student();
-                            tempModel = new Chapter();
-
-                            jsonObject = jsonArray.getJSONObject(i);
-
-                            // Adding Student Id TO IdList Array.
-                            tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-
-                            //Adding Student Name.
-                            tempModel.setTitle(jsonObject.getString("Name"));
-                            categories.add(tempModel);
-
-                            try {
-                                String INSERT_DATA = "INSERT INTO category VALUES('"+tempModel.getId()+"','"+tempModel.getTitle()+"','"+idChapter+"')";
-                                dbHelper.QueryData(INSERT_DATA);
-                            } catch (Exception e) {
-                                String UPDATE_DATA = "UPDATE category SET Name = '"+tempModel.getTitle()+"' WHERE Id = '"+tempModel.getId()+"' AND TypeID = '"+idChapter+"'";
-                                dbHelper.QueryData(UPDATE_DATA);
-                            }
-                        }
-                    }
-                    catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result)
-        {
-            progressBar.setVisibility(View.GONE);
-            GetCursorData();
-            Log.d("MyTagView", "onPostExecute: "+ titleChapter);
-        }
+    @Override
+    public void ShowListFromSelected() {
+        progressBar.setVisibility(View.GONE);
+        GetCursorData();
+        Log.d("MyTagView", "onPostExecute: "+ titleChapter);
     }
 }

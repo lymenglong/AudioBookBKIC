@@ -223,13 +223,14 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
             @Override
             public void onClick(View v) {
 //                Toast.makeText(activity, "Refresh", Toast.LENGTH_SHORT).show();
-                switch (idMenu){
+                switch (idMenu)
+                {
                     case 1:
                         presenterShowList.GetDataResponse(HttpUrlSwitched(idMenu));
                         break;
                     default:
                         String keyPost = "UserID";
-                        presenterShowList.GetSelectedResponse(keyPost,String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
+                        presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
                         break;
                 }
             }
@@ -257,7 +258,7 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
                 if(list.isEmpty()) {
 //                    HttpWebCall(String.valueOf(session.getUserIdLoggedIn()));
                     String keyPost = "UserID";
-                    presenterShowList.GetSelectedResponse(keyPost, String.valueOf(session.getUserIdLoggedIn()), HttpUrlSwitched(idMenu));
+                    presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()), HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -269,7 +270,7 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
                 //get data from json parsing
                 if(list.isEmpty()) {
                     String keyPost = "UserID";
-                    presenterShowList.GetSelectedResponse(keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
+                    presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }
@@ -456,16 +457,6 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
         } catch (Exception e) {
             SetUpdateTableData(tempModel, TableSwitched(idMenu));
         }
-    }
-
-    @Override
-    public void ShowProgressDialog() {
-        pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
-    }
-
-    @Override
-    public void DismissDialog() {
-        pDialog.dismiss();
     }
 
     @Override

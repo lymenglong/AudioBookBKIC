@@ -1,5 +1,7 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
@@ -23,6 +25,8 @@ public class PresenterShowList implements PresenterShowListImp{
     ListBookType listBookTypeActivity;
     ListCategory listCategoryActivity;
     ListBook listBookActivity;
+    Activity activity;
+    private ProgressDialog pDialog;
 
     public PresenterShowList(ListBookType listBookTypeActivity) {
         this.listBookTypeActivity = listBookTypeActivity;
@@ -42,8 +46,8 @@ public class PresenterShowList implements PresenterShowListImp{
     }
 
     @Override
-    public void GetSelectedResponse(String keyPost, String idPost, String HttpHolder) {
-        HttpWebCall(keyPost, idPost, HttpHolder);
+    public void GetSelectedResponse(Activity activity, String keyPost, String idPost, String HttpHolder) {
+        HttpWebCall(activity, keyPost, idPost, HttpHolder);
     }
 
     //region JSON parse class started from here.
@@ -127,29 +131,16 @@ public class PresenterShowList implements PresenterShowListImp{
     private HashMap<String, String> ResultHash = new HashMap<>();
     private String ParseResult;
     private HttpParse httpParse = new HttpParse();
-    public void HttpWebCall(final String keyPost, final String idPost, final String httpHolder){
+    private void HttpWebCall(final Activity activity, final String keyPost, final String idPost, final String httpHolder){
+
+        this.activity = activity;
 
         class HttpWebCallFunction extends AsyncTask<String,Void,String> {
 
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-                listBookTypeActivity.ShowProgressDialog();
-            }
-
-            @Override
-            protected void onPostExecute(String httpResponseMsg) {
-
-                super.onPostExecute(httpResponseMsg);
-
-                listBookTypeActivity.DismissDialog();
-
-                //Storing Complete JSon Object into String Variable.
-                FinalJSonObject = httpResponseMsg ;
-
-                //Parsing the Stored JSOn String to GetHttpResponse Method.
-                new GetHttpResponseFromHttpWebCall(listBookTypeActivity).execute();
-
+                pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
             }
 
             @Override
@@ -161,6 +152,19 @@ public class PresenterShowList implements PresenterShowListImp{
 
                 return ParseResult;
             }
+
+            @Override
+            protected void onPostExecute(String httpResponseMsg) {
+
+                super.onPostExecute(httpResponseMsg);
+
+                //Storing Complete JSon Object into String Variable.
+                FinalJSonObject = httpResponseMsg ;
+                //Parsing the Stored JSOn String to GetHttpResponse Method.
+                pDialog.dismiss();
+                new GetHttpResponseFromHttpWebCall(activity).execute();
+            }
+
         }
 
         HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
@@ -171,13 +175,13 @@ public class PresenterShowList implements PresenterShowListImp{
     //region Parsing Complete JSON Object.
     private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
     {
-        public Context context;
+        public Activity activity;
 
         ArrayList<Chapter> tempArray;
 
-        public GetHttpResponseFromHttpWebCall(Context context)
+        public GetHttpResponseFromHttpWebCall(Activity activity)
         {
-            this.context = context;
+            this.activity = activity;
         }
 
         @Override
@@ -193,26 +197,38 @@ public class PresenterShowList implements PresenterShowListImp{
             {
                 if(FinalJSonObject != null && !FinalJSonObject.equals("No Results Found.")) //When no data, it will return "No Results Found." Value to String JSONObject.
                 {
-                    JSONArray jsonArray = null;
+                    JSONArray jsonArray;
 
                     try {
                         jsonArray = new JSONArray(FinalJSonObject);
 
                         JSONObject jsonObject;
 
-                        Chapter tempModel;
                         tempArray = new ArrayList<>();
 
-                        //compare if data on server is less than phone we del data from phone
+                        if (activity == listBookActivity){
+                            //compare if data on server is less than phone we del data from phone
+                            listBookTypeActivity.CompareDataPhoneWithServer(jsonArray);
 
-                        listBookTypeActivity.CompareDataPhoneWithServer(jsonArray);
+                            for(int i=0; i<jsonArray.length(); i++)
+                            {
+                                jsonObject = jsonArray.getJSONObject(i);
 
-                        for(int i=0; i<jsonArray.length(); i++)
-                        {
-                            jsonObject = jsonArray.getJSONObject(i);
+                                listBookTypeActivity.SetTableSelectedData(jsonObject);
 
-                            listBookTypeActivity.SetTableSelectedData(jsonObject);
+                            }
+                        }
+                        if (activity == listCategoryActivity){
+                            //compare if data on server is less than phone we del data from phone
+                            listCategoryActivity.CompareDataPhoneWithServer(jsonArray);
 
+                            for(int i=0; i<jsonArray.length(); i++)
+                            {
+                                jsonObject = jsonArray.getJSONObject(i);
+
+                                listCategoryActivity.SetTableSelectedData(jsonObject);
+
+                            }
                         }
                     }
                     catch (JSONException e) {
@@ -232,7 +248,12 @@ public class PresenterShowList implements PresenterShowListImp{
         @Override
         protected void onPostExecute(Void result)
         {
-            listBookTypeActivity.ShowListFromSelected();
+            if(activity == listBookTypeActivity){
+                listBookTypeActivity.ShowListFromSelected();
+            }
+            if(activity == listCategoryActivity){
+                listCategoryActivity.ShowListFromSelected();
+            }
         }
     }
     //endregion
