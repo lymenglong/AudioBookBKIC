@@ -24,17 +24,17 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class HttpServicesClass {
-    public int responseCode;
+    private int responseCode;
 
     public String message;
 
-    public String response;
+    private String response;
 
-    public ArrayList<NameValuePair> ArrayListParams;
+    private ArrayList<NameValuePair> ArrayListParams;
 
-    public ArrayList<NameValuePair> headers;
+    private ArrayList<NameValuePair> headers;
 
-    public String UrlHolder;
+    private String UrlHolder;
 
     public String getResponse()
     {
@@ -55,9 +55,9 @@ public class HttpServicesClass {
     {
         HttpServicesClass.this.UrlHolder = url;
 
-        ArrayListParams = new ArrayList<NameValuePair>();
+        ArrayListParams = new ArrayList<>();
 
-        headers = new ArrayList<NameValuePair>();
+        headers = new ArrayList<>();
     }
 
     public void AddParam(String name, String value)
@@ -72,11 +72,11 @@ public class HttpServicesClass {
 
     public void ExecuteGetRequest() throws Exception
     {
-        String MixParams = "";
+        StringBuilder MixParams = new StringBuilder();
 
         if(!ArrayListParams.isEmpty())
         {
-            MixParams += "?";
+            MixParams.append("?");
 
             for(NameValuePair p : ArrayListParams)
             {
@@ -84,11 +84,11 @@ public class HttpServicesClass {
 
                 if(MixParams.length() > 1)
                 {
-                    MixParams  +=  "&" + paramString;
+                    MixParams.append("&").append(paramString);
                 }
                 else
                 {
-                    MixParams += paramString;
+                    MixParams.append(paramString);
                 }
             }
         }
@@ -164,12 +164,12 @@ public class HttpServicesClass {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        String line = null;
+        String line;
         try
         {
             while ((line = bufferedReader.readLine()) != null)
             {
-                stringBuilder.append(line + "\n");
+                stringBuilder.append(line).append("\n");
             }
         }
         catch (IOException e)

@@ -16,7 +16,7 @@ package="com.bkic.lymenglong.audiobookbkic">
     android:supportsRtl="true"
     android:theme="@style/AppTheme">
     <activity
-        android:name=".SplashScreen"
+        android:name=".Views.SplashScreen"
         android:screenOrientation="portrait">
         <intent-filter>
             <action android:name="android.intent.action.MAIN" />
@@ -85,7 +85,7 @@ package="com.bkic.lymenglong.audiobookbkic">
         </intent-filter>
     </activity>
     <activity
-        android:name=".PlayControl"
+        android:name=".Views.Player.PlayControl"
         android:screenOrientation="portrait">
     </activity>
     <activity

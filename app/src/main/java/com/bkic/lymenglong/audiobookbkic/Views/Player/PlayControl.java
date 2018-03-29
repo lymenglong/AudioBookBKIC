@@ -1,5 +1,6 @@
-package com.bkic.lymenglong.audiobookbkic;
+package com.bkic.lymenglong.audiobookbkic.Views.Player;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.media.AudioManager;
@@ -26,6 +27,8 @@ import com.android.volley.toolbox.Volley;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
+import com.bkic.lymenglong.audiobookbkic.Presenters.Player.PresenterPlayer;
+import com.bkic.lymenglong.audiobookbkic.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,14 +36,11 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlayControl extends AppCompatActivity {
-
-
+public class PlayControl extends AppCompatActivity implements PlayerImp{
+    PresenterPlayer presenterPlayer = new PresenterPlayer(this);
     private Button btnPlay, btnStop, btnPause, btnForward, btnBackward, btnNext, btnPrev, btnFavorite;
     private final MediaPlayer mediaPlayer = new MediaPlayer();
-    private CustomActionBar actionBar;
     private Activity activity = PlayControl.this;
-    private Thread seekBarThread;
     private SeekBar songProgressBar;
     private static int lastPlayDuration = 0;
 
@@ -48,20 +48,15 @@ public class PlayControl extends AppCompatActivity {
     private RequestQueue requestQueueHistory, requestQueueFavorite;
     private static final String historyURL = "http://20121969.tk/audiobook/mobile_registration/history.php";
     private static final String favoriteURL = "http://20121969.tk/audiobook/mobile_registration/favorite.php";
-    private StringRequest requestHistory, requestFavorite;
     private Session session;
 
 
     // Handler to update UI timer, progress bar etc,.
     private Handler mHandler = new Handler();
     private int intCurrentPosition = 0;
-    private int targetPossition;
     private int intSoundMax;
-    private int seekForwardTime = 5000; //5 seconds
-    private int seekBackwardTime = 5000; // 5 seconds
-    private TextView songTotalDurationLabel;
-    private TextView songCurrentDurationLabel;
-    private String getFileUrlChapter,  getContentChapter, getTitleChapter;
+    private String getFileUrlChapter;
+    private String getTitleChapter;
     private int getIdChapter, getPauseTime;
     private ProgressDialog progressDialog;
 
@@ -84,10 +79,11 @@ public class PlayControl extends AppCompatActivity {
 
     }
 
+    @SuppressLint("StaticFieldLeak")
     class Player extends AsyncTask<String, Void, Boolean> {
     @Override
     protected Boolean doInBackground(String... strings) {
-        Boolean prepared = false;
+        Boolean prepared;
         try {
             mediaPlayer.reset();
             mediaPlayer.setDataSource(PlayControl.this, Uri.parse(strings[0]));
@@ -148,6 +144,7 @@ public class PlayControl extends AppCompatActivity {
                                  final String S_HttpURL,
                                  final String S_Status){
 
+        @SuppressLint("StaticFieldLeak")
         class UpdateRecordDataClass extends AsyncTask<String,Void,String> {
 
             @Override
@@ -185,7 +182,7 @@ public class PlayControl extends AppCompatActivity {
         updateRecordDataClass.execute(S_IdUser,S_IdBook,S_InsertTime,S_PauseTime,S_HttpURL,S_Status);
     }
 
-    private HashMap <String, String> PutHashMapToServer(String [] params, HashMap<String,String> hashMap) {
+    private void PutHashMapToServer(String [] params, HashMap<String,String> hashMap) {
 
         if(params[4].equals(HttpUrlUpdateHistory)){
 
@@ -207,23 +204,21 @@ public class PlayControl extends AppCompatActivity {
 
             hashMap.put("Status",params[5]);
         }
-
-        return hashMap;
     }
     //endregion
 
     //region Update history data to server OLD CODE
     private void postHistoryDataToServer() {
 
-        requestHistory = new StringRequest(Request.Method.POST, historyURL, new Response.Listener<String>() {
+        StringRequest requestHistory = new StringRequest(Request.Method.POST, historyURL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
-                    if(jsonObject.names().get(0).equals("success")){
-                        Toast.makeText(getApplicationContext(),"Thành công, "+jsonObject.getString("success"),Toast.LENGTH_SHORT).show();
-                    }else {
-                        Toast.makeText(getApplicationContext(), "Lỗi, " +jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
+                    if (jsonObject.names().get(0).equals("success")) {
+                        Toast.makeText(getApplicationContext(), "Thành công, " + jsonObject.getString("success"), Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Lỗi, " + jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (JSONException e) {
@@ -237,14 +232,14 @@ public class PlayControl extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(getApplicationContext(), "Thêm vào lịch sử thất bại", Toast.LENGTH_SHORT).show();
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                HashMap<String,String> hashMap = new HashMap<String, String>();
+                HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(getIdChapter));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());
-                hashMap.put("InsertTime","12354");
-                hashMap.put("PauseTime ",String.valueOf(lastPlayDuration));
+                hashMap.put("InsertTime", "12354");
+                hashMap.put("PauseTime ", String.valueOf(lastPlayDuration));
                 return hashMap;
             }
         };
@@ -255,15 +250,15 @@ public class PlayControl extends AppCompatActivity {
 
     private void postFavoriteDataToServer() {
 
-        requestFavorite = new StringRequest(Request.Method.POST, favoriteURL, new Response.Listener<String>() {
+        StringRequest requestFavorite = new StringRequest(Request.Method.POST, favoriteURL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
-                    if(jsonObject.names().get(0).equals("success")){
-                        Toast.makeText(getApplicationContext(),"Thành công, "+jsonObject.getString("success"),Toast.LENGTH_SHORT).show();
-                    }else {
-                        Toast.makeText(getApplicationContext(), "Lỗi, " +jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
+                    if (jsonObject.names().get(0).equals("success")) {
+                        Toast.makeText(getApplicationContext(), "Thành công, " + jsonObject.getString("success"), Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Lỗi, " + jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (JSONException e) {
@@ -277,10 +272,10 @@ public class PlayControl extends AppCompatActivity {
             public void onErrorResponse(VolleyError error) {
                 Toast.makeText(getApplicationContext(), "Đăng ký thất bại", Toast.LENGTH_SHORT).show();
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                HashMap<String,String> hashMap = new HashMap<String, String>();
+                HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(getIdChapter));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());
 //                hashMap.put("InsertTime","1234");
@@ -303,7 +298,7 @@ public class PlayControl extends AppCompatActivity {
         getFileUrlChapter = getIntent().getStringExtra("fileUrl");
         getIdChapter = getIntent().getIntExtra("idChapter",-1);
         getTitleChapter = getIntent().getStringExtra("titleChapter");
-        getContentChapter = getIntent().getStringExtra("content");
+        String getContentChapter = getIntent().getStringExtra("content");
         getPauseTime = getIntent().getIntExtra("pauseTime", 0);
     }
 
@@ -390,6 +385,7 @@ public class PlayControl extends AppCompatActivity {
     private void RewindMedia() {
         intCurrentPosition = mediaPlayer.getCurrentPosition();
         // check if seekBackward time is greater than 0 sec
+        int seekBackwardTime = 5000;
         if(intCurrentPosition - seekBackwardTime >= 0){
             // forward song
             mediaPlayer.seekTo(intCurrentPosition - seekBackwardTime);
@@ -401,7 +397,8 @@ public class PlayControl extends AppCompatActivity {
 
     private void forwardMedia() {
         intCurrentPosition = mediaPlayer.getCurrentPosition();
-        targetPossition = intCurrentPosition + seekForwardTime;
+        int seekForwardTime = 5000;
+        int targetPossition = intCurrentPosition + seekForwardTime;
         if(targetPossition < intSoundMax){
             // forward song
             mediaPlayer.seekTo(targetPossition);
@@ -460,26 +457,24 @@ public class PlayControl extends AppCompatActivity {
 
     private void playMedia() {
         if (!mediaPlayer.isPlaying()) {
-            if (mediaPlayer!=null) {
-                if(mediaPlayer.getCurrentPosition()< getPauseTime){
-                    mediaPlayer.seekTo(getPauseTime);
+            if(mediaPlayer.getCurrentPosition()< getPauseTime){
+                mediaPlayer.seekTo(getPauseTime);
 //                    mediaPlayer.start();
-                } else{
-                    mediaPlayer.start();
+            } else{
+                mediaPlayer.start();
 //                    mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 1000);
-                }
+            }
 //                Toast.makeText(activity, "Playback Started From Server",
-                if(mediaPlayer.isPlaying()){
-                    Toast.makeText(activity,"Đang chạy, vui lòng chờ!",Toast.LENGTH_SHORT).show();
-                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                        @Override
-                        public void onCompletion(MediaPlayer mediaPlayer) {
-                            Toast.makeText(activity, "Đã chạy xong", Toast.LENGTH_SHORT).show();
+            if(mediaPlayer.isPlaying()){
+                Toast.makeText(activity,"Đang chạy, vui lòng chờ!",Toast.LENGTH_SHORT).show();
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mediaPlayer) {
+                        Toast.makeText(activity, "Đã chạy xong", Toast.LENGTH_SHORT).show();
 //                            lastPlayDuration = 0;
 //                            postHistoryDataToServer();
-                        }
-                    });
-                }
+                    }
+                });
             }
         }
     }
@@ -495,21 +490,19 @@ public class PlayControl extends AppCompatActivity {
 
 
     public void initProgressSeekBar(){
-        seekBarThread = new Thread(new Runnable() {
+        Thread seekBarThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 songProgressBar.setMax(intSoundMax);
 //                Log.d("test","s"+SONG_NUMBER+"tt"+SOUND_TOTAL);
-                while (mediaPlayer != null && intCurrentPosition < intSoundMax){
+                while (intCurrentPosition < intSoundMax) {
                     try {
                         Thread.sleep(1000);
                         intCurrentPosition = mediaPlayer.getCurrentPosition();
-                    }
-                    catch (InterruptedException e) {
+                    } catch (InterruptedException e) {
                         return;
 
-                    }
-                    catch (Exception otherException){
+                    } catch (Exception otherException) {
                         return;
                     }
                     songProgressBar.setProgress(intCurrentPosition);
@@ -524,7 +517,7 @@ public class PlayControl extends AppCompatActivity {
      */
 
     private void initToolbar() {
-        actionBar = new CustomActionBar();
+        CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, getTitleChapter, false);
     }
 
@@ -538,8 +531,8 @@ public class PlayControl extends AppCompatActivity {
         btnPrev = findViewById(R.id.btn_previous);
         btnStop = findViewById(R.id.btn_stop);
         songProgressBar = findViewById(R.id.seekBar);
-        songTotalDurationLabel = (TextView) findViewById(R.id.text_total_duration_label);
-        songCurrentDurationLabel = (TextView) findViewById(R.id.text_current_duration_label);
+        TextView songTotalDurationLabel = findViewById(R.id.text_total_duration_label);
+        TextView songCurrentDurationLabel = findViewById(R.id.text_current_duration_label);
     }
 
     @Override

@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
-import com.bkic.lymenglong.audiobookbkic.PlayControl;
+import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
 
@@ -64,7 +64,7 @@ public class BookAdapter extends RecyclerView.Adapter {
         private TextView name;
         private ImageView imgNext;
 
-        public ChapterHolder(View itemView) {
+        ChapterHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.nameStory);
             imgNext = itemView.findViewById(R.id.imgNext);

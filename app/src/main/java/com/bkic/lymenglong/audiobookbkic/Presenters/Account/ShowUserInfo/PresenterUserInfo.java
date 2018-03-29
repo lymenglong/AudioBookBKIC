@@ -6,7 +6,7 @@ import com.bkic.lymenglong.audiobookbkic.Views.Account.ShowUserInfo.UserInfoActi
 
 
 public class PresenterUserInfo implements PresenterUserInfoImp {
-    UserInfoActivity userInfoActivity;
+    private UserInfoActivity userInfoActivity;
 
     public PresenterUserInfo(UserInfoActivity userInfoActivity) {
         this.userInfoActivity = userInfoActivity;

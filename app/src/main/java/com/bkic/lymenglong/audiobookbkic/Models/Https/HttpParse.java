@@ -13,18 +13,13 @@ import java.util.Map;
 
 public class HttpParse {
 
-    String FinalHttpData = "";
-    String Result ;
-    BufferedWriter bufferedWriter ;
-    OutputStream outputStream ;
-    BufferedReader bufferedReader ;
-    StringBuilder stringBuilder = new StringBuilder();
-    URL url;
+    private String FinalHttpData = "";
+    private StringBuilder stringBuilder = new StringBuilder();
 
     public String postRequest(HashMap<String, String> Data, String HttpUrlHolder) {
 
         try {
-            url = new URL(HttpUrlHolder);
+            URL url = new URL(HttpUrlHolder);
 
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
 
@@ -38,9 +33,9 @@ public class HttpParse {
 
             httpURLConnection.setDoOutput(true);
 
-            outputStream = httpURLConnection.getOutputStream();
+            OutputStream outputStream = httpURLConnection.getOutputStream();
 
-            bufferedWriter = new BufferedWriter(
+            BufferedWriter bufferedWriter = new BufferedWriter(
 
                     new OutputStreamWriter(outputStream, "UTF-8"));
 
@@ -54,7 +49,7 @@ public class HttpParse {
 
             if (httpURLConnection.getResponseCode() == HttpURLConnection.HTTP_OK) {
 
-                bufferedReader = new BufferedReader(
+                BufferedReader bufferedReader = new BufferedReader(
                         new InputStreamReader(
                                 httpURLConnection.getInputStream()
                         )
@@ -71,7 +66,7 @@ public class HttpParse {
         return FinalHttpData;
     }
 
-    public String FinalDataParse(HashMap<String,String> hashMap2) throws UnsupportedEncodingException {
+    private String FinalDataParse(HashMap<String, String> hashMap2) throws UnsupportedEncodingException {
 
         for(Map.Entry<String,String> map_entry : hashMap2.entrySet()){
 
@@ -85,8 +80,6 @@ public class HttpParse {
 
         }
 
-        Result = stringBuilder.toString();
-
-        return Result ;
+        return stringBuilder.toString();
     }
 }

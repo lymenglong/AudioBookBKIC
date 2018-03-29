@@ -1,5 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -22,10 +23,9 @@ import java.util.HashMap;
 
 public class PresenterShowList implements PresenterShowListImp{
 
-    ListBookType listBookTypeActivity;
-    ListCategory listCategoryActivity;
-    ListBook listBookActivity;
-    Activity activity;
+    private ListBookType listBookTypeActivity;
+    private ListCategory listCategoryActivity;
+    private ListBook listBookActivity;
     private ProgressDialog pDialog;
 
     public PresenterShowList(ListBookType listBookTypeActivity) {
@@ -51,13 +51,14 @@ public class PresenterShowList implements PresenterShowListImp{
     }
 
     //region JSON parse class started from here.
+    @SuppressLint("StaticFieldLeak")
     private class GetHttpResponse extends AsyncTask<String, Void, Void>
     {
         public Context context;
 
         String JSonResult;
 
-        public GetHttpResponse(Context context)
+        GetHttpResponse(Context context)
         {
             this.context = context;
         }
@@ -83,7 +84,7 @@ public class PresenterShowList implements PresenterShowListImp{
 
                     if(JSonResult != null)
                     {
-                        JSONArray jsonArray = null;
+                        JSONArray jsonArray;
 
                         try {
                             jsonArray = new JSONArray(JSonResult);
@@ -133,8 +134,7 @@ public class PresenterShowList implements PresenterShowListImp{
     private HttpParse httpParse = new HttpParse();
     private void HttpWebCall(final Activity activity, final String keyPost, final String idPost, final String httpHolder){
 
-        this.activity = activity;
-
+        @SuppressLint("StaticFieldLeak")
         class HttpWebCallFunction extends AsyncTask<String,Void,String> {
 
             @Override
@@ -173,13 +173,14 @@ public class PresenterShowList implements PresenterShowListImp{
     }
 
     //region Parsing Complete JSON Object.
+    @SuppressLint("StaticFieldLeak")
     private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
     {
         public Activity activity;
 
         ArrayList<Chapter> tempArray;
 
-        public GetHttpResponseFromHttpWebCall(Activity activity)
+        GetHttpResponseFromHttpWebCall(Activity activity)
         {
             this.activity = activity;
         }

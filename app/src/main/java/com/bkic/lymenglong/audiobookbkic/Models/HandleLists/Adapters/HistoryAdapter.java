@@ -14,7 +14,7 @@ import android.widget.Toast;
 
 
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
-import com.bkic.lymenglong.audiobookbkic.PlayControl;
+import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
 
@@ -65,7 +65,7 @@ public class HistoryAdapter extends RecyclerView.Adapter {
         private TextView name;
         private ImageView imgNext;
 
-        public ChapterHolder(View itemView) {
+        ChapterHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.nameStory);
             imgNext = itemView.findViewById(R.id.imgNext);
@@ -96,7 +96,7 @@ public class HistoryAdapter extends RecyclerView.Adapter {
     }
 
 
-    public void showAlertDialog(){
+    private void showAlertDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 //        builder.setTitle("Chọn Dạng Sách");
         builder.setMessage("Bạn muốn chọn dạng nào?");

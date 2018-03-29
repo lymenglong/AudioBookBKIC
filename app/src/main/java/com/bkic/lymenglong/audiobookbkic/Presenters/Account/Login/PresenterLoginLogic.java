@@ -1,5 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.Account.Login;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
@@ -28,13 +29,9 @@ import java.util.Map;
 
 
 public class PresenterLoginLogic implements PresenterLoginImp {
-    ViewLoginActivity loginActivity;
-    private User userModel;
-//    private Session session = new Session(loginActivity);
-    private StringRequest request;
+    private ViewLoginActivity loginActivity;
     private static final String URL = "http://20121969.tk/audiobook/mobile_registration/login.php";
     private static final String getDataURL = "http://20121969.tk/audiobook/mobile_registration/get_user.php";
-    private RequestQueue requestQueue;
     private Session session;
 
     public PresenterLoginLogic(ViewLoginActivity loginActivity) {
@@ -48,21 +45,21 @@ public class PresenterLoginLogic implements PresenterLoginImp {
     }
 
     private void RequestLogin(final String email, final String password) {
-        requestQueue = Volley.newRequestQueue(loginActivity);
+        RequestQueue requestQueue = Volley.newRequestQueue(loginActivity);
         session = new Session(loginActivity);
-        request = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+        StringRequest request = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
-                    if(jsonObject.names().get(0).equals("success")){
+                    if (jsonObject.names().get(0).equals("success")) {
 //                        Toast.makeText(loginActivity,"Thành công, "+jsonObject.getString("success"),Toast.LENGTH_SHORT).show();
-                        getJSON(getDataURL,email);
+                        getJSON(getDataURL, email);
                         loginActivity.LoginSuccess();
-                    }else {
+                    } else {
                         // Snack Bar to show success message that record is wrong
 //                                Snackbar.make(nestedScrollView, getString(R.string.error_valid_email_password), Snackbar.LENGTH_LONG).show();
-                        Toast.makeText(loginActivity, "Lỗi, " +jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(loginActivity, "Lỗi, " + jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (JSONException e) {
@@ -76,12 +73,12 @@ public class PresenterLoginLogic implements PresenterLoginImp {
             public void onErrorResponse(VolleyError error) {
                 loginActivity.LoginFailed();
             }
-        }){
+        }) {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
-                HashMap<String,String> hashMap = new HashMap<String, String>();
-                hashMap.put("Email",email);
-                hashMap.put("Password",password);
+                HashMap<String, String> hashMap = new HashMap<String, String>();
+                hashMap.put("Email", email);
+                hashMap.put("Password", password);
 
                 return hashMap;
             }
@@ -92,6 +89,7 @@ public class PresenterLoginLogic implements PresenterLoginImp {
 
     private void getJSON(final String urlWebService, final String email) {
 
+        @SuppressLint("StaticFieldLeak")
         class GetJSON extends AsyncTask<Void, Void, String> {
 
             @Override
@@ -119,7 +117,7 @@ public class PresenterLoginLogic implements PresenterLoginImp {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(con.getInputStream()));
                     String json;
                     while ((json = bufferedReader.readLine()) != null) {
-                        sb.append(json + "\n");
+                        sb.append(json).append("\n");
                     }
                     return sb.toString().trim();
                 } catch (Exception e) {
@@ -131,7 +129,7 @@ public class PresenterLoginLogic implements PresenterLoginImp {
         getJSON.execute();
     }
 
-    public void getUser(String json, String textEmail) throws JSONException {
+    private void getUser(String json, String textEmail) throws JSONException {
         JSONArray jsonArray = new JSONArray(json);
         ArrayList<User> users = new ArrayList<>();
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -139,7 +137,7 @@ public class PresenterLoginLogic implements PresenterLoginImp {
             if (obj.getString("Email").trim().equals(textEmail)
                     || obj.getString("Username").trim().equals(textEmail) ) {
 //                userModel = new User(obj.getInt("Id"), obj.getString("Fullname"),obj.getString("Email"));
-                userModel = new User();
+                User userModel = new User();
                 userModel.setId(Integer.parseInt(obj.getString("Id")));
                 userModel.setName(obj.getString("Fullname"));
                 userModel.setEmail(obj.getString("Email"));

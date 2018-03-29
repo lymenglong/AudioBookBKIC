@@ -1,5 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.Main;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
@@ -12,8 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class PresenterMain implements PresenterMainImp {
-    MainActivity mainActivity;
-    String HttpUrl = "http://20121969.tk/SachNoiBKIC/AllMenuData.php";
+    private MainActivity mainActivity;
+
     public PresenterMain(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
     }
@@ -24,12 +25,13 @@ public class PresenterMain implements PresenterMainImp {
     }
 
     //region JSON parse class started from here.
+    @SuppressLint("StaticFieldLeak")
     private class GetHttpResponse extends AsyncTask<Void, Void, Void> {
 
         public Context context;
         String JSonResult;
 
-        public GetHttpResponse(Context context) {
+        GetHttpResponse(Context context) {
             this.context = context;
         }
 
@@ -42,7 +44,8 @@ public class PresenterMain implements PresenterMainImp {
         @Override
         protected Void doInBackground(Void... arg0) {
             // Passing HTTP URL to HttpServicesClass Class.
-            HttpServicesClass httpServicesClass = new HttpServicesClass(HttpUrl);
+            String httpUrl = "http://20121969.tk/SachNoiBKIC/AllMenuData.php";
+            HttpServicesClass httpServicesClass = new HttpServicesClass(httpUrl);
             try {
                 httpServicesClass.ExecutePostRequest();
 
@@ -50,7 +53,7 @@ public class PresenterMain implements PresenterMainImp {
                     JSonResult = httpServicesClass.getResponse();
 
                     if (JSonResult != null) {
-                        JSONArray jsonArray = null;
+                        JSONArray jsonArray;
 
                         try {
                             jsonArray = new JSONArray(JSonResult);
