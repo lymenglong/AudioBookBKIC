@@ -2,21 +2,13 @@ package com.bkic.lymenglong.audiobookbkic.Views.Player;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -36,33 +28,20 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PlayControl extends AppCompatActivity implements PlayerImp{
+public class PlayControl extends AppCompatActivity implements PlayerImp, View.OnClickListener{
     PresenterPlayer presenterPlayer = new PresenterPlayer(this);
     private Button btnPlay, btnStop, btnPause, btnForward, btnBackward, btnNext, btnPrev, btnFavorite;
-    private final MediaPlayer mediaPlayer = new MediaPlayer();
-    private Activity activity = PlayControl.this;
+    private Activity playControlActivity = PlayControl.this;
     private SeekBar songProgressBar;
-    private static int lastPlayDuration = 0;
-
-
+    public int lastPlayDuration = 0;
     private RequestQueue requestQueueHistory, requestQueueFavorite;
     private static final String historyURL = "http://20121969.tk/audiobook/mobile_registration/history.php";
     private static final String favoriteURL = "http://20121969.tk/audiobook/mobile_registration/favorite.php";
     private Session session;
-
-
-    // Handler to update UI timer, progress bar etc,.
-    private Handler mHandler = new Handler();
-    private int intCurrentPosition = 0;
-    private int intSoundMax;
     private String getFileUrlChapter;
     private String getTitleChapter;
-    private int getIdChapter, getPauseTime;
-    private ProgressDialog progressDialog;
-
-    private boolean initialStage = true;
-    private Runnable runnable;
-
+    private int getIdChapter;
+    public int getPauseTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,70 +49,15 @@ public class PlayControl extends AppCompatActivity implements PlayerImp{
         setContentView(R.layout.activity_play_control);
         initDataFromIntent();
         setTitle(getTitleChapter);
-        initCheckBookUrl(); //finish activity when getFileUrlChapter is empty
         initToolbar();
         initView();
         initObject();
-        initPrepareMedia();
+        initCheckAudioUrl();
         intListener();
-
     }
-
-    @SuppressLint("StaticFieldLeak")
-    class Player extends AsyncTask<String, Void, Boolean> {
-    @Override
-    protected Boolean doInBackground(String... strings) {
-        Boolean prepared;
-        try {
-            mediaPlayer.reset();
-            mediaPlayer.setDataSource(PlayControl.this, Uri.parse(strings[0]));
-//            mediaPlayer.prepareAsync();
-            mediaPlayer.prepare();
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    initialStage = true;
-                    mediaPlayer.stop();
-                    mediaPlayer.reset();
-                }
-            });
-
-//            songProgressBar.setMax(intSoundMax);
-            prepared = true;
-
-        } catch (Exception e) {
-            Log.e("MyAudioStreamingApp", e.getMessage());
-            prepared = false;
-        }
-
-        return prepared;
-    }
-
-    @Override
-    protected void onPostExecute(Boolean aBoolean) {
-        super.onPostExecute(aBoolean);
-
-        if (progressDialog.isShowing()) {
-            progressDialog.cancel();
-        }
-        playMedia();
-//        mediaPlayer.start();
-
-        initialStage = false;
-    }
-
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        progressDialog.setMessage("Buffering...");
-        progressDialog.show();
-    }
-}
-
     //region Method to Update History
     String HttpUrlUpdateHistory = "http://20121969.tk/SachNoiBKIC/UpdateHistory.php";
     String HttpUrlUpdateFavorite = "http://20121969.tk/SachNoiBKIC/UpdateFavorite.php";
-    ProgressDialog pDialog;
     String finalResult ;
     HashMap<String,String> hashMap = new HashMap<>();
     HttpParse httpParse = new HttpParse();
@@ -146,23 +70,9 @@ public class PlayControl extends AppCompatActivity implements PlayerImp{
 
         @SuppressLint("StaticFieldLeak")
         class UpdateRecordDataClass extends AsyncTask<String,Void,String> {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-
-//                pDialog = ProgressDialog.show(PlayControl.this,"Loading Data",null,true,true);
-            }
-
             @Override
             protected void onPostExecute(String httpResponseMsg) {
-
                 super.onPostExecute(httpResponseMsg);
-
-//                pDialog.dismiss();
-
-//                Toast.makeText(getApplicationContext(),httpResponseMsg.toString(), Toast.LENGTH_LONG).show();
-
             }
 
             @Override
@@ -207,7 +117,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp{
     }
     //endregion
 
-    //region Update history data to server OLD CODE
+    //region Insert history data to server OLD CODE
     private void postHistoryDataToServer() {
 
         StringRequest requestHistory = new StringRequest(Request.Method.POST, historyURL, new Response.Listener<String>() {
@@ -216,9 +126,9 @@ public class PlayControl extends AppCompatActivity implements PlayerImp{
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     if (jsonObject.names().get(0).equals("success")) {
-                        Toast.makeText(getApplicationContext(), "Thành công, " + jsonObject.getString("success"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(playControlActivity, "Thành công, " + jsonObject.getString("success"), Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(getApplicationContext(), "Lỗi, " + jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(playControlActivity, "Lỗi, " + jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
                     }
 
                 } catch (JSONException e) {
@@ -238,7 +148,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp{
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(getIdChapter));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());
-                hashMap.put("InsertTime", "12354");
+                hashMap.put("InsertTime", "30032018");
                 hashMap.put("PauseTime ", String.valueOf(lastPlayDuration));
                 return hashMap;
             }
@@ -287,234 +197,29 @@ public class PlayControl extends AppCompatActivity implements PlayerImp{
         requestQueueFavorite.add(requestFavorite);
     }
 
-    private void initCheckBookUrl() {
+    @Override
+    public void initCheckAudioUrl() {
         if (getFileUrlChapter.isEmpty()) {
-            Toast.makeText(activity, "Lỗi, Dữ liệu chưa được cấp nhật", Toast.LENGTH_SHORT).show();
-            activity.finish();
+            Toast.makeText(playControlActivity, getString(R.string.no_data), Toast.LENGTH_SHORT).show();
+            playControlActivity.finish();
+        } else{
+            //prepareMediaData
+            presenterPlayer.PrepareMediaPlayer(getFileUrlChapter);
         }
+    }
+
+    private void initObject() {
+        requestQueueHistory = Volley.newRequestQueue(playControlActivity);
+        requestQueueFavorite = Volley.newRequestQueue(playControlActivity);
+        session = new Session(playControlActivity);
     }
 
     private void initDataFromIntent() {
         getFileUrlChapter = getIntent().getStringExtra("fileUrl");
         getIdChapter = getIntent().getIntExtra("idChapter",-1);
         getTitleChapter = getIntent().getStringExtra("titleChapter");
-        String getContentChapter = getIntent().getStringExtra("content");
         getPauseTime = getIntent().getIntExtra("pauseTime", 0);
     }
-
-    private void initPrepareMedia() {
-        if (getFileUrlChapter != null) {
-/*            mediaPlayer.reset();
-            mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-            try {
-                mediaPlayer.setDataSource(getFileUrlChapter);
-                mediaPlayer.prepareAsync();
-                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        intSoundMax = mp.getDuration();
-                    }
-                });
-                mediaPlayer.prepare();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }*/
-            new Player().execute(getFileUrlChapter);
-        }
-    }
-
-
-    private void initObject() {
-        requestQueueHistory = Volley.newRequestQueue(activity);
-        requestQueueFavorite = Volley.newRequestQueue(activity);
-//        mediaPlayer= new MediaPlayer();
-        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        session = new Session(activity);
-        progressDialog = new ProgressDialog(activity);
-    }
-
-    //bat su kien khi kich button
-    View.OnClickListener onClickListener  = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            //region Switch Button
-            switch (view.getId()){
-                case R.id.btn_add_favorite:
-                    postFavoriteDataToServer();
-//                    String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
-//                    String IdBookHolder = String.valueOf(getIdChapter);
-//                    String InsertTimeHolder = String.valueOf(12345); //todo get current date when post to server
-//                    String PauseTimeHolder = String.valueOf(lastPlayDuration);
-//                    String HttpUrlHolder = String.valueOf(HttpUrlUpdateFavorite);
-//                    String Status = String.valueOf(5);
-//                    UpdateRecordData(IdUserHolder,IdBookHolder,InsertTimeHolder,PauseTimeHolder,HttpUrlHolder,Status);
-                    break;
-                case R.id.btn_play :
-                    playMedia();
-                    break;
-                case R.id.btn_pause:
-                    pauseMedia();
-                    break;
-                case R.id.btn_stop:
-                    stopMedia();
-                    break;
-                case R.id.btn_next:
-                    nextMedia();
-                    break;
-                case R.id.btn_previous:
-                    previousMedia();
-                    break;
-                case R.id.btn_ffw:
-                    forwardMedia();
-                    break;
-                case R.id.btn_backward:
-                    RewindMedia();
-                    break;
-            }
-            //endregion
-        }
-    };
-
-    private void stopMedia() { // nghe lại từ đầu
-        mediaPlayer.pause();
-        mediaPlayer.seekTo(0);
-        mediaPlayer.start();
-
-    }
-
-    private void RewindMedia() {
-        intCurrentPosition = mediaPlayer.getCurrentPosition();
-        // check if seekBackward time is greater than 0 sec
-        int seekBackwardTime = 5000;
-        if(intCurrentPosition - seekBackwardTime >= 0){
-            // forward song
-            mediaPlayer.seekTo(intCurrentPosition - seekBackwardTime);
-        }else{
-            // backward to starting position
-            mediaPlayer.seekTo(0);
-        }
-    }
-
-    private void forwardMedia() {
-        intCurrentPosition = mediaPlayer.getCurrentPosition();
-        int seekForwardTime = 5000;
-        int targetPossition = intCurrentPosition + seekForwardTime;
-        if(targetPossition < intSoundMax){
-            // forward song
-            mediaPlayer.seekTo(targetPossition);
-            Log.d("MyTagView", "forwardMedia: "+ targetPossition);
-        }else{
-            // forward to end position
-            mediaPlayer.seekTo(mediaPlayer.getDuration());
-        }
-    }
-
-    private void previousMedia() {
-
-    }
-
-    private void intListener() {
-        btnFavorite.setOnClickListener(onClickListener);
-        btnPlay.setOnClickListener(onClickListener);
-        btnPause.setOnClickListener(onClickListener);
-        btnForward.setOnClickListener(onClickListener);
-        btnBackward.setOnClickListener(onClickListener);
-        btnNext.setOnClickListener(onClickListener);
-        btnPrev.setOnClickListener(onClickListener);
-        btnStop.setOnClickListener(onClickListener);
-        songProgressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
-                if(b){
-                    mediaPlayer.seekTo(i);
-                    seekBar.setProgress(i);
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-//                seekBar.setProgress(mediaPlayer.getCurrentPosition());
-            }
-        });
-    }
-
-    private void nextMedia() {
-
-    }
-
-    private void pauseMedia() {
-
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-            mSeekbarUpdateHandler.removeCallbacks(mUpdateSeekbar);
-        }
-    }
-
-    private void playMedia() {
-        if (!mediaPlayer.isPlaying()) {
-            if(mediaPlayer.getCurrentPosition()< getPauseTime){
-                mediaPlayer.seekTo(getPauseTime);
-//                    mediaPlayer.start();
-            } else{
-                mediaPlayer.start();
-//                    mSeekbarUpdateHandler.postDelayed(mUpdateSeekbar, 1000);
-            }
-//                Toast.makeText(activity, "Playback Started From Server",
-            if(mediaPlayer.isPlaying()){
-                Toast.makeText(activity,"Đang chạy, vui lòng chờ!",Toast.LENGTH_SHORT).show();
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mediaPlayer) {
-                        Toast.makeText(activity, "Đã chạy xong", Toast.LENGTH_SHORT).show();
-//                            lastPlayDuration = 0;
-//                            postHistoryDataToServer();
-                    }
-                });
-            }
-        }
-    }
-
-    private Handler mSeekbarUpdateHandler = new Handler();
-    private Runnable mUpdateSeekbar = new Runnable() {
-        @Override
-        public void run() {
-            songProgressBar.setProgress(mediaPlayer.getCurrentPosition());
-            mSeekbarUpdateHandler.postDelayed(this, 50);
-        }
-    };
-
-
-    public void initProgressSeekBar(){
-        Thread seekBarThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                songProgressBar.setMax(intSoundMax);
-//                Log.d("test","s"+SONG_NUMBER+"tt"+SOUND_TOTAL);
-                while (intCurrentPosition < intSoundMax) {
-                    try {
-                        Thread.sleep(1000);
-                        intCurrentPosition = mediaPlayer.getCurrentPosition();
-                    } catch (InterruptedException e) {
-                        return;
-
-                    } catch (Exception otherException) {
-                        return;
-                    }
-                    songProgressBar.setProgress(intCurrentPosition);
-                }
-            }
-        });
-        seekBarThread.start();
-    }
-
-    /**
-     * Khai báo các view và khởi tạo giá trị
-     */
 
     private void initToolbar() {
         CustomActionBar actionBar = new CustomActionBar();
@@ -531,28 +236,98 @@ public class PlayControl extends AppCompatActivity implements PlayerImp{
         btnPrev = findViewById(R.id.btn_previous);
         btnStop = findViewById(R.id.btn_stop);
         songProgressBar = findViewById(R.id.seekBar);
-        TextView songTotalDurationLabel = findViewById(R.id.text_total_duration_label);
-        TextView songCurrentDurationLabel = findViewById(R.id.text_current_duration_label);
+    }
+
+    private void intListener() {
+        btnFavorite.setOnClickListener(this);
+        btnPlay.setOnClickListener(this);
+        btnPause.setOnClickListener(this);
+        btnForward.setOnClickListener(this);
+        btnBackward.setOnClickListener(this);
+        btnNext.setOnClickListener(this);
+        btnPrev.setOnClickListener(this);
+        btnStop.setOnClickListener(this);
+        songProgressBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int i, boolean b) {
+//                if(b){
+//                    mediaPlayer.seekTo(i);
+//                    seekBar.setProgress(i);
+//                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+//                seekBar.setProgress(mediaPlayer.getCurrentPosition());
+            }
+        });
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        //region Switch Button
+        switch (v.getId()){
+            case R.id.btn_add_favorite:
+                postFavoriteDataToServer();
+                //region Update to favorite with httpWebCall
+//                    String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
+//                    String IdBookHolder = String.valueOf(getIdChapter);
+//                    String InsertTimeHolder = String.valueOf(12345); //todo get current date when post to server
+//                    String PauseTimeHolder = String.valueOf(lastPlayDuration);
+//                    String HttpUrlHolder = String.valueOf(HttpUrlUpdateFavorite);
+//                    String Status = String.valueOf(5);
+//                    UpdateRecordData(IdUserHolder,IdBookHolder,InsertTimeHolder,PauseTimeHolder,HttpUrlHolder,Status);
+                //endregion
+                break;
+            case R.id.btn_play :
+                presenterPlayer.PlayMedia();
+                break;
+            case R.id.btn_pause:
+                presenterPlayer.PauseMedia();
+                break;
+            case R.id.btn_stop:
+                presenterPlayer.ReplayMedia();
+                break;
+            case R.id.btn_next:
+                presenterPlayer.NextMedia();
+                break;
+            case R.id.btn_previous:
+                presenterPlayer.PreviousMedia();
+                break;
+            case R.id.btn_ffw:
+                presenterPlayer.ForwardMedia();
+                break;
+            case R.id.btn_backward:
+                presenterPlayer.RewindMedia();
+                break;
+        }
+        //endregion
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(mediaPlayer.getCurrentPosition()==mediaPlayer.getDuration()){
-            lastPlayDuration = 0;
-        }else {
-            lastPlayDuration = mediaPlayer.getCurrentPosition();
-        }
         if (!getFileUrlChapter.isEmpty()) {
-            //TODO update history when destroy activity
-            String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
-            String IdBookHolder = String.valueOf(getIdChapter);
-            String InsertTimeHolder = String.valueOf(12345); //todo get current date when post to server
-            String PauseTimeHolder = String.valueOf(lastPlayDuration);
-            String HttpUrlHolder = String.valueOf(HttpUrlUpdateHistory);
-            UpdateRecordData(IdUserHolder,IdBookHolder,InsertTimeHolder,PauseTimeHolder,HttpUrlHolder,"0");
-//            postHistoryDataToServer();
+            presenterPlayer.GetLastMediaData();
+            try {
+                postHistoryDataToServer();
+            } catch (Exception e) {
+                //TODO update history when destroy activity
+                //region UpdateHistoryRecordData
+                String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
+                String IdBookHolder = String.valueOf(getIdChapter);
+                String InsertTimeHolder = String.valueOf(12345); //todo get current date when post to server
+                String PauseTimeHolder = String.valueOf(lastPlayDuration);
+                String HttpUrlHolder = String.valueOf(HttpUrlUpdateHistory);
+                UpdateRecordData(IdUserHolder,IdBookHolder,InsertTimeHolder,PauseTimeHolder,HttpUrlHolder,"0");
+                //endregion
+            }
         }
-        mediaPlayer.release();
     }
 }

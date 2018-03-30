@@ -96,5 +96,6 @@
     <string name="application_icon">Application icon</string>
     <string name="Hello">Chào bạn,</string>
     <string name="no_data">Chưa cấp nhật dữ liệu, Vui lòng chọn sách khác</string>
+    <string name="buffering_data">Buffering…</string>
 
 </resources>
