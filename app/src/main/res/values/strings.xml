@@ -100,5 +100,8 @@
     <string name="prompt_history">Lịch Sử</string>
     <string name="prompt_favorite">Yêu Thích</string>
     <string name="prompt_book_type">Thể Loại Sách</string>
+    <string name="prompt_account">Tài Khoản</string>
+    <string name="prompt_help">Hướng Dẫn</string>
+    <string name="toolbar">Toolbar</string>
 
 </resources>

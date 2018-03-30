@@ -1,29 +1,22 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Help;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
-import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Help.PresenterHelp;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 
 
-public class HelpActivity extends AppCompatActivity implements HelpImp, View.OnClickListener{
+public class HelpActivity extends AppCompatActivity implements HelpImp{
     PresenterHelp presenterHelp = new PresenterHelp(this);
     private TextView tvReadFile;
     private String titleHome;
-    private View imgBack;
-    private Activity activity = HelpActivity.this;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,19 +26,8 @@ public class HelpActivity extends AppCompatActivity implements HelpImp, View.OnC
         getDataFromIntent();
         initView();
         initObject();
-        initListener();
     }
 
-    private void initListener() {
-        imgBack.setOnClickListener(this);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-    }
 
     /**
      * Lấy dữ liệu thông qua intent
@@ -68,7 +50,6 @@ public class HelpActivity extends AppCompatActivity implements HelpImp, View.OnC
         CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, titleHome, false );
         tvReadFile = findViewById(R.id.tv_read_file);
-        imgBack = findViewById(R.id.imBack);
     }
 
     @Override
@@ -80,14 +61,5 @@ public class HelpActivity extends AppCompatActivity implements HelpImp, View.OnC
     @Override
     public void ShowHelpFailed() {
         Toast.makeText(this, "Reading file failed", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.imBack:
-                activity.onBackPressed();
-                break;
-        }
     }
 }

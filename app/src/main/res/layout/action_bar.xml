@@ -34,7 +34,7 @@
             android:focusable="true"
             android:focusableInTouchMode="true"
             android:scrollHorizontally="true"
-            android:text="Toolbar"
+            android:text="@string/toolbar"
             android:textColor="@color/white"
             android:textSize="20sp" />
         <ImageView

@@ -29,7 +29,6 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private CategoryAdapter adapter;
-    private CustomActionBar actionBar;
     private String titleChapter;
     private int idChapter;
     private ProgressBar progressBar;
@@ -41,7 +40,6 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     String HttpURL = "http://20121969.tk/SachNoiBKIC/FilterCategoryData.php";
 
     private Activity activity = ListCategory.this;
-    private Chapter tempModel;
 
 
     @Override
@@ -68,7 +66,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
      * Khai báo các view và khởi tạo giá trị
      */
     private void init() {
-        actionBar = new CustomActionBar();
+        CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, titleChapter, true);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
@@ -133,17 +131,17 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
 
-        tempModel = new Chapter();
+        Chapter tempModel = new Chapter();
 
         tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
 
         tempModel.setTitle(jsonObject.getString("Name"));
 
         try {
-            String INSERT_DATA = "INSERT INTO category VALUES('"+tempModel.getId()+"','"+tempModel.getTitle()+"','"+idChapter+"')";
+            String INSERT_DATA = "INSERT INTO category VALUES('"+ tempModel.getId()+"','"+ tempModel.getTitle()+"','"+idChapter+"')";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
-            String UPDATE_DATA = "UPDATE category SET Name = '"+tempModel.getTitle()+"' WHERE Id = '"+tempModel.getId()+"' AND TypeID = '"+idChapter+"'";
+            String UPDATE_DATA = "UPDATE category SET Name = '"+ tempModel.getTitle()+"' WHERE Id = '"+ tempModel.getId()+"' AND TypeID = '"+idChapter+"'";
             dbHelper.QueryData(UPDATE_DATA);
         }
     }

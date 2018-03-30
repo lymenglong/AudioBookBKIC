@@ -1,5 +1,5 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Player;
 
-interface PlayerImp {
+public interface PlayerImp {
     void initCheckAudioUrl();
 }

@@ -54,7 +54,7 @@ public class PresenterShowList implements PresenterShowListImp{
     @SuppressLint("StaticFieldLeak")
     private class GetHttpResponse extends AsyncTask<String, Void, Void>
     {
-        public Context context;
+        private Context context;
 
         String JSonResult;
 
@@ -207,18 +207,6 @@ public class PresenterShowList implements PresenterShowListImp{
 
                         tempArray = new ArrayList<>();
 
-                        if (activity == listBookTypeActivity){
-                            //compare if data on server is less than phone we del data from phone
-                            listBookTypeActivity.CompareDataPhoneWithServer(jsonArray);
-
-                            for(int i=0; i<jsonArray.length(); i++)
-                            {
-                                jsonObject = jsonArray.getJSONObject(i);
-
-                                listBookTypeActivity.SetTableSelectedData(jsonObject);
-
-                            }
-                        }
                         if (activity == listCategoryActivity){
                             //compare if data on server is less than phone we del data from phone
                             listCategoryActivity.CompareDataPhoneWithServer(jsonArray);
