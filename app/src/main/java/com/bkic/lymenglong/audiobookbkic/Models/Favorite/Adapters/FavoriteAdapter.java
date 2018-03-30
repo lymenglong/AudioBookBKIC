@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters;
+package com.bkic.lymenglong.audiobookbkic.Models.Favorite.Adapters;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.Favorite.Utils.IndexFavorite;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
@@ -21,14 +21,14 @@ import java.util.ArrayList;
 
 
 public class FavoriteAdapter extends RecyclerView.Adapter {
-    private ArrayList<Chapter> chapters;
+    private ArrayList<IndexFavorite> index;
     private Activity activity;
     private View view;
     private int getIdChapter;
     private String getTitleChapter,getContentChapter, getFileUrlChapter;
 
-    public FavoriteAdapter(Activity activity, ArrayList<Chapter> chapters) {
-        this.chapters = chapters;
+    public FavoriteAdapter(Activity activity, ArrayList<IndexFavorite> index) {
+        this.index = index;
         this.activity = activity;
     }
 
@@ -44,7 +44,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
         if (holder instanceof ChapterHolder) {
             ChapterHolder chapterHolder = (ChapterHolder) holder;
 
-            chapterHolder.name.setText(chapters.get(position).getTitle());
+            chapterHolder.name.setText(index.get(position).getTitle());
         }
 
     }
@@ -56,7 +56,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return chapters.size();
+        return index.size();
     }
 
     class ChapterHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -75,10 +75,10 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
         @Override
         public void onClick(View view) {
             if(view == itemView) {
-                getIdChapter = chapters.get(getAdapterPosition()).getId();
-                getTitleChapter = chapters.get(getAdapterPosition()).getTitle();
-                getContentChapter = chapters.get(getAdapterPosition()).getContent();
-                getFileUrlChapter = chapters.get(getAdapterPosition()).getFileUrl();
+                getIdChapter = index.get(getAdapterPosition()).getId();
+                getTitleChapter = index.get(getAdapterPosition()).getTitle();
+                getContentChapter = index.get(getAdapterPosition()).getContent();
+                getFileUrlChapter = index.get(getAdapterPosition()).getFileUrl();
                 showAlertDialog();
             }
         }

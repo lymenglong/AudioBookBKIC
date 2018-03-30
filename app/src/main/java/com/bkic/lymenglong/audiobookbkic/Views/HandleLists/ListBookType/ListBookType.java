@@ -14,11 +14,11 @@ import android.view.View;
 import android.widget.ProgressBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.FavoriteAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.Favorite.Adapters.FavoriteAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.History.Adapter.HistoryAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookTypeAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.ShowUserInfo.UserInfoActivity;
@@ -244,19 +244,6 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
                 //get data from json parsing
                 if(list.isEmpty()){
                     presenterShowList.GetDataResponse(HttpUrlSwitched(idMenu));
-                } else {
-                    progressBar.setVisibility(View.GONE);
-                }
-                break;
-
-            case 3: // favorite
-                favoriteAdapter = new FavoriteAdapter(activity, list);
-                listChapter.setAdapter(favoriteAdapter);
-                GetCursorData(TableSwitched(idMenu));
-                //get data from json parsing
-                if(list.isEmpty()) {
-                    String keyPost = "UserID";
-                    presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrlSwitched(idMenu));
                 } else {
                     progressBar.setVisibility(View.GONE);
                 }

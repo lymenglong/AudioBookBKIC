@@ -79,6 +79,12 @@ public class MainAdapter extends RecyclerView.Adapter {
                     intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
                     activity.startActivity(intent);
                 }
+                if (chapters.get(getAdapterPosition()).getTitle().equals(activity.getString(R.string.prompt_favorite))){
+                    Intent intent = new Intent(activity, ListHistory.class);
+                    intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
+                    intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
+                    activity.startActivity(intent);
+                }
             }
 
         }

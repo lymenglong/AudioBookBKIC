@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database;
+package com.bkic.lymenglong.audiobookbkic.Models.Database;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class DBHelper extends SQLiteOpenHelper {
-    String TAG = "MyTagView";
+    private String TAG = "MyTagView";
 
     public DBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
