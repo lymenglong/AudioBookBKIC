@@ -97,5 +97,7 @@
     <string name="Hello">Chào bạn,</string>
     <string name="no_data">Chưa cấp nhật dữ liệu, Vui lòng chọn sách khác</string>
     <string name="buffering_data">Buffering…</string>
+    <string name="prompt_history">Lịch Sử</string>
+    <string name="prompt_book_type">Thể Loại Sách</string>
 
 </resources>

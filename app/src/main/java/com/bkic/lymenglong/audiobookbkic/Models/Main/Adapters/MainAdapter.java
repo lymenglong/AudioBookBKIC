@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters;
+package com.bkic.lymenglong.audiobookbkic.Models.Main.Adapters;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -6,12 +6,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType.ListBookType;
+import com.bkic.lymenglong.audiobookbkic.Views.History.ListHistory;
 
 import java.util.ArrayList;
 
@@ -19,7 +19,6 @@ import java.util.ArrayList;
 public class MainAdapter extends RecyclerView.Adapter {
     private ArrayList<Chapter> chapters;
     private Activity activity;
-    private View view;
 
     public MainAdapter(Activity activity, ArrayList<Chapter> chapters) {
         this.chapters = chapters;
@@ -28,7 +27,7 @@ public class MainAdapter extends RecyclerView.Adapter {
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
         return new HomeHolder(view);
 
     }
@@ -56,23 +55,32 @@ public class MainAdapter extends RecyclerView.Adapter {
     class HomeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView name;
-        private ImageView imgNext;
+//        private ImageView imgNext;
 
-        public HomeHolder(View itemView) {
+        HomeHolder(View itemView) {
             super(itemView);
-            name = (TextView) itemView.findViewById(R.id.nameStory);
-            imgNext = (ImageView) itemView.findViewById(R.id.imgNext);
+            name = itemView.findViewById(R.id.nameStory);
+//            imgNext = itemView.findViewById(R.id.imgNext);
             itemView.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View view) {
             if(view == itemView){
-                Intent intent = new Intent(activity, ListBookType.class);
-                intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
-                intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
-                activity.startActivity(intent);
+                if (chapters.get(getAdapterPosition()).getTitle().equals(activity.getString(R.string.prompt_book_type))) {
+                    Intent intent = new Intent(activity, ListBookType.class);
+                    intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
+                    intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
+                    activity.startActivity(intent);
+                }
+                if (chapters.get(getAdapterPosition()).getTitle().equals(activity.getString(R.string.prompt_history))){
+                    Intent intent = new Intent(activity, ListHistory.class);
+                    intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
+                    intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
+                    activity.startActivity(intent);
+                }
             }
+
         }
     }
 }

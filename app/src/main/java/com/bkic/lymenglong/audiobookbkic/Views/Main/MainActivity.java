@@ -13,10 +13,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.MainAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.Main.Adapters.MainAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
-import com.bkic.lymenglong.audiobookbkic.Models.Main.Menu;
+import com.bkic.lymenglong.audiobookbkic.Models.Main.Utils.Menu;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Main.PresenterMain;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements MainImp{
     private static ArrayList<Chapter> menuList;
     private ProgressBar progressBar;
     private ProgressDialog pDialog;
-    private Menu menuModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,8 +60,8 @@ public class MainActivity extends AppCompatActivity implements MainImp{
     }
 
     private void initView() {
-        homeList = (RecyclerView) findViewById(R.id.listView);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        homeList = findViewById(R.id.listView);
+        progressBar = findViewById(R.id.progressBar);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.label_name),
                 ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
@@ -111,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements MainImp{
 
     @Override
     public void SetMenuData(JSONObject jsonObject) throws JSONException {
-        menuModel = new Menu();
+        Menu menuModel = new Menu();
         menuModel.setId(Integer.parseInt(jsonObject.getString("Id")));
         menuModel.setTitle(jsonObject.getString("Name"));
         int Id = menuModel.getId();
@@ -123,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements MainImp{
             String UPDATE_DATA = "UPDATE menu SET Name = '" + Name + "' WHERE Id = '" + Id + "'";
             dbHelper.QueryData(UPDATE_DATA);
         }
+        Log.d(TAG, "SetMenuData");
     }
 
     @Override

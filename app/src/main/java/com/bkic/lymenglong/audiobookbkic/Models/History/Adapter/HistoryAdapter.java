@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters;
+package com.bkic.lymenglong.audiobookbkic.Models.History.Adapter;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -8,12 +8,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+//import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.History.Utils.Index;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
@@ -22,20 +22,19 @@ import java.util.ArrayList;
 
 
 public class HistoryAdapter extends RecyclerView.Adapter {
-    private ArrayList<Chapter> chapters;
+    private ArrayList<Index> indices;
     private Activity activity;
-    private View view;
     private int getIdChapter, getPauseTime;
     private String getTitleChapter,getContentChapter, getFileUrlChapter;
 
-    public HistoryAdapter(Activity activity, ArrayList<Chapter> chapters) {
-        this.chapters = chapters;
+    public HistoryAdapter(Activity activity, ArrayList<Index> indices) {
+        this.indices = indices;
         this.activity = activity;
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
         return new ChapterHolder(view);
 
     }
@@ -45,7 +44,7 @@ public class HistoryAdapter extends RecyclerView.Adapter {
         if (holder instanceof ChapterHolder) {
             ChapterHolder chapterHolder = (ChapterHolder) holder;
 
-            chapterHolder.name.setText(chapters.get(position).getTitle());
+            chapterHolder.name.setText(indices.get(position).getTitle());
         }
 
     }
@@ -57,18 +56,18 @@ public class HistoryAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return chapters.size();
+        return indices.size();
     }
 
     class ChapterHolder extends RecyclerView.ViewHolder {
 
         private TextView name;
-        private ImageView imgNext;
+//        private ImageView imgNext;
 
         ChapterHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.nameStory);
-            imgNext = itemView.findViewById(R.id.imgNext);
+//            imgNext = itemView.findViewById(R.id.imgNext);
 
             itemView.setOnClickListener(onClickListener);
             itemView.setOnLongClickListener(onLongClickListener);
@@ -77,11 +76,11 @@ public class HistoryAdapter extends RecyclerView.Adapter {
             @Override
             public void onClick(View view) {
                 if(view == itemView) {
-                    getIdChapter = chapters.get(getAdapterPosition()).getId();
-                    getTitleChapter = chapters.get(getAdapterPosition()).getTitle();
-                    getContentChapter = chapters.get(getAdapterPosition()).getContent();
-                    getFileUrlChapter = chapters.get(getAdapterPosition()).getFileUrl();
-                    getPauseTime = chapters.get(getAdapterPosition()).getPauseTime();
+                    getIdChapter = indices.get(getAdapterPosition()).getId();
+                    getTitleChapter = indices.get(getAdapterPosition()).getTitle();
+                    getContentChapter = indices.get(getAdapterPosition()).getContent();
+                    getFileUrlChapter = indices.get(getAdapterPosition()).getFileUrl();
+                    getPauseTime = indices.get(getAdapterPosition()).getPauseTime();
                     showAlertDialog();
                 }
             }

@@ -1,7 +1,7 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.Player;
 
 
-interface PresenterPlayerImp {
+public interface PresenterPlayerImp {
 
     void PrepareMediaPlayer(String httpUrlMedia);
 

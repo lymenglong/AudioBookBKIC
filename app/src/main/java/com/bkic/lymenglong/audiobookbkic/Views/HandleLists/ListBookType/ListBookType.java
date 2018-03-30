@@ -1,7 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -16,7 +15,7 @@ import android.widget.ProgressBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.FavoriteAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.HistoryAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.History.Adapter.HistoryAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookTypeAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Database.DBHelper;
@@ -46,7 +45,6 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
     private DBHelper dbHelper;
     private static ArrayList <Chapter> list = new ArrayList<>();
     private Chapter tempModel;
-    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -250,19 +248,7 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
                     progressBar.setVisibility(View.GONE);
                 }
                 break;
-            case 2: //history
-                historyAdapter = new HistoryAdapter(activity, list);
-                listChapter.setAdapter(historyAdapter);
-                GetCursorData(TableSwitched(idMenu));
-                //get data from json parsing
-                if(list.isEmpty()) {
-//                    HttpWebCall(String.valueOf(session.getUserIdLoggedIn()));
-                    String keyPost = "UserID";
-                    presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()), HttpUrlSwitched(idMenu));
-                } else {
-                    progressBar.setVisibility(View.GONE);
-                }
-                break;
+
             case 3: // favorite
                 favoriteAdapter = new FavoriteAdapter(activity, list);
                 listChapter.setAdapter(favoriteAdapter);
@@ -441,7 +427,6 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
 
     @Override
     public void ShowListFromSelected() {
-        pDialog.dismiss();
         progressBar.setVisibility(View.GONE);
         GetCursorData(TableSwitched(idMenu));
         Log.d("MyTagView", "onPostExecute: "+ titleHome);

@@ -55,6 +55,9 @@ package="com.bkic.lymenglong.audiobookbkic">
     </intent-filter>
     </activity>
     <activity
+        android:name=".Views.History.ListHistory"
+        android:windowSoftInputMode="adjustResize|stateHidden" />
+    <activity
         android:name=".Views.HandleLists.ListBookType.ListBookType"
         android:windowSoftInputMode="adjustResize|stateHidden" />
     <activity
