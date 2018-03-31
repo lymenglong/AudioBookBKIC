@@ -3,7 +3,7 @@ package com.bkic.lymenglong.audiobookbkic.Models.Account.Login;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.bkic.lymenglong.audiobookbkic.Models.Account.User;
+import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
 
 import java.util.ArrayList;
 import java.util.List;

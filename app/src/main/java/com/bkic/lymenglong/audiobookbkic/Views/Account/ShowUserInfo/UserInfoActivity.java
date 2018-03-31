@@ -19,7 +19,7 @@ import android.widget.Toast;
 import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.ShowUserInfo.Adapter.UserInfoRecyclerAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.Account.User;
+import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Account.ShowUserInfo.PresenterUserInfo;
 import com.bkic.lymenglong.audiobookbkic.R;

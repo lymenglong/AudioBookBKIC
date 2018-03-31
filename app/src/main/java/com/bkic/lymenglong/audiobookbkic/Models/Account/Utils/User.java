@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Models.Account;
+package com.bkic.lymenglong.audiobookbkic.Models.Account.Utils;
 
 public class User {
 

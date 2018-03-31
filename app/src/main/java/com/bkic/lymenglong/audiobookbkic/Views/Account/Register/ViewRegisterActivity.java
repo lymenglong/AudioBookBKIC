@@ -14,7 +14,7 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.InputValidation;
-import com.bkic.lymenglong.audiobookbkic.Models.Account.User;
+import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Account.Register.PresenterRegisterLogic;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;

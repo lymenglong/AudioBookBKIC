@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 
-import com.bkic.lymenglong.audiobookbkic.Models.Account.User;
+import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 import java.util.List;

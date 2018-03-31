@@ -10,7 +10,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.bkic.lymenglong.audiobookbkic.Models.Account.User;
+import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Register.ViewRegisterActivity;
 
 import org.json.JSONException;
