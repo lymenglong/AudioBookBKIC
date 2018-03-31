@@ -6,28 +6,22 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatTextView;
 import android.view.View;
 import android.widget.Toast;
 
-import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.InputValidation;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Account.Login.PresenterLoginLogic;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Register.ViewRegisterActivity;
+import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
 
 
 public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp, View.OnClickListener{
     private Activity activity = ViewLoginActivity.this;
-
-    private String textEmail;
-    private String textPassword;
-
-    private NestedScrollView nestedScrollView;
 
     private TextInputLayout textInputLayoutEmail;
     private TextInputLayout textInputLayoutPassword;
@@ -38,10 +32,8 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     private AppCompatButton appCompatButtonLogin;
     private InputValidation inputValidation;
 
-    private Intent accountsIntent;
     private AppCompatTextView textViewLinkRegister;
     private PresenterLoginLogic presenter = new PresenterLoginLogic(this);
-    private Session session;
 
 
     @Override
@@ -59,7 +51,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     }
     private void initObjects() {
         inputValidation = new InputValidation(activity);
-        session = new Session(this);
+        Session session = new Session(this);
         //Intent into MainActivity when session.loggedin = true.
         if(session.loggedin()){
             startActivity(new Intent(ViewLoginActivity.this, MainActivity.class));
@@ -72,7 +64,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
      */
     private void initViews() {
 
-        nestedScrollView = findViewById(R.id.nestedScrollView);
+//        NestedScrollView nestedScrollView = findViewById(R.id.nestedScrollView);
 
         textInputLayoutEmail = findViewById(R.id.textInputLayoutEmail);
         textInputLayoutPassword = findViewById(R.id.textInputLayoutPassword);
@@ -90,6 +82,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.appCompatButtonLogin:
+                String textEmail;
                 if (!inputValidation.isInputEditTextFilled(
                         textInputEditTextEmail,
                         textInputLayoutEmail,
@@ -100,6 +93,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                 }   else{
                     textEmail = textInputEditTextEmail.getText().toString().trim();
                 }
+                String textPassword;
                 if (!inputValidation.isInputEditTextFilled(
                         textInputEditTextPassword,
                         textInputLayoutPassword,
@@ -110,7 +104,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                     textPassword = textInputEditTextPassword.getText().toString();
                 }
 
-                presenter.Login(textEmail,textPassword);
+                presenter.Login(textEmail, textPassword);
 
                 break;
             case R.id.textViewLinkRegister:
@@ -124,7 +118,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     @Override
     public void LoginSuccess() {
 //        Toast.makeText(activity, "Login Success", Toast.LENGTH_SHORT).show();
-        accountsIntent = new Intent(activity, MainActivity.class);
+        Intent accountsIntent = new Intent(activity, MainActivity.class);
         accountsIntent.putExtra("EMAIL", textInputEditTextEmail.getText().toString().trim());
         startActivity(accountsIntent);
         activity.finish();

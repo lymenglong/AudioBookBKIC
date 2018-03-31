@@ -20,15 +20,15 @@ public class PresenterMain implements PresenterMainImp {
     }
 
     @Override
-    public void GetHttpResponse() {
-        new GetHttpResponse(mainActivity).execute();
+    public void GetHttpResponse(String httpUrl) {
+        new GetHttpResponse(mainActivity).execute(httpUrl);
     }
 
     //region JSON parse class started from here.
     @SuppressLint("StaticFieldLeak")
-    private class GetHttpResponse extends AsyncTask<Void, Void, Void> {
+    private class GetHttpResponse extends AsyncTask<String, Void, Void> {
 
-        public Context context;
+        Context context;
         String JSonResult;
 
         GetHttpResponse(Context context) {
@@ -36,16 +36,10 @@ public class PresenterMain implements PresenterMainImp {
         }
 
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mainActivity.ShowProgressDialog();
-        }
-
-        @Override
-        protected Void doInBackground(Void... arg0) {
+        protected Void doInBackground(String... httpUrl) {
             // Passing HTTP URL to HttpServicesClass Class.
-            String httpUrl = "http://20121969.tk/SachNoiBKIC/AllMenuData.php";
-            HttpServicesClass httpServicesClass = new HttpServicesClass(httpUrl);
+
+            HttpServicesClass httpServicesClass = new HttpServicesClass(httpUrl[0]);
             try {
                 httpServicesClass.ExecutePostRequest();
 
@@ -81,6 +75,13 @@ public class PresenterMain implements PresenterMainImp {
             }
             return null;
         }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            mainActivity.ShowProgressDialog();
+        }
+
 
         @Override
         protected void onPostExecute(Void result) {

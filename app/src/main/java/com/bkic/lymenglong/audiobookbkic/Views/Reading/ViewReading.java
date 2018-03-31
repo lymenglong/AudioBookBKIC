@@ -13,26 +13,22 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.StringRequest;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
-import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Reading.PresenterViewReading;
 import com.bkic.lymenglong.audiobookbkic.R;
+
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_InsertFavorite;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_InsertHistory;
 
 
 public class ViewReading extends AppCompatActivity implements ViewReadingImp, View.OnClickListener{
     PresenterViewReading presenterViewReading = new PresenterViewReading(this);
     private int idChapter;
-    private TextView tvReading;
     private String titleChapter, detailReadingHtml, detailReading;
-    private CustomActionBar actionBar;
     private ScrollView scrollView;
     private final DisplayMetrics dm = new DisplayMetrics();
     int offset;
     private Button btnFavorite;
-    private static final String URL = "http://20121969.tk/audiobook/mobile_registration/history.php";
-    private static final String favoriteURL = "http://20121969.tk/audiobook/mobile_registration/favorite.php";
     private Activity viewReadingActivity = ViewReading.this;
     private boolean existedContent;
 
@@ -56,7 +52,7 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
 
     private void initObject() {
         detailReading = String.valueOf(Html.fromHtml(detailReadingHtml));
-        tvReading = findViewById(R.id.tvDetailReading);
+        TextView tvReading = findViewById(R.id.tvDetailReading);
         if (!detailReadingHtml.trim().isEmpty()) {
             tvReading.setText(detailReading);
             existedContent = true;
@@ -87,7 +83,7 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
     private void initView() {
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar),
                 ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        actionBar = new CustomActionBar();
+        CustomActionBar actionBar = new CustomActionBar();
         detailReading = String.valueOf(Html.fromHtml(detailReadingHtml));
         scrollView = findViewById(R.id.scrollView);
         actionBar.eventToolbar(this, titleChapter, false);
@@ -95,7 +91,7 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
 
     }
 
-    /**
+    /*
      * Lấy độ cao của textview
      *
      * @param text
@@ -106,7 +102,7 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
         return text.getMeasuredHeight();
     }
 
-    /**
+    /*
      * Lấy độ cao của màn hình thiết bị
      *
      * @return
@@ -116,15 +112,15 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
         return dm.heightPixels;
     }
 
-    /**
+    /*
      * Lấy chiều rộng của thiết bị
      *
      * @return
      */
-    private int getScreenWidth() {
+/*    private int getScreenWidth() {
         getWindowManager().getDefaultDisplay().getMetrics(dm);
         return dm.widthPixels;
-    }
+    }*/
 
     /**
      * Số trang của văn bản
@@ -156,7 +152,7 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
     protected void onDestroy() {
         super.onDestroy();
         if (existedContent) {
-            presenterViewReading.postDataToServer(URL,idChapter);
+            presenterViewReading.postHistoryDataToServer(HttpUrl_InsertHistory,idChapter);
         }
     }
 
@@ -164,7 +160,7 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btn_add_favorite:
-                presenterViewReading.postFavoriteDataToServer(favoriteURL,idChapter);
+                presenterViewReading.postFavoriteDataToServer(HttpUrl_InsertFavorite,idChapter);
                 break;
         }
 

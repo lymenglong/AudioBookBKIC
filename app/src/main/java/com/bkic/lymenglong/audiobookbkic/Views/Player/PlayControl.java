@@ -9,22 +9,27 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.Toast;
-import com.android.volley.AuthFailureError;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
-import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Player.PresenterPlayer;
 import com.bkic.lymenglong.audiobookbkic.R;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_InsertFavorite;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_InsertHistory;
 
 public class PlayControl extends AppCompatActivity implements PlayerImp, View.OnClickListener{
     PresenterPlayer presenterPlayer = new PresenterPlayer(this);
@@ -33,8 +38,6 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     private SeekBar songProgressBar;
     public int lastPlayDuration = 0;
     private RequestQueue requestQueueHistory, requestQueueFavorite;
-    private static final String historyURL = "http://20121969.tk/audiobook/mobile_registration/history.php";
-    private static final String favoriteURL = "http://20121969.tk/audiobook/mobile_registration/favorite.php";
     private Session session;
     private String getFileUrlChapter;
     private String getTitleChapter;
@@ -118,7 +121,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     //region Insert history data to server OLD CODE
     private void postHistoryDataToServer() {
 
-        StringRequest requestHistory = new StringRequest(Request.Method.POST, historyURL, new Response.Listener<String>() {
+        StringRequest requestHistory = new StringRequest(Request.Method.POST, HttpUrl_InsertHistory, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
@@ -142,7 +145,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(getIdChapter));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());
@@ -158,7 +161,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
 
     private void postFavoriteDataToServer() {
 
-        StringRequest requestFavorite = new StringRequest(Request.Method.POST, favoriteURL, new Response.Listener<String>() {
+        StringRequest requestFavorite = new StringRequest(Request.Method.POST, HttpUrl_InsertFavorite, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
@@ -182,7 +185,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(getIdChapter));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());

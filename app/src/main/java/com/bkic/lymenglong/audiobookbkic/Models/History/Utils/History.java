@@ -1,7 +1,7 @@
-package com.bkic.lymenglong.audiobookbkic.Models.Favorite.Utils;
+package com.bkic.lymenglong.audiobookbkic.Models.History.Utils;
 
 
-public class IndexFavorite {
+public class History {
     private int id;
     private String title;
     private String content;
@@ -10,9 +10,6 @@ public class IndexFavorite {
     private String fileUrl;
     private int categoryId;
 
-    public int getStatus() {
-        return status;
-    }
 
     public void setStatus(int status) {
         this.status = status;
@@ -44,16 +41,7 @@ public class IndexFavorite {
         this.pauseTime = pauseTime;
     }
 
-
-    public IndexFavorite(int id, String title, String content, String fileUrl, int pauseTime) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.fileUrl = fileUrl;
-        this.pauseTime = pauseTime;
-    }
-
-    public IndexFavorite(int id, String title, String content, int pauseTime, int insertTime, String fileUrl, int categoryId) {
+    public History(int id, String title, String content, int pauseTime, int insertTime, String fileUrl, int categoryId) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -63,25 +51,14 @@ public class IndexFavorite {
         this.categoryId = categoryId;
     }
 
-    public IndexFavorite(int id, String title, String content, int pauseTime, int insertTime, String fileUrl, int categoryId, int status) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.pauseTime = pauseTime;
-        this.insertTime = insertTime;
-        this.fileUrl = fileUrl;
-        this.categoryId = categoryId;
-        this.status = status;
-    }
-
-    public IndexFavorite(int id, String title, String content, String fileUrl) {
+    public History(int id, String title, String content, String fileUrl) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.fileUrl = fileUrl;
     }
 
-    public IndexFavorite(int id, String title) {
+    public History(int id, String title) {
         this.id = id;
         this.title = title;
     }
@@ -94,13 +71,13 @@ public class IndexFavorite {
         this.fileUrl = fileUrl;
     }
 
-    public IndexFavorite(int id, String title, String content) {
+    public History(int id, String title, String content) {
         this.id = id;
         this.title = title;
         this.content = content;
     }
 
-    public IndexFavorite() {
+    public History() {
     }
 
     public int getId() {

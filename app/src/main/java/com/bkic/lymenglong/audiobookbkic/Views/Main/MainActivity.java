@@ -13,9 +13,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.bkic.lymenglong.audiobookbkic.Models.Main.Adapters.MainAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.Main.Adapters.MainAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Main.Utils.Menu;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Main.PresenterMain;
 import com.bkic.lymenglong.audiobookbkic.R;
@@ -25,6 +25,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_ALLMenuData;
 
 public class MainActivity extends AppCompatActivity implements MainImp{
     PresenterMain presenterMain = new PresenterMain(this);
@@ -47,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements MainImp{
         initObject();
         GetCursorData();
         //get data from json parsing
-        presenterMain.GetHttpResponse();
+        presenterMain.GetHttpResponse(HttpUrl_ALLMenuData);
     }
 
     // to make application remember pass LoginActivity in to MainActivity
@@ -67,14 +71,7 @@ public class MainActivity extends AppCompatActivity implements MainImp{
     }
 
     private void initDatabase() {
-        String DB_NAME = "menu.sqlite";
-        int DB_VERSION = 1;
-//        String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS menu(Id INTEGER PRIMARY KEY AUTOINCREMENT, MenuName VARCHAR(255));";
-        String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS menu(Id INTEGER PRIMARY KEY, Name VARCHAR(255));";
         dbHelper = new DBHelper(this, DB_NAME, null, DB_VERSION);
-        //create database
-        dbHelper.QueryData(CREATE_TABLE);
-
     }
 
     private void initObject() {
@@ -105,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements MainImp{
         pDialog.dismiss();
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d("MyTagView", "onPostExecute: " + getTitle());
+        Log.d(TAG, "onPostExecute: " + getTitle());
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.Reading;
 
 import android.widget.Toast;
-import com.android.volley.AuthFailureError;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -10,8 +10,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,7 +27,7 @@ public class PresenterViewReading implements PresenterViewReadingImp {
     }
 
     @Override
-    public void postDataToServer(String HttpUrl, final int idChapter) {
+    public void postHistoryDataToServer(String HttpUrl, final int idChapter) {
         session = new Session(viewReadingActivity);
         RequestQueue requestQueue = Volley.newRequestQueue(viewReadingActivity);
         StringRequest request = new StringRequest(Request.Method.POST, HttpUrl, new Response.Listener<String>() {
@@ -34,9 +36,9 @@ public class PresenterViewReading implements PresenterViewReadingImp {
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     if (jsonObject.names().get(0).equals("success")) {
-                        Toast.makeText(viewReadingActivity, "Thành công, " + jsonObject.getString("success"), Toast.LENGTH_SHORT).show();
+                        viewReadingActivity.PostDataSuccess(jsonObject.getString("success"));
                     } else {
-                        Toast.makeText(viewReadingActivity, "Lỗi, " + jsonObject.getString("error"), Toast.LENGTH_SHORT).show();
+                        viewReadingActivity.PostDataFailed(jsonObject.getString("error"));
                     }
 
                 } catch (JSONException e) {
@@ -50,7 +52,7 @@ public class PresenterViewReading implements PresenterViewReadingImp {
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(idChapter));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());
@@ -85,7 +87,7 @@ public class PresenterViewReading implements PresenterViewReadingImp {
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(idChapter));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());

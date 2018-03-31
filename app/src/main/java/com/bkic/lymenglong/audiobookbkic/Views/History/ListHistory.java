@@ -13,9 +13,9 @@ import android.widget.ProgressBar;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
-import com.bkic.lymenglong.audiobookbkic.Models.History.Adapter.HistoryAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
-import com.bkic.lymenglong.audiobookbkic.Models.History.Utils.Index;
+import com.bkic.lymenglong.audiobookbkic.Models.History.Adapter.HistoryAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.History.Utils.History;
 import com.bkic.lymenglong.audiobookbkic.Presenters.History.PresenterShowListHistory;
 import com.bkic.lymenglong.audiobookbkic.R;
 
@@ -25,7 +25,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_FilterHistoryData;
+
 public class ListHistory extends AppCompatActivity implements ListHistoryImp {
+    private static final String TAG = "ListHistory";
     PresenterShowListHistory presenterShowListHistory = new PresenterShowListHistory(this);
     private RecyclerView listChapter;
     private View imRefresh;
@@ -35,8 +40,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     private Session session;
     private ProgressBar progressBar;
     private DBHelper dbHelper;
-    private static ArrayList <Index> list = new ArrayList<>();
-    private static final String HttpUrl_FilterHistoryData = "http://20121969.tk/SachNoiBKIC/FilterHistoryData.php";
+    private static ArrayList <History> list = new ArrayList<>();
     private String tableDB = "history";
 
     @Override
@@ -71,7 +75,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         listChapter = findViewById(R.id.listView);
     }
 
-    private void SetTempModel(Index tempModel, JSONObject jsonObject, String tableSwitched) throws JSONException {
+    private void SetTempModel(History tempModel, JSONObject jsonObject, String tableSwitched) throws JSONException {
         switch (tableSwitched){
             case "history":
                 tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
@@ -94,65 +98,17 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         }
     }
 
-    private void SetUpdateTableData(Index arrayModel, String tableName) {
-        String UPDATE_DATA;
-        switch (tableName){
-            case "booktype":
-                UPDATE_DATA = "UPDATE '"+tableName+"' SET Name = '"+arrayModel.getTitle()+"' WHERE Id = '"+arrayModel.getId()+"';";
-                dbHelper.QueryData(UPDATE_DATA);
-                break;
-            case "history":
-                UPDATE_DATA = "UPDATE history SET " +
+    private void SetUpdateTableData(History arrayModel) {
+        String UPDATE_DATA = "UPDATE history SET " +
                         "InsertTime = '"+arrayModel.getInsertTime()+"', " +
                         "PauseTime = '"+arrayModel.getPauseTime()+"' " +
                         "WHERE " +
                         "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
-                dbHelper.QueryData(UPDATE_DATA);
-                break;
-            case "favorite":
-                try {
-                    UPDATE_DATA = "UPDATE favorite SET " +
-                            "InsertTime = '"+arrayModel.getInsertTime()+"', " +
-                            "Status = '"+arrayModel.getStatus()+"' " +
-                            "WHERE " +
-                            "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
-                    dbHelper.QueryData(UPDATE_DATA);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-
-        }
-
+        dbHelper.QueryData(UPDATE_DATA);
     }
 
     private void initDatabase() {
-        String DB_NAME = "menu.sqlite";
-        int DB_VERSION = 1;
-        String CREATE_TABLE_BOOKTYPE = "CREATE TABLE IF NOT EXISTS booktype(Id INTEGER PRIMARY KEY, Name VARCHAR(255));";
-        String CREATE_TABLE_HISTORY = "CREATE TABLE IF NOT EXISTS history(" +
-                "IdBook INTEGER PRIMARY KEY, " +
-                "IdUser INTEGER, " +
-                "InsertTime INTEGER, " +
-                "PauseTime INTEGER);";
-        String CREATE_TABLE_FAVORITE = "CREATE TABLE IF NOT EXISTS favorite(" +
-                "IdBook INTEGER PRIMARY KEY, " +
-                "IdUser INTEGER, " +
-                "InsertTime INTEGER, " +
-                "Status INTEGER);";
-        String CREATE_TABLE_BOOK = "CREATE TABLE IF NOT EXISTS book " +
-                "(Id INTEGER PRIMARY KEY, " +
-                "Name VARCHAR(255), " +
-                "CategoryID INTEGER, " +
-                "FileUrl VARCHAR(255), " +
-                "TextContent LONGTEXT);";
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
-        //create database
-        dbHelper.QueryData(CREATE_TABLE_BOOKTYPE);
-        dbHelper.QueryData(CREATE_TABLE_HISTORY);
-        dbHelper.QueryData(CREATE_TABLE_BOOK);
-        dbHelper.QueryData(CREATE_TABLE_FAVORITE);
-
     }
 
     private void GetCursorData() {
@@ -167,7 +123,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
             int categoryId = cursor.getInt(6);
             String content = cursor.getString(8);
             String fileURL = cursor.getString(7);
-            list.add(new Index(bookId,bookName,content,pauseTime,insertTime,fileURL,categoryId));
+            list.add(new History(bookId,bookName,content,pauseTime,insertTime,fileURL,categoryId));
         }
         cursor.close();
         historyAdapter.notifyDataSetChanged();
@@ -196,7 +152,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         }
     }
 
-    private void SetInsertTableData(Index arrayModel, String tableName) {
+    private void SetInsertTableData(History arrayModel, String tableName) {
         String INSERT_DATA = "INSERT INTO '"+tableName+"' VALUES(" +
                         "'"+arrayModel.getId()+"'," +
                         "'"+session.getUserIdLoggedIn()+"'," +
@@ -212,7 +168,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
                     "'"+arrayModel.getContent()+"');";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
-            Log.d("MyTagView", "SetInsertTableData: failed "+INSERT_DATA);
+            Log.d(TAG, "SetInsertTableData: failed "+INSERT_DATA);
         }
     }
 
@@ -221,7 +177,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         Cursor cursor;
        // if list of database in sqlite on phone we delete all data in history table in sqlite phone
         cursor = dbHelper.GetData("SELECT * FROM history, book WHERE history.IdBook = book.Id");
-        ArrayList<Index> arrayList = new ArrayList<>();
+        ArrayList<History> arrayList = new ArrayList<>();
         while (cursor.moveToNext()) {
             int insertTime = cursor.getInt(2);
             int pauseTime = cursor.getInt(3);
@@ -230,7 +186,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
             int categoryId = cursor.getInt(6);
             String content = cursor.getString(8);
             String fileURL = cursor.getString(7);
-            arrayList.add(new Index(bookId, bookName, content, pauseTime, insertTime, fileURL, categoryId));
+            arrayList.add(new History(bookId, bookName, content, pauseTime, insertTime, fileURL, categoryId));
         }
         if (arrayList.size() > jsonArray.length()) {
             dbHelper.QueryData("DELETE FROM '" + tableDB + "'");
@@ -240,14 +196,14 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
 
-        Index tempModel = new Index();
+        History tempModel = new History();
         //return tempModel value from jsonObject
         SetTempModel(tempModel,jsonObject,tableDB);
 
         try {
             SetInsertTableData(tempModel,tableDB);
         } catch (Exception e) {
-            SetUpdateTableData(tempModel, tableDB);
+            SetUpdateTableData(tempModel);
         }
     }
 
@@ -255,6 +211,6 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d("MyTagView", "onPostExecute: "+ titleHome);
+        Log.d(TAG, "onPostExecute: "+ titleHome);
     }
 }

@@ -1,5 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Account.ShowUserInfo;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -28,7 +29,6 @@ import java.util.List;
 
 public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, View.OnClickListener{
     PresenterUserInfo presenterUserInfo = new PresenterUserInfo(this);
-    private final String TAG = "UserInfoActivity";
     private AppCompatActivity activity = UserInfoActivity.this;
     private AppCompatTextView textViewName;
     private AppCompatButton btnLogout;
@@ -36,7 +36,6 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
     private List<User> listUsers;
     private UserInfoRecyclerAdapter userInfoRecyclerAdapter;
     private Session session;
-    private CustomActionBar actionBar;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,7 +65,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
      */
     private void initObjects() {
         session = new Session(this);
-        listUsers = new ArrayList<User>();
+        listUsers = new ArrayList<>();
         userInfoRecyclerAdapter = new UserInfoRecyclerAdapter(listUsers);
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
@@ -76,7 +75,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         recyclerViewUsers.setAdapter(userInfoRecyclerAdapter);
 
         String Name = session.getNameLoggedIn();
-        textViewName.setText("Chào bạn, "+Name.toUpperCase());
+        textViewName.setText(getString(R.string.text_hello )+ Name.toUpperCase());
 
     }
 
@@ -85,11 +84,11 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
     }
 
     /**
-    //This will clear the data and remove your app from memory.
-    //It is equivalent to clear data option under Settings --> Application Manager --> Your App --> Clear data
-    //todo: clear app data
+    *This will clear the data and remove your app from memory.
+    *It is equivalent to clear data option under Settings --> Application Manager --> Your App --> Clear data
+    *todo: clear app data
     **/
-    private void deleteAppData() {
+/*    private void deleteAppData() {
         try {
             // clearing app data
             String packageName = getApplicationContext().getPackageName();
@@ -98,22 +97,23 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
 
         } catch (Exception e) {
             e.printStackTrace();
-        } }
+        } }*/
 
     private void initToolbar() {
-        actionBar = new CustomActionBar();
+        CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, "Tải Khoản", false);
     }
 
     /**
      * This method is to fetch all user records from Server
      */
+    @SuppressLint("StaticFieldLeak")
     private class getDataFromPrefs extends AsyncTask<Void, Void, Void>
     {
         // AsyncTask is used that SQLite operation not blocks the UI Thread.
-        public Context context;
+        Context context;
 
-        public getDataFromPrefs(Context context) {
+        getDataFromPrefs(Context context) {
             this.context = context;
         }
 
@@ -154,6 +154,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);// This flag ensures all activities on top of the MainActivity are cleared.
         intent.putExtra("EXIT", true);
         Toast.makeText(activity, "Đăng Xuất Thành Công", Toast.LENGTH_SHORT).show();
+        String TAG = "UserInfoActivity";
         Log.d(TAG, "LogoutSuccess");
         activity.startActivity(intent);
         activity.finish();

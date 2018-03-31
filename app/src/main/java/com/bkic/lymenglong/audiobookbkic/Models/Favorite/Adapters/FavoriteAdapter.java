@@ -12,7 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bkic.lymenglong.audiobookbkic.Models.Favorite.Utils.IndexFavorite;
+import com.bkic.lymenglong.audiobookbkic.Models.Favorite.Utils.Favorite;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
@@ -21,13 +21,13 @@ import java.util.ArrayList;
 
 
 public class FavoriteAdapter extends RecyclerView.Adapter {
-    private ArrayList<IndexFavorite> index;
+    private ArrayList<Favorite> index;
     private Activity activity;
     private View view;
     private int getIdChapter;
     private String getTitleChapter,getContentChapter, getFileUrlChapter;
 
-    public FavoriteAdapter(Activity activity, ArrayList<IndexFavorite> index) {
+    public FavoriteAdapter(Activity activity, ArrayList<Favorite> index) {
         this.index = index;
         this.activity = activity;
     }

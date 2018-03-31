@@ -1,10 +1,8 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,15 +10,14 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
-import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
+
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
+import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
+import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookTypeAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
-import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
-import com.bkic.lymenglong.audiobookbkic.Views.Account.ShowUserInfo.UserInfoActivity;
-import com.bkic.lymenglong.audiobookbkic.Views.Help.HelpActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -28,20 +25,22 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_AllBookTypeData;
+
 public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
+    private static final String TAG = "ListBookType";
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private View imRefresh;
     private BookTypeAdapter adapter;
     private String titleHome;
-    private int idMenu;
     private Activity activity = ListBookType.this;
     private Session session;
     private ProgressBar progressBar;
     private DBHelper dbHelper;
     private static ArrayList <Chapter> list = new ArrayList<>();
-    private Chapter tempModel;
-    private static final String HttpUrl_AllBookTypeData = "http://20121969.tk/SachNoiBKIC/AllBookTypeData.php";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +59,7 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
      */
     private void getDataFromIntent() {
         titleHome = getIntent().getStringExtra("titleHome");
-        idMenu = getIntent().getIntExtra("idHome", -1);
+//        int idMenu = getIntent().getIntExtra("idHome", -1);
     }
 
     /**
@@ -81,34 +80,7 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
     }
 
     private void initDatabase() {
-        String DB_NAME = "menu.sqlite";
-        int DB_VERSION = 1;
-        String CREATE_TABLE_BOOKTYPE = "CREATE TABLE IF NOT EXISTS booktype(" +
-                "Id INTEGER PRIMARY KEY, " +
-                "Name VARCHAR(255));";
-        String CREATE_TABLE_HISTORY = "CREATE TABLE IF NOT EXISTS history(" +
-                "IdBook INTEGER PRIMARY KEY, " +
-                "IdUser INTEGER, " +
-                "InsertTime INTEGER, " +
-                "PauseTime INTEGER);";
-        String CREATE_TABLE_FAVORITE = "CREATE TABLE IF NOT EXISTS favorite(" +
-                "IdBook INTEGER PRIMARY KEY, " +
-                "IdUser INTEGER, " +
-                "InsertTime INTEGER, " +
-                "Status INTEGER);";
-        String CREATE_TABLE_BOOK = "CREATE TABLE IF NOT EXISTS book " +
-                "(Id INTEGER PRIMARY KEY, " +
-                "Name VARCHAR(255), " +
-                "CategoryID INTEGER, " +
-                "FileUrl VARCHAR(255), " +
-                "TextContent LONGTEXT);";
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
-        //create database
-        dbHelper.QueryData(CREATE_TABLE_BOOKTYPE);
-        dbHelper.QueryData(CREATE_TABLE_HISTORY);
-        dbHelper.QueryData(CREATE_TABLE_BOOK);
-        dbHelper.QueryData(CREATE_TABLE_FAVORITE);
-
     }
 
     private void GetCursorData() {
@@ -160,12 +132,12 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d("MyTagView", "onPostExecute: "+ titleHome);
+        Log.d(TAG, "onPostExecute: "+ titleHome);
     }
 
     @Override
     public void SetTableData(JSONObject jsonObject) throws JSONException {
-        tempModel = new Chapter();
+        Chapter tempModel = new Chapter();
         tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
         tempModel.setTitle(jsonObject.getString("Name"));
         try {
@@ -179,7 +151,7 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
     public void ShowListBookType() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d("MyTagView", "onPostExecute: "+titleHome);
+        Log.d(TAG, "onPostExecute: "+titleHome);
     }
 
 }

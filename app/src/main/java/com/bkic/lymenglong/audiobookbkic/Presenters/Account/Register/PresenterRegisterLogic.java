@@ -3,7 +3,6 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Account.Register;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -22,8 +21,8 @@ import java.util.Map;
 
 public class PresenterRegisterLogic implements PresenterRegisterImp {
     private ViewRegisterActivity registerActivity;
-    //    private static final String URL = "http://192.168.1.27:80/audiobook/mobile_registration/register.php";
-    private static final String URL = "http://20121969.tk/audiobook/mobile_registration/register.php";
+    //    private static final String HttpUrl_Register = "http://192.168.1.27:80/audiobook/mobile_registration/register.php";
+    private static final String HttpUrl_Register = "http://20121969.tk/audiobook/mobile_registration/register.php";
 
     public PresenterRegisterLogic(ViewRegisterActivity registerActivity) {
         this.registerActivity = registerActivity;
@@ -37,7 +36,7 @@ public class PresenterRegisterLogic implements PresenterRegisterImp {
 
     private void RequestRegister(final User userModel) {
         RequestQueue requestQueue = Volley.newRequestQueue(registerActivity);
-        StringRequest request = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+        StringRequest request = new StringRequest(Request.Method.POST, HttpUrl_Register, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
@@ -61,7 +60,7 @@ public class PresenterRegisterLogic implements PresenterRegisterImp {
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("Fullname", userModel.getName());
                 hashMap.put("Username", userModel.getUsername().trim().toLowerCase());

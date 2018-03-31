@@ -11,11 +11,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
-
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.CategoryAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.CategoryAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
 
@@ -25,7 +24,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_FilterCategoryData;
+
 public class ListCategory extends AppCompatActivity implements ListCategoryImp{
+    private static final String TAG = "ListCategory";
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private CategoryAdapter adapter;
@@ -35,9 +39,6 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     private DBHelper dbHelper;
     private static ArrayList<Chapter> list;
     private View imRefresh;
-
-    // Http Url For Filter Student Data from Id Sent from previous activity.
-    String HttpURL = "http://20121969.tk/SachNoiBKIC/FilterCategoryData.php";
 
     private Activity activity = ListCategory.this;
 
@@ -74,16 +75,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     }
 
     private void initDatabase() {
-        String DB_NAME = "menu.sqlite";
-        int DB_VERSION = 1;
-        String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS category(" +
-                "Id INTEGER PRIMARY KEY, " +
-                "Name VARCHAR(255), " +
-                "TypeID INTEGER);";
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
-        //create database
-        dbHelper.QueryData(CREATE_TABLE);
-
     }
 
     private void GetCursorData() {
@@ -112,7 +104,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
 
             if(list.isEmpty()){
                 String keyPost = "BookTypeID";
-                presenterShowList.GetSelectedResponse(this, keyPost, String.valueOf(idChapter), HttpURL);
+                presenterShowList.GetSelectedResponse(this, keyPost, String.valueOf(idChapter), HttpURL_FilterCategoryData);
             } else {
                 progressBar.setVisibility(View.GONE);
             }
@@ -122,7 +114,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
                 public void onClick(View v) {
                     //todo: check internet connection before be abel to press Button Refresh
                 String keyPost = "BookTypeID";
-                presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL);
+                presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL_FilterCategoryData);
                 }
             });
 
@@ -155,6 +147,6 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d("MyTagView", "onPostExecute: "+ titleChapter);
+        Log.d(TAG, "onPostExecute: "+ titleChapter);
     }
 }

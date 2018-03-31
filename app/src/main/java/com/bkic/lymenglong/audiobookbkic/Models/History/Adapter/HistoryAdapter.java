@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-import com.bkic.lymenglong.audiobookbkic.Models.History.Utils.Index;
+import com.bkic.lymenglong.audiobookbkic.Models.History.Utils.History;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
@@ -22,12 +22,12 @@ import java.util.ArrayList;
 
 
 public class HistoryAdapter extends RecyclerView.Adapter {
-    private ArrayList<Index> indices;
+    private ArrayList<History> indices;
     private Activity activity;
     private int getIdChapter, getPauseTime;
     private String getTitleChapter,getContentChapter, getFileUrlChapter;
 
-    public HistoryAdapter(Activity activity, ArrayList<Index> indices) {
+    public HistoryAdapter(Activity activity, ArrayList<History> indices) {
         this.indices = indices;
         this.activity = activity;
     }

@@ -12,9 +12,9 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
+import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
-import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
 
@@ -24,7 +24,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_FilterBookData;
+
 public class ListBook extends AppCompatActivity implements ListBookImp{
+    private static final String TAG = "ListBook";
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private BookAdapter bookAdapter;
@@ -35,8 +40,6 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     private static ArrayList<Book> list;
     private ProgressBar progressBar;
     private View imRefresh;
-    private String HttpURL = "http://20121969.tk/SachNoiBKIC/FilterBookData.php";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,18 +74,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     }
 
     private void initDatabase() {
-        String DB_NAME = "menu.sqlite";
-        int DB_VERSION = 1;
-        String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS book " +
-                "(Id INTEGER PRIMARY KEY, " +
-                "Name VARCHAR(255), " +
-                "CategoryID INTEGER, " +
-                "FileUrl VARCHAR(255), " +
-                "TextContent LONGTEXT);";
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
-        //create database
-        dbHelper.QueryData(CREATE_TABLE);
-
     }
 
     private void initObject() {
@@ -94,7 +86,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         //region get data from json parsing
         if(list.isEmpty()){
             String keyPost = "CategoryID";
-            presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL);
+            presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL_FilterBookData);
         } else {
             progressBar.setVisibility(View.GONE);
         }
@@ -106,7 +98,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
             public void onClick(View v) {
                 // todo: check internet connection before be abel to press Button Refresh
                 String keyPost = "CategoryID";
-                presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL);
+                presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL_FilterBookData);
             }
         });
     }
@@ -168,7 +160,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
             INSERT_DATA = "INSERT INTO book VALUES('"+Id+"','"+Name+"','"+idChapter+"','"+FileUrl+"','"+TextContent+"')";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
-            Log.d("MyTagView", "SetInsertTableData: failed "+INSERT_DATA);
+            Log.d(TAG, "SetInsertTableData: failed "+INSERT_DATA);
             String UPDATE_DATA = "UPDATE book SET " +
                     "Name = '"+Name+"', " +
                     "CategoryId = '"+CategoryId+"', " +
@@ -183,6 +175,6 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d("MyTagView", "onPostExecute: "+ titleChapter);
+        Log.d(TAG, "onPostExecute: "+ titleChapter);
     }
 }

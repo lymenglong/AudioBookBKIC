@@ -5,5 +5,5 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Main;
  */
 
 public interface PresenterMainImp {
-    void GetHttpResponse();
+    void GetHttpResponse(String httpUrl);
 }
