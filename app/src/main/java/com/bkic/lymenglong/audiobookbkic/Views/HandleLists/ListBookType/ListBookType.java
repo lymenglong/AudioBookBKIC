@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
@@ -101,8 +102,11 @@ public class ListBookType extends AppCompatActivity implements ListBookTypeImp {
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            String keyPost = "UserID";
-            presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrl_AllBookTypeData);
+                HashMap<String, String> ResultHash = new HashMap<>();
+                String keyPost = "UserID";
+                String postValue = String.valueOf(session.getUserIdLoggedIn());
+                ResultHash.put(keyPost, postValue);
+                presenterShowList.GetSelectedResponse(activity,ResultHash, HttpUrl_AllBookTypeData);
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);

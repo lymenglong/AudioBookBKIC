@@ -46,8 +46,8 @@ public class PresenterShowList implements PresenterShowListImp{
     }
 
     @Override
-    public void GetSelectedResponse(Activity activity, String keyPost, String idPost, String HttpHolder) {
-        HttpWebCall(activity, keyPost, idPost, HttpHolder);
+    public void GetSelectedResponse(Activity activity, HashMap<String,String> ResultHash, String HttpHolder) {
+        HttpWebCall(activity, ResultHash, HttpHolder);
     }
 
     //region JSON parse class started from here.
@@ -129,13 +129,12 @@ public class PresenterShowList implements PresenterShowListImp{
 
     //region Method to show current record Current Selected Record
     private String FinalJSonObject;
-    private HashMap<String, String> ResultHash = new HashMap<>();
     private String ParseResult;
     private HttpParse httpParse = new HttpParse();
-    private void HttpWebCall(final Activity activity, final String keyPost, final String idPost, final String httpHolder){
+    private void HttpWebCall(final Activity activity, final HashMap<String,String> ResultHash, final String httpHolder){
 
         @SuppressLint("StaticFieldLeak")
-        class HttpWebCallFunction extends AsyncTask<String,Void,String> {
+        class HttpWebCallFunction extends AsyncTask<Void,Void,String> {
 
             @Override
             protected void onPreExecute() {
@@ -144,9 +143,7 @@ public class PresenterShowList implements PresenterShowListImp{
             }
 
             @Override
-            protected String doInBackground(String... params) {
-
-                ResultHash.put(keyPost,params[0]);
+            protected String doInBackground(Void... voids) {
 
                 ParseResult = httpParse.postRequest(ResultHash, httpHolder);
 
@@ -169,7 +166,7 @@ public class PresenterShowList implements PresenterShowListImp{
 
         HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
 
-        httpWebCallFunction.execute(idPost);
+        httpWebCallFunction.execute();
     }
 
     //region Parsing Complete JSON Object.
@@ -207,6 +204,7 @@ public class PresenterShowList implements PresenterShowListImp{
 
                         tempArray = new ArrayList<>();
 
+                        //region Get data from json server in ListCategoryActivity
                         if (activity == listCategoryActivity){
                             //compare if data on server is less than phone we del data from phone
                             listCategoryActivity.CompareDataPhoneWithServer(jsonArray);
@@ -219,6 +217,9 @@ public class PresenterShowList implements PresenterShowListImp{
 
                             }
                         }
+                        //endregion
+
+                        //region Get data from json server in ListBookActivity
                         if (activity == listBookActivity){
                             //compare if data on server is less than phone we del data from phone
                             listBookActivity.CompareDataPhoneWithServer(jsonArray);
@@ -231,6 +232,7 @@ public class PresenterShowList implements PresenterShowListImp{
 
                             }
                         }
+                        //endregion
                     }
                     catch (JSONException e) {
                         // TODO Auto-generated catch block

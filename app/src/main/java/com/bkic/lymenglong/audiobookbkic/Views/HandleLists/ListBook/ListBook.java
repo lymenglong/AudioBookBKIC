@@ -23,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
@@ -85,8 +86,11 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
 
         //region get data from json parsing
         if(list.isEmpty()){
+            HashMap<String, String> ResultHash = new HashMap<>();
             String keyPost = "CategoryID";
-            presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL_FilterBookData);
+            String postValue = String.valueOf(idChapter);
+            ResultHash.put(keyPost,postValue);
+            presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_FilterBookData);
         } else {
             progressBar.setVisibility(View.GONE);
         }
@@ -97,8 +101,11 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
             @Override
             public void onClick(View v) {
                 // todo: check internet connection before be abel to press Button Refresh
+                HashMap<String, String> ResultHash = new HashMap<>();
                 String keyPost = "CategoryID";
-                presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(idChapter), HttpURL_FilterBookData);
+                String postValue = String.valueOf(idChapter);
+                ResultHash.put(keyPost,postValue);
+                presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_FilterBookData);
             }
         });
     }

@@ -3,7 +3,9 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists;
 
 import android.app.Activity;
 
+import java.util.HashMap;
+
 public interface PresenterShowListImp {
     void GetDataResponse(String httpUrl);
-    void GetSelectedResponse(Activity activity, String keyPost, String idPost , String httpUrl);
+    void GetSelectedResponse(Activity activity, HashMap<String,String> ResultHash, String httpUrl);
 }

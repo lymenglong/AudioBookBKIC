@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
@@ -134,8 +135,11 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            String keyPost = "UserID";
-            presenterShowListHistory.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrl_FilterHistoryData);
+                HashMap<String,String> ResultHash = new HashMap<>();
+                String keyPost = "UserID";
+                String postValue = String.valueOf(session.getUserIdLoggedIn());
+                ResultHash.put(keyPost,postValue);
+                presenterShowListHistory.GetSelectedResponse(activity, ResultHash,HttpUrl_FilterHistoryData);
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
@@ -145,8 +149,11 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         GetCursorData();
         //get data from json parsing
         if(list.isEmpty()) {
+            HashMap<String,String> ResultHash = new HashMap<>();
             String keyPost = "UserID";
-            presenterShowListHistory.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()), HttpUrl_FilterHistoryData);
+            String postValue = String.valueOf(session.getUserIdLoggedIn());
+            ResultHash.put(keyPost,postValue);
+            presenterShowListHistory.GetSelectedResponse(activity, ResultHash,HttpUrl_FilterHistoryData);
         } else {
             progressBar.setVisibility(View.GONE);
         }

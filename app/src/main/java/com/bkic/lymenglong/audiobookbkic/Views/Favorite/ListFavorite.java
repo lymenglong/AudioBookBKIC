@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
@@ -124,8 +125,11 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            String keyPost = "UserID";
-            presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrl_FilterFavoriteData);
+                HashMap<String,String> ResultHash = new HashMap<>();
+                String keyPost = "UserID";
+                String valuePost = String.valueOf(session.getUserIdLoggedIn());
+                ResultHash.put(keyPost,valuePost);
+                presenterShowList.GetSelectedResponse(activity, ResultHash,HttpUrl_FilterFavoriteData);
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
@@ -135,8 +139,11 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         GetCursorData();
         //get data from json parsing
         if(list.isEmpty()) {
+            HashMap<String,String> ResultHash = new HashMap<>();
             String keyPost = "UserID";
-            presenterShowList.GetSelectedResponse(activity, keyPost, String.valueOf(session.getUserIdLoggedIn()),HttpUrl_FilterFavoriteData);
+            String valuePost = String.valueOf(session.getUserIdLoggedIn());
+            ResultHash.put(keyPost,valuePost);
+            presenterShowList.GetSelectedResponse(activity, ResultHash,HttpUrl_FilterFavoriteData);
         } else {
             progressBar.setVisibility(View.GONE);
         }

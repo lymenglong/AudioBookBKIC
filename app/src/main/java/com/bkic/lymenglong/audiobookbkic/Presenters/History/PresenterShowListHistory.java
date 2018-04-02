@@ -26,17 +26,16 @@ public class PresenterShowListHistory implements PresenterShowListHistoryImp {
     }
 
     @Override
-    public void GetSelectedResponse(Activity activity, String keyPost, String idPost, String HttpHolder) {
-        HttpWebCall(activity, keyPost, idPost, HttpHolder);
+    public void GetSelectedResponse(Activity activity, HashMap<String,String> ResultHash, String HttpHolder) {
+        HttpWebCall(activity, ResultHash, HttpHolder);
     }
 
 
     //region Method to show current record Current Selected Record
     private String FinalJSonObject;
-    private HashMap<String, String> ResultHash = new HashMap<>();
     private String ParseResult;
     private HttpParse httpParse = new HttpParse();
-    private void HttpWebCall(final Activity activity, final String keyPost, final String idPost, final String httpHolder){
+    private void HttpWebCall(final Activity activity, final HashMap<String,String> ResultHash, final String httpHolder){
 
         @SuppressLint("StaticFieldLeak")
         class HttpWebCallFunction extends AsyncTask<String,Void,String> {
@@ -48,9 +47,7 @@ public class PresenterShowListHistory implements PresenterShowListHistoryImp {
             }
 
             @Override
-            protected String doInBackground(String... params) {
-
-                ResultHash.put(keyPost,params[0]);
+            protected String doInBackground(String... voids) {
 
                 ParseResult = httpParse.postRequest(ResultHash, httpHolder);
 
@@ -73,7 +70,7 @@ public class PresenterShowListHistory implements PresenterShowListHistoryImp {
 
         HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
 
-        httpWebCallFunction.execute(idPost);
+        httpWebCallFunction.execute();
     }
 
     //region Parsing Complete JSON Object.

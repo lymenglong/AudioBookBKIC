@@ -8,8 +8,7 @@ import com.bkic.lymenglong.audiobookbkic.R;
 
 
 public class CustomActionBar implements CustomActionBarImp, View.OnClickListener{
-    private View imBack, imRefresh;
-    private TextView tvToolbar;
+    private View imBack;
     private Activity activity;
     /**
      * Custom actionbar cho các activity với title và right btn
@@ -21,8 +20,8 @@ public class CustomActionBar implements CustomActionBarImp, View.OnClickListener
     public void eventToolbar(Activity activity, String text, boolean hasSearch) {
         this.activity = activity;
         imBack = activity.findViewById(R.id.imBack);
-        imRefresh = activity.findViewById(R.id.imRefresh);
-        tvToolbar = activity.findViewById(R.id.tvToolbar);
+        View imRefresh = activity.findViewById(R.id.imRefresh);
+        TextView tvToolbar = activity.findViewById(R.id.tvToolbar);
 
         tvToolbar.setText(text);
         if(hasSearch) {
@@ -39,10 +38,10 @@ public class CustomActionBar implements CustomActionBarImp, View.OnClickListener
         if(view == imBack) {
             activity.onBackPressed();
         }
-        if(view == imRefresh){
+/*        if(view == imRefresh){
             //todo: refresh list
 //            presenter.RefreshContent(activity);
 
-        }
+        }*/
     }
 }

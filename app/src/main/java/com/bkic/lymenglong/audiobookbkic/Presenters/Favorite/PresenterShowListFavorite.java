@@ -3,17 +3,11 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Favorite;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
-import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
-import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpServicesClass;
 import com.bkic.lymenglong.audiobookbkic.Views.Favorite.ListFavorite;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook.ListBook;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType.ListBookType;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory.ListCategory;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,16 +26,15 @@ public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
     }
 
     @Override
-    public void GetSelectedResponse(Activity activity, String keyPost, String idPost, String HttpHolder) {
-        HttpWebCall(activity, keyPost, idPost, HttpHolder);
+    public void GetSelectedResponse(Activity activity, HashMap<String, String> ResultHash, String HttpHolder) {
+        HttpWebCall(activity, ResultHash, HttpHolder);
     }
 
     //region Method to show current record Current Selected Record
     private String FinalJSonObject;
-    private HashMap<String, String> ResultHash = new HashMap<>();
     private String ParseResult;
     private HttpParse httpParse = new HttpParse();
-    private void HttpWebCall(final Activity activity, final String keyPost, final String idPost, final String httpHolder){
+    private void HttpWebCall(final Activity activity, final HashMap<String, String> ResultHash, final String httpHolder){
 
         @SuppressLint("StaticFieldLeak")
         class HttpWebCallFunction extends AsyncTask<String,Void,String> {
@@ -53,9 +46,7 @@ public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
             }
 
             @Override
-            protected String doInBackground(String... params) {
-
-                ResultHash.put(keyPost,params[0]);
+            protected String doInBackground(String... voids) {
 
                 ParseResult = httpParse.postRequest(ResultHash, httpHolder);
 
@@ -78,7 +69,7 @@ public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
 
         HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
 
-        httpWebCallFunction.execute(idPost);
+        httpWebCallFunction.execute();
     }
 
     //region Parsing Complete JSON Object.
