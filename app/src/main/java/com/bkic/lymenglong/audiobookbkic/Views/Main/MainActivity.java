@@ -1,7 +1,5 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Main;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -35,11 +33,9 @@ public class MainActivity extends AppCompatActivity implements MainImp{
     private static final String TAG = "MainActivity";
     private RecyclerView homeList;
     private MainAdapter mainAdapter;
-    private Activity activity = MainActivity.this;
     DBHelper dbHelper;
     private static ArrayList<Chapter> menuList;
     private ProgressBar progressBar;
-    private ProgressDialog pDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements MainImp{
 
     @Override
     public void ShowListMenu() {
-        pDialog.dismiss();
         progressBar.setVisibility(View.GONE);
         GetCursorData();
         Log.d(TAG, "onPostExecute: " + getTitle());
@@ -120,10 +115,5 @@ public class MainActivity extends AppCompatActivity implements MainImp{
             dbHelper.QueryData(UPDATE_DATA);
         }
         Log.d(TAG, "SetMenuData");
-    }
-
-    @Override
-    public void ShowProgressDialog() {
-        pDialog = ProgressDialog.show(activity, "Load Data", "Please wait...", true, true);
     }
 }

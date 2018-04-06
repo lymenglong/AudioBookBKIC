@@ -27,6 +27,7 @@ import java.util.HashMap;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_FilterCategoryData;
 
 public class ListCategory extends AppCompatActivity implements ListCategoryImp{
@@ -104,11 +105,19 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
             GetCursorData();
 
             if(list.isEmpty()){
-                HashMap<String, String> ResultHash = new HashMap<>();
+               /* HashMap<String, String> ResultHash = new HashMap<>();
                 String keyPost = "BookTypeID";
-                String postValue = "String.valueOf(idChapter)";
+                String postValue = String.valueOf(idChapter);
                 ResultHash.put(keyPost,postValue);
-                presenterShowList.GetSelectedResponse(this, ResultHash, HttpURL_FilterCategoryData);
+                presenterShowList.GetSelectedResponse(this, ResultHash, HttpURL_FilterCategoryData);*/
+
+               // for new api
+                HashMap<String, String> ResultHash = new HashMap<>();
+                String keyPost = "json";
+                String postValue ="{\"Action\":\"getListCategory\"}";
+                ResultHash.put(keyPost,postValue);
+                presenterShowList.GetDataResponse(HttpURL_API);
+
             } else {
                 progressBar.setVisibility(View.GONE);
             }
@@ -117,11 +126,17 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
                 @Override
                 public void onClick(View v) {
                     //todo: check internet connection before be abel to press Button Refresh
-                    HashMap<String, String> ResultHash = new HashMap<>();
+                    /*HashMap<String, String> ResultHash = new HashMap<>();
                     String keyPost = "BookTypeID";
                     String postValue = String.valueOf(idChapter);
                     ResultHash.put(keyPost,postValue);
-                    presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_FilterCategoryData);
+                    presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_FilterCategoryData);*/
+                    // for new api
+                    HashMap<String, String> ResultHash = new HashMap<>();
+                    String keyPost = "json";
+                    String postValue ="{\"Action\":\"getListCategory\"}";
+                    ResultHash.put(keyPost,postValue);
+                    presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
                 }
             });
 

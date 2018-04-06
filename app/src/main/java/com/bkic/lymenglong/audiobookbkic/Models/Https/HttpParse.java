@@ -19,6 +19,7 @@ public class HttpParse {
     public String postRequest(HashMap<String, String> Data, String HttpUrlHolder) {
 
         try {
+
             URL url = new URL(HttpUrlHolder);
 
             HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();

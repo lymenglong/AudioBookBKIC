@@ -13,6 +13,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpServicesClass;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook.ListBook;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory.ListCategory;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType.ListBookType;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter.ListChapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,7 +27,12 @@ public class PresenterShowList implements PresenterShowListImp{
     private ListBookType listBookTypeActivity;
     private ListCategory listCategoryActivity;
     private ListBook listBookActivity;
+    private ListChapter listChapterActivity;
     private ProgressDialog pDialog;
+
+    public PresenterShowList(ListChapter listChapterActivity) {
+        this.listChapterActivity = listChapterActivity;
+    }
 
     public PresenterShowList(ListBookType listBookTypeActivity) {
         this.listBookTypeActivity = listBookTypeActivity;
@@ -193,19 +199,19 @@ public class PresenterShowList implements PresenterShowListImp{
         {
             try
             {
-                if(FinalJSonObject != null && !FinalJSonObject.equals("No Results Found.")) //When no data, it will return "No Results Found." Value to String JSONObject.
+                if(FinalJSonObject != null) //When no data, it will return "No Results Found." Value to String JSONObject.
                 {
                     JSONArray jsonArray;
 
+                    JSONArray jsonArrayResult;
+
+                    //region Get data from json server in ListCategoryActivity
+                    if (activity == listCategoryActivity){
                     try {
                         jsonArray = new JSONArray(FinalJSonObject);
-
                         JSONObject jsonObject;
 
-                        tempArray = new ArrayList<>();
 
-                        //region Get data from json server in ListCategoryActivity
-                        if (activity == listCategoryActivity){
                             //compare if data on server is less than phone we del data from phone
                             listCategoryActivity.CompareDataPhoneWithServer(jsonArray);
 
@@ -216,28 +222,63 @@ public class PresenterShowList implements PresenterShowListImp{
                                 listCategoryActivity.SetTableSelectedData(jsonObject);
 
                             }
-                        }
-                        //endregion
+                    } catch (Exception ignored){
+                    }
+                }
+                //endregion
 
-                        //region Get data from json server in ListBookActivity
-                        if (activity == listBookActivity){
+                    //region Get data from json server in ListBookActivity{
+                    if (activity == listBookActivity) {
+                        try {
+                            //for new api////
+                            JSONObject jsonActionObject = new JSONObject(FinalJSonObject);
+                            ////////////////
+                            tempArray = new ArrayList<>();
+
                             //compare if data on server is less than phone we del data from phone
-                            listBookActivity.CompareDataPhoneWithServer(jsonArray);
+//                            listBookActivity.CompareDataPhoneWithServer(jsonArray);
 
-                            for(int i=0; i<jsonArray.length(); i++)
+                            //todo: for new api
+                            String jsonResult = jsonActionObject.getString("Result");
+
+                            jsonArrayResult = new JSONArray(jsonResult);
+
+                            for (int j = 0; j < jsonArrayResult.length(); j++) {
+                                listBookActivity.SetTableSelectedData(jsonArrayResult.getJSONObject(j));
+                            }
+
+                            /*for(int i=0; i<jsonArray.length(); i++)
                             {
                                 jsonObject = jsonArray.getJSONObject(i);
 
                                 listBookActivity.SetTableSelectedData(jsonObject);
 
-                            }
+                            }*/
+                            //endregion
+
+                        } catch (JSONException ignored) {
                         }
-                        //endregion
                     }
-                    catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                        if(activity == listChapterActivity){
+                            try {
+                                JSONObject jsonObject = new JSONObject(FinalJSonObject);
+                                String resultJsonObject = jsonObject.getString("Result");
+                                JSONObject jsonObjectResult = new JSONObject(resultJsonObject);
+                                String arrayJsonChapter = jsonObjectResult.getString("ChapterList");
+                                JSONArray jsonArrayChapter = new JSONArray(arrayJsonChapter);
+                                JSONObject jsonObjectChapter;
+                                for (int i = 0; i< jsonArrayChapter.length(); i++){
+
+                                    jsonObjectChapter = jsonArrayChapter.getJSONObject(i);
+
+                                    listChapterActivity.SetTableSelectedData(jsonObjectChapter);
+                                }
+                            } catch (JSONException ignored) {
+                            }
+
+                        }
+
+
                 }
             }
             catch (Exception e)
@@ -259,6 +300,9 @@ public class PresenterShowList implements PresenterShowListImp{
             }
             if(activity == listBookActivity){
                 listBookActivity.ShowListFromSelected();
+            }
+            if(activity == listChapterActivity){
+                listChapterActivity.ShowListFromSelected();
             }
         }
     }

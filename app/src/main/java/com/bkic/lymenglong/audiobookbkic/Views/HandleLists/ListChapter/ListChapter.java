@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook;
+package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter;
 
 import android.app.Activity;
 import android.database.Cursor;
@@ -13,8 +13,8 @@ import android.widget.ProgressBar;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.ChapterAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
 
@@ -29,16 +29,16 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 
-public class ListBook extends AppCompatActivity implements ListBookImp{
-    private static final String TAG = "ListBook";
+public class ListChapter extends AppCompatActivity implements ListChapterImp{
+    private static final String TAG = "ListChapter";
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
-    private BookAdapter bookAdapter;
+    private ChapterAdapter chapterAdapter;
     private String title;
     private int id;
-    private Activity activity = ListBook.this;
+    private Activity activity = ListChapter.this;
     private DBHelper dbHelper;
-    private static ArrayList<Book> list;
+    private static ArrayList<Chapter> list;
     private ProgressBar progressBar;
     private View imRefresh;
 
@@ -76,10 +76,21 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
 
     private void initDatabase() {
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
+        String CREATE_TABLE_CHAPTER =
+                "CREATE TABLE IF NOT EXISTS chapter " +
+                "(" +
+                "ChapterId INTEGER PRIMARY KEY, " +
+                "ChapterTitle VARCHAR(255), " +
+                "ChapterUrl VARCHAR(255), " +
+                "ChapterLength INTEGER, " +
+                "BookId INTEGER " +
+                ");";
+        dbHelper.QueryData(CREATE_TABLE_CHAPTER);
+
     }
 
     private void initObject() {
-        //set bookAdapter to list view
+        //set chapterAdapter to list view
         SetAdapterToListView();
         //update list
         GetCursorData();
@@ -88,14 +99,12 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         if(list.isEmpty()){
             //todo: for new api
             HashMap<String, String> ResultHash = new HashMap<>();
-            int Page = 1;
-            int CategoryId = 33;
+            int BookId = 232;
             String keyPost = "json";
             String postValue =
                     "{" +
-                            "\"Action\":\"getBooksByCategory\", " +
-                            "\"CategoryId\":\""+CategoryId+"\", " +
-                            "\"Page\":\""+Page+"\"" +
+                            "\"Action\":\"getBookDetail\", " +
+                            "\"BookId\":\""+BookId+"\"" +
                     "}";
             ResultHash.put(keyPost,postValue);
             /*HashMap<String, String> ResultHash = new HashMap<>();
@@ -114,22 +123,18 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
             public void onClick(View v) {
                 // todo: check internet connection before be abel to press Button Refresh
                 HashMap<String, String> ResultHash = new HashMap<>();
-                int Page = 1;
-//                int CategoryId = id;
-                int CategoryId = 33;
+                int BookId = 232;
                 String keyPost = "json";
                 String postValue =
                         "{" +
-                                "\"Action\":\"getBooksByCategory\", " +
-                                "\"CategoryId\":\""+CategoryId+"\", " +
-                                "\"Page\":\""+Page+"\"" +
+                                "\"Action\":\"getBookDetail\", " +
+                                "\"BookId\":\""+BookId+"\"" +
                         "}";
                 ResultHash.put(keyPost,postValue);
-
-/*                HashMap<String, String> ResultHash = new HashMap<>();
-                String keyPost = "CategoryID";
-                String postValue = String.valueOf(id);
-                ResultHash.put(keyPost,postValue);*/
+            /*HashMap<String, String> ResultHash = new HashMap<>();
+            String keyPost = "CategoryId";
+            String postValue =String.valueOf(id);
+            ResultHash.put(keyPost,postValue);*/
                 presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
             }
         });
@@ -137,10 +142,10 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
 
     private void SetAdapterToListView() {
         list = new ArrayList<>();
-        bookAdapter = new BookAdapter(ListBook.this, list);
+        chapterAdapter = new ChapterAdapter(ListChapter.this, list);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         listChapter.setLayoutManager(mLinearLayoutManager);
-        listChapter.setAdapter(bookAdapter);
+        listChapter.setAdapter(chapterAdapter);
     }
 
     //region Method to get data for database
@@ -157,22 +162,22 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
             }
         }
         cursor.close();
-        bookAdapter.notifyDataSetChanged();
+        chapterAdapter.notifyDataSetChanged();
         dbHelper.close();*/
         //todo: for new api
         list.clear();
-        Cursor cursor = dbHelper.GetData("SELECT * FROM books");
+        Cursor cursor = dbHelper.GetData("SELECT * FROM chapter");
         while (cursor.moveToNext()){
-            Book bookModel = new Book();
-            bookModel.setId(cursor.getInt(0));
-            bookModel.setTitle(cursor.getString(1));
-            bookModel.setUrlImage(cursor.getString(2));
-            bookModel.setLength(cursor.getInt(3));
-            bookModel.setCategoryId(cursor.getInt(4));
-            list.add(bookModel);
+            Chapter chapterModel = new Chapter();
+            chapterModel.setId(cursor.getInt(0));
+            chapterModel.setTitle(cursor.getString(1));
+            chapterModel.setFileUrl(cursor.getString(2));
+//            chapterModel.setLength(cursor.getInt(3));
+            chapterModel.setBookId(cursor.getInt(4));
+            list.add(chapterModel);
         }
         cursor.close();
-        bookAdapter.notifyDataSetChanged();
+        chapterAdapter.notifyDataSetChanged();
         dbHelper.close();
     }
     //endregion
@@ -185,31 +190,33 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
         //todo: for new api
-        Book bookModel = new Book();
-        bookModel.setId(Integer.parseInt(jsonObject.getString("BookId")));
-        bookModel.setTitle(jsonObject.getString("BookTitle"));
-        bookModel.setUrlImage(jsonObject.getString("BookImage"));
-        bookModel.setLength(Integer.parseInt(jsonObject.getString("BookLength")));
-        int CategoryId = id;
+        Chapter chapterModel = new Chapter();
+        chapterModel.setId(Integer.parseInt(jsonObject.getString("ChapterId")));
+        chapterModel.setTitle(jsonObject.getString("ChapterName"));
+        chapterModel.setFileUrl(jsonObject.getString("ChapterURL"));
+//        chapterModel.setLength(Integer.parseInt(jsonObject.getString("ChapterLength")));
+        int BookId = id;
         String INSERT_DATA;
         try {
             INSERT_DATA =
                     //todo: create new book table for sqlite
-                    "INSERT INTO books VALUES(" +
-                            "'"+bookModel.getId()+"', " +
-                            "'"+bookModel.getTitle()+"', " +
-                            "'"+bookModel.getUrlImage() +"', " +
-                            "'"+bookModel.getLength()+"', " +
-                            "'"+CategoryId+"'" + //CategoryID
+                    "INSERT INTO chapter VALUES" +
+                            "(" +
+                            "'"+chapterModel.getId()+"', " +
+                            "'"+chapterModel.getTitle()+"', " +
+                            "'"+chapterModel.getFileUrl() +"', " +
+//                            "'"+chapterModel.getLength() +"', " +
+                            "'', " +
+                            "'"+BookId+"'" + //BookId
                             ")";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
             String UPDATE_DATA = "UPDATE books SET " +
-                    "BookTitle = '"+bookModel.getTitle()+"', " +
-                    "BookImage = '"+bookModel.getUrlImage()+"', " +
-                    "BookLength = '"+bookModel.getLength()+"' ," +
-                    "CategoryId = '"+CategoryId+"' " + //CategoryId
-                    "WHERE BookId = '"+bookModel.getId()+"'";
+                    "ChapterTitle = '"+chapterModel.getTitle()+"', " +
+                    "ChapterUrl = '"+chapterModel.getFileUrl()+"', " +
+                    "ChapterLength = '"+chapterModel.getLength()+"' ," +
+                    "BookId = '"+BookId+"' " + //BookId
+                    "WHERE ChapterId = '"+chapterModel.getId()+"'";
             dbHelper.QueryData(UPDATE_DATA);
         }
 

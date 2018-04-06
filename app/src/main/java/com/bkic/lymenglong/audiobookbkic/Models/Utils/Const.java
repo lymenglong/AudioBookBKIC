@@ -20,6 +20,10 @@ public final class Const {
     public static final String HttpUrl_FilterHistoryData = "http://20121969.tk/SachNoiBKIC/FilterHistoryData.php";
     //</editor-fold>
 
+    //<editor-fold desc="New API URL">
+    public static final String HttpURL_API = "http://jsontest123.000webhostapp.com/api/index.php";
+    //</editor-fold>
+
     //endregion
 
     //region DBHelper Constants
@@ -52,6 +56,14 @@ public final class Const {
                     "CategoryID INTEGER, " +
                     "FileUrl VARCHAR(255), " +
                     "TextContent LONGTEXT);";
+    public static final String CREATE_TABLE_BOOKS = "CREATE TABLE IF NOT EXISTS books " +
+            "(" +
+            "BookId INTEGER PRIMARY KEY, " +
+            "BookTitle VARCHAR(255), " +
+            "BookImage VARCHAR(255), " +
+            "BookLength INTEGER, " +
+            "CategoryId INTEGER " +
+            ");";
     public static final String CREATE_TABLE_CATEGORY =
             "CREATE TABLE IF NOT EXISTS category(" +
                     "Id INTEGER PRIMARY KEY, " +

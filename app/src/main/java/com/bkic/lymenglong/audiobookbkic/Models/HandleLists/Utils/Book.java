@@ -7,6 +7,8 @@ public class Book {
     private String content;
     private Boolean status; //when status is true, it means that you select audio book
     private String FileUrl;
+    private String urlImage;
+    private int length;
 
     public int getCategoryId() {
         return CategoryId;
@@ -85,4 +87,19 @@ public class Book {
         this.content = content;
     }
 
+    public void setUrlImage(String urlImage) {
+        this.urlImage = urlImage;
+    }
+
+    public String getUrlImage() {
+        return urlImage;
+    }
+
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
 }

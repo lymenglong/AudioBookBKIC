@@ -14,13 +14,15 @@ import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.InputValidation;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
-import com.bkic.lymenglong.audiobookbkic.Presenters.Account.Login.PresenterLoginLogic;
+import com.bkic.lymenglong.audiobookbkic.Presenters.Account.Login.PresenterLogin;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Register.ViewRegisterActivity;
 import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
 
 
 public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp, View.OnClickListener{
+    private PresenterLogin presenter = new PresenterLogin(this);
+
     private Activity activity = ViewLoginActivity.this;
 
     private TextInputLayout textInputLayoutEmail;
@@ -33,7 +35,8 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     private InputValidation inputValidation;
 
     private AppCompatTextView textViewLinkRegister;
-    private PresenterLoginLogic presenter = new PresenterLoginLogic(this);
+    private String textEmail;
+
 
 
     @Override
@@ -82,7 +85,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.appCompatButtonLogin:
-                String textEmail;
+
                 if (!inputValidation.isInputEditTextFilled(
                         textInputEditTextEmail,
                         textInputLayoutEmail,
@@ -117,16 +120,16 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
 
     @Override
     public void LoginSuccess() {
-//        Toast.makeText(activity, "Login Success", Toast.LENGTH_SHORT).show();
         Intent accountsIntent = new Intent(activity, MainActivity.class);
         accountsIntent.putExtra("EMAIL", textInputEditTextEmail.getText().toString().trim());
         startActivity(accountsIntent);
         activity.finish();
+        presenter.UserDetail(textEmail);
     }
 
     @Override
     public void LoginFailed() {
-        Toast.makeText(activity, "Login Failed", Toast.LENGTH_SHORT).show();
+        Toast.makeText(ViewLoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
     }
 }
 

@@ -9,6 +9,8 @@ public class Chapter {
     private int insertTime;
     private String fileUrl;
     private int categoryId;
+    private int length;
+    private int bookId;
 
     public int getStatus() {
         return status;
@@ -127,4 +129,19 @@ public class Chapter {
         this.content = content;
     }
 
+    public int getLength() {
+        return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
+    }
+
+    public void setBookId(int bookId) {
+        this.bookId = bookId;
+    }
+
+    public int getBookId() {
+        return bookId;
+    }
 }

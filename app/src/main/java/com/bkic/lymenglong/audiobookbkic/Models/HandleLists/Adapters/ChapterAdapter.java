@@ -11,28 +11,24 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook.ListBook;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter.ListChapter;
-import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.R;
+import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
 
 import java.util.ArrayList;
 
 
-public class BookAdapter extends RecyclerView.Adapter {
-    private ArrayList<Book> books;
+public class ChapterAdapter extends RecyclerView.Adapter {
+    private ArrayList<Chapter> chapters;
     private Activity activity;
     private View view;
-/*
-private int getIdChapter;
-private String getTitleChapter, getContentChapter, getfileUrlChapter;
-*/
+    private int getIdChapter;
+    private String getTitleChapter, getContentChapter, getfileUrlChapter;
 
-    public BookAdapter(Activity activity, ArrayList<Book> books) {
-        this.books = books;
+    public ChapterAdapter(Activity activity, ArrayList<Chapter> chapters) {
+        this.chapters = chapters;
         this.activity = activity;
     }
 
@@ -48,8 +44,7 @@ private String getTitleChapter, getContentChapter, getfileUrlChapter;
         if (holder instanceof ChapterHolder) {
             ChapterHolder chapterHolder = (ChapterHolder) holder;
 
-
-            chapterHolder.name.setText(books.get(position).getTitle());
+            chapterHolder.name.setText(chapters.get(position).getTitle());
         }
 
     }
@@ -61,18 +56,18 @@ private String getTitleChapter, getContentChapter, getfileUrlChapter;
 
     @Override
     public int getItemCount() {
-        return books.size();
+        return chapters.size();
     }
 
     class ChapterHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView name;
-//        private ImageView imgNext;
+        private ImageView imgNext;
 
         ChapterHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.nameStory);
-//            imgNext = itemView.findViewById(R.id.imgNext);
+            imgNext = itemView.findViewById(R.id.imgNext);
 
             itemView.setOnClickListener(this);
         }
@@ -80,22 +75,16 @@ private String getTitleChapter, getContentChapter, getfileUrlChapter;
         @Override
         public void onClick(View view) {
             if(view == itemView) {
-                /*getIdChapter = books.get(getAdapterPosition()).getId();
-                getTitleChapter = books.get(getAdapterPosition()).getTitle();
-                getContentChapter = books.get(getAdapterPosition()).getContent();
-                getfileUrlChapter = books.get(getAdapterPosition()).getFileUrl();
-                showAlertDialog();*/
-                Intent intent = new Intent(activity, ListChapter.class);
-                intent.putExtra("idChapter", books.get(getAdapterPosition()).getId());
-                intent.putExtra("titleChapter", books.get(getAdapterPosition()).getTitle());
-                intent.putExtra("content", books.get(getAdapterPosition()).getContent());
-                activity.startActivity(intent);
+                getIdChapter = chapters.get(getAdapterPosition()).getId();
+                getTitleChapter = chapters.get(getAdapterPosition()).getTitle();
+                getContentChapter = chapters.get(getAdapterPosition()).getContent();
+                getfileUrlChapter = chapters.get(getAdapterPosition()).getFileUrl();
+                showAlertDialog();
             }
         }
     }
 
-    //region ShowAlertDialog
-/*
+
     private void showAlertDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 //        builder.setTitle("Chọn Dạng Sách");
@@ -138,7 +127,5 @@ private String getTitleChapter, getContentChapter, getfileUrlChapter;
         alertDialog.show();
 
     }
-*/
-    //endregion
 
 }

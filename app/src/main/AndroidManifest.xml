@@ -96,6 +96,7 @@ package="com.bkic.lymenglong.audiobookbkic">
         android:screenOrientation="portrait">
     </activity>
     <activity android:name=".Views.Favorite.ListFavorite" />
+    <activity android:name=".Views.HandleLists.ListChapter.ListChapter" />
 
 </application>
 </manifest>

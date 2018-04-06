@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 public class PresenterMain implements PresenterMainImp {
     private MainActivity mainActivity;
+//    private ProgressDialog pDialog;
 
     public PresenterMain(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -66,11 +67,10 @@ public class PresenterMain implements PresenterMainImp {
                             e.printStackTrace();
                         }
                     }
-                } else {
-                    Toast.makeText(context, httpServicesClass.getErrorMessage(), Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
-                // TODO Auto-generated catch block
+                // TODO Auto-generated catch block0
+                Toast.makeText(context, httpServicesClass.getErrorMessage(), Toast.LENGTH_SHORT).show();
                 e.printStackTrace();
             }
             return null;
@@ -79,12 +79,13 @@ public class PresenterMain implements PresenterMainImp {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            mainActivity.ShowProgressDialog();
+//            pDialog = ProgressDialog.show(mainActivity, "Load Data", "Please wait...", true, true);
         }
 
 
         @Override
         protected void onPostExecute(Void result) {
+//            pDialog.dismiss();
             mainActivity.ShowListMenu();
 
         }

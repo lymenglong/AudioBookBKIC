@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_BOOK;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_BOOKS;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_BOOK_TYPE;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_CATEGORY;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_FAVORITE;
@@ -39,6 +40,7 @@ public class DBHelper extends SQLiteOpenHelper {
         dbHelper.execSQL(CREATE_TABLE_BOOK_TYPE);
         dbHelper.execSQL(CREATE_TABLE_CATEGORY);
         dbHelper.execSQL(CREATE_TABLE_BOOK);
+        dbHelper.execSQL(CREATE_TABLE_BOOKS);
         dbHelper.execSQL(CREATE_TABLE_HISTORY);
         dbHelper.execSQL(CREATE_TABLE_FAVORITE);
     }
