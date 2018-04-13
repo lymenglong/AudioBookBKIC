@@ -36,7 +36,7 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
     private RecyclerView listChapter;
     private View imRefresh;
     private FavoriteAdapter favoriteAdapter;
-    private String titleHome;
+    private String menuTitle;
     private Activity activity = ListFavorite.this;
     private Session session;
     private ProgressBar progressBar;
@@ -50,7 +50,7 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         setContentView(R.layout.activity_show_list);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
         getDataFromIntent();
-        setTitle(titleHome);
+        setTitle(menuTitle);
         initView();
         initDatabase();
         initObject();
@@ -60,7 +60,7 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
      * Lấy dữ liệu thông qua intent
      */
     private void getDataFromIntent() {
-        titleHome = getIntent().getStringExtra("titleHome");
+        menuTitle = getIntent().getStringExtra("MenuTitle");
 //        int idMenu = getIntent().getIntExtra("idHome", -1);
     }
 
@@ -72,7 +72,7 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         progressBar = findViewById(R.id.progressBar);
         imRefresh = findViewById(R.id.imRefresh);
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, titleHome, true);
+        actionBar.eventToolbar(this, menuTitle, true);
         listChapter = findViewById(R.id.listView);
     }
 
@@ -209,7 +209,7 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d(TAG, "onPostExecute: "+ titleHome);
+        Log.d(TAG, "onPostExecute: "+ menuTitle);
     }
 
 }

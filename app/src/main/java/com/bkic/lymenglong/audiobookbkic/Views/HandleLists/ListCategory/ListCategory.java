@@ -10,11 +10,12 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.CategoryAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
 
@@ -28,52 +29,82 @@ import java.util.HashMap;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
-import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_FilterCategoryData;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.SELECT_CATEGORY_BY_PARENT_ID;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.UPDATE_CATEGORY_DATA;
 
-public class ListCategory extends AppCompatActivity implements ListCategoryImp{
+public class ListCategory extends AppCompatActivity implements ListCategoryImp {
     private static final String TAG = "ListCategory";
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
+    private View imRefresh;
     private CategoryAdapter adapter;
-    private String titleChapter;
-    private int idChapter;
+    private String title;
+    private Activity activity = ListCategory.this;
     private ProgressBar progressBar;
     private DBHelper dbHelper;
-    private static ArrayList<Chapter> list;
-    private View imRefresh;
-
-    private Activity activity = ListCategory.this;
-
+    private static ArrayList <Category> list = new ArrayList<>();
+    private String menuTitle;
+    private String categoryTitle;
+    private int categoryId;
+    private String categoryDescription;
+    private int categoryParent;
+    private int numOfChild;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
-        getDataFromIntent();
-        init();
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        setTitle(titleChapter);
+        getDataFromIntent();
+        SetToolBarTitle();
+        initView();
         initDatabase();
         initObject();
+    }
+
+    private void SetToolBarTitle() {
+        if(menuTitle == null){
+            title = categoryTitle;
+        } else{
+            title = menuTitle;
+        }
+        setTitle(title);
     }
 
     /**
      * Lấy dữ liệu thông qua intent
      */
     private void getDataFromIntent() {
-        titleChapter = getIntent().getStringExtra("titleChapter");
-        idChapter = getIntent().getIntExtra("idChapter", -1);
+        menuTitle = getIntent().getStringExtra("MenuTitle");
+        categoryTitle = getIntent().getStringExtra("CategoryTitle");
+        categoryId = getIntent().getIntExtra("CategoryId", 0);
+        categoryDescription = getIntent().getStringExtra("CategoryDescription");
+        categoryParent = getIntent().getIntExtra("CategoryParent",0);
+        numOfChild = getIntent().getIntExtra("NumOfChild",0);
+
     }
 
     /**
      * Khai báo các view và khởi tạo giá trị
      */
-    private void init() {
-        CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, titleChapter, true);
-        listChapter = findViewById(R.id.listView);
+    private void initView() {
         progressBar = findViewById(R.id.progressBar);
         imRefresh = findViewById(R.id.imRefresh);
+        CustomActionBar actionBar = new CustomActionBar();
+        actionBar.eventToolbar(this, title, true);
+        listChapter = findViewById(R.id.listView);
+    }
+
+    private void SetUpdateTableData(Category arrayModel) {
+        dbHelper.QueryData(
+                UPDATE_CATEGORY_DATA(
+                        arrayModel.getId(),
+                        arrayModel.getTitle(),
+                        arrayModel.getDescription(),
+                        arrayModel.getParentId(),
+                        arrayModel.getNumOfChild()
+                )
+        );
     }
 
     private void initDatabase() {
@@ -81,14 +112,18 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     }
 
     private void GetCursorData() {
+        Cursor cursor;
         list.clear();
-        Cursor cursor = dbHelper.GetData("SELECT * FROM category");
+        int parentId = categoryId; //getIntent
+        String SELECT_DATA = SELECT_CATEGORY_BY_PARENT_ID(parentId);
+        cursor = dbHelper.GetData(SELECT_DATA);
         while (cursor.moveToNext()){
-            if(cursor.getInt(2)== idChapter){
-                String name = cursor.getString(1);
-                int id = cursor.getInt(0);
-                list.add(new Chapter(id,name));
-            }
+            int id = cursor.getInt(0);
+            String title = cursor.getString(1);
+            String description = cursor.getString(2);
+            int parent = cursor.getInt(3);
+            int numOfChild = cursor.getInt(4);
+            list.add(new Category(id,title,description,parent,numOfChild));
         }
         cursor.close();
         adapter.notifyDataSetChanged();
@@ -96,79 +131,92 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp{
     }
 
     private void initObject() {
-            list = new ArrayList<>();
-            adapter = new CategoryAdapter(ListCategory.this, list);
-            LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
-            listChapter.setLayoutManager(mLinearLayoutManager);
-            listChapter.setAdapter(adapter);
-            // update list
-            GetCursorData();
-
-            if(list.isEmpty()){
-               /* HashMap<String, String> ResultHash = new HashMap<>();
-                String keyPost = "BookTypeID";
-                String postValue = String.valueOf(idChapter);
-                ResultHash.put(keyPost,postValue);
-                presenterShowList.GetSelectedResponse(this, ResultHash, HttpURL_FilterCategoryData);*/
-
-               // for new api
-                HashMap<String, String> ResultHash = new HashMap<>();
-                String keyPost = "json";
-                String postValue ="{\"Action\":\"getListCategory\"}";
-                ResultHash.put(keyPost,postValue);
-                presenterShowList.GetDataResponse(HttpURL_API);
-
-            } else {
-                progressBar.setVisibility(View.GONE);
+        imRefresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RefreshLoadingData();
             }
-
-            imRefresh.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //todo: check internet connection before be abel to press Button Refresh
-                    /*HashMap<String, String> ResultHash = new HashMap<>();
-                    String keyPost = "BookTypeID";
-                    String postValue = String.valueOf(idChapter);
-                    ResultHash.put(keyPost,postValue);
-                    presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_FilterCategoryData);*/
-                    // for new api
-                    HashMap<String, String> ResultHash = new HashMap<>();
-                    String keyPost = "json";
-                    String postValue ="{\"Action\":\"getListCategory\"}";
-                    ResultHash.put(keyPost,postValue);
-                    presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
-                }
-            });
-
+        });
+        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
+        listChapter.setLayoutManager(mLinearLayoutManager);
+        adapter = new CategoryAdapter(ListCategory.this, list);
+        listChapter.setAdapter(adapter);
+        GetCursorData();
+        //get data from json parsing
+        if(list.isEmpty()){
+            RefreshLoadingData();
+        } else {
+            progressBar.setVisibility(View.GONE);
+        }
     }
 
-    @Override
-    public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
+    private void RefreshLoadingData() {
+        HashMap<String, String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String postValue = "{\"Action\":\"getListCategory\"}";
+        ResultHash.put(keyPost, postValue);
+        presenterShowList.GetSelectedResponse(activity,ResultHash, HttpURL_API);
+    }
 
-        Chapter tempModel = new Chapter();
-
-        tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-
-        tempModel.setTitle(jsonObject.getString("Name"));
-
-        try {
-            String INSERT_DATA = "INSERT INTO category VALUES('"+ tempModel.getId()+"','"+ tempModel.getTitle()+"','"+idChapter+"')";
-            dbHelper.QueryData(INSERT_DATA);
-        } catch (Exception e) {
-            String UPDATE_DATA = "UPDATE category SET Name = '"+ tempModel.getTitle()+"' WHERE Id = '"+ tempModel.getId()+"' AND TypeID = '"+idChapter+"'";
-            dbHelper.QueryData(UPDATE_DATA);
-        }
+    private void SetInsertTableData(Category arrayModel) {
+        String INSERT_DATA =
+                "INSERT INTO category VALUES" +
+                "(" +
+                        "'"+arrayModel.getId()+"', " +
+                        "'"+arrayModel.getTitle()+"', " +
+                        "'"+arrayModel.getDescription()+"', " +
+                        "'"+arrayModel.getParentId()+"', " +
+                        "'"+arrayModel.getNumOfChild()+"'" +
+                ")";
+        dbHelper.QueryData(INSERT_DATA);
     }
 
     @Override
     public void CompareDataPhoneWithServer(JSONArray jsonArray) {
-        //todo: CompareDataPhoneWithServer
     }
+
 
     @Override
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d(TAG, "onPostExecute: "+ titleChapter);
+        Log.d(TAG, "onPostExecute: "+ title);
     }
+
+    @Override
+    public void LoadListDataFailed(String jsonMessage) {
+        Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
+        Category tempModel;
+        JSONArray jsonArrayCategoryChildren;
+        do {
+            int j = 0;
+            do {
+                tempModel = new Category();
+                tempModel.setId(Integer.parseInt(jsonObject.getString("CategoryId")));
+                tempModel.setTitle(jsonObject.getString("CategoryName"));
+                tempModel.setDescription(jsonObject.getString("CategoryDescription"));
+                tempModel.setParentId(Integer.parseInt(jsonObject.getString("CategoryParent")));
+//                tempModel.setNumOfChild(Integer.parseInt(jsonObject.getString("NumOfChild")));
+                tempModel.setCategoryChildren(jsonObject.getString("CategoryChildren"));
+                jsonArrayCategoryChildren = new JSONArray(tempModel.getCategoryChildren());
+                int numOfChild = jsonArrayCategoryChildren.length();
+                tempModel.setNumOfChild(numOfChild);
+                try {
+                    SetInsertTableData(tempModel);
+                } catch (Exception e) {
+                    SetUpdateTableData(tempModel);
+                }
+                try {
+                    jsonObject = jsonArrayCategoryChildren.getJSONObject(j++);
+                } catch (JSONException ignored) {
+                    Log.d(TAG, "SetTableSelectedData: "+j);
+                }
+            } while (j <= jsonArrayCategoryChildren.length());
+        } while (jsonArrayCategoryChildren.length()!=0);
+    }
+
 }

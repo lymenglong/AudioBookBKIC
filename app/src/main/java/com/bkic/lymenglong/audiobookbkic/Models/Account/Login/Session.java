@@ -1,5 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Models.Account.Login;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 
@@ -9,20 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Session {
-    SharedPreferences prefs;
-    SharedPreferences.Editor editor;
-    Context ctx;
+    private SharedPreferences prefs;
+    private SharedPreferences.Editor editor;
     private final String TAG = getClass().getSimpleName();
 
+    @SuppressLint("CommitPrefEdits")
     public Session(Context ctx){
-        this.ctx = ctx;
         prefs = ctx.getSharedPreferences("ACCOUNT", Context.MODE_PRIVATE);
         editor = prefs.edit();
     }
 
     public void setUserInfo(User user){
         editor.putInt("ID_USER", user.getId());
-        editor.putString("FULL_NAME",user.getName());
+        editor.putString("FIRST_NAME",user.getFirstName());
+        editor.putString("LAST_NAME",user.getLastName());
+        editor.putString("FULL_NAME",user.getLastName() + " " + user.getFirstName());
         editor.putString("USERNAME",user.getUsername());
         editor.putString("BIRTHDAY",user.getBirthday());
         editor.putString("EMAIL",user.getEmail());
@@ -33,11 +35,13 @@ public class Session {
         editor.commit();
     }
 
-    public List<User> getUserInfo (){
+    public List<User> getListUserInfo(){
         List<User> userList = new ArrayList<>();
         User user = new User();
-        user.setId(prefs.getInt("ID_USER", -1));
+        user.setId(prefs.getInt("USER_ID", -1));
         user.setUsername(prefs.getString("USERNAME","DEFAULT"));
+        user.setFirstName(prefs.getString("FIRST_NAME","DEFAULT"));
+        user.setLastName(prefs.getString("LAST_NAME","DEFAULT"));
         user.setPhonenumber(prefs.getString("PHONE_NUMBER","DEFAULT"));
         user.setBirthday(prefs.getString("BIRTHDAY","DEFAULT"));
         user.setAddress(prefs.getString("ADDRESS","DEFAULT"));
@@ -59,14 +63,18 @@ public class Session {
         editor.commit();
     }
 
-    public void setUserIdLoggedIn(String strUserId){
+   /* public void setUserIdLoggedIn(String strUserId){
         editor.putString("USER_ID", strUserId);
         editor.commit();
-    }
+    }*/
 
     public void setRemoveEmailLoggedIn(String strEmail){
         editor.remove(strEmail);
         editor.commit();
+    }
+
+    public String getFullName(){
+        return prefs.getString("FULL_NAME", "DEFAULT");
     }
 
     public String getNameLoggedIn(){

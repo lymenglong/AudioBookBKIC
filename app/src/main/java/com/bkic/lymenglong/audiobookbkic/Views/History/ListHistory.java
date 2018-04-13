@@ -36,7 +36,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     private RecyclerView listChapter;
     private View imRefresh;
     private HistoryAdapter historyAdapter;
-    private String titleHome;
+    private String menuTitle;
     private Activity activity = ListHistory.this;
     private Session session;
     private ProgressBar progressBar;
@@ -49,8 +49,8 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        getDataFromIntent();
-        setTitle(titleHome);
+        initDataFromIntent();
+        setTitle(menuTitle);
         initView();
         initDatabase();
         initObject();
@@ -59,8 +59,8 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     /**
      * Lấy dữ liệu thông qua intent
      */
-    private void getDataFromIntent() {
-        titleHome = getIntent().getStringExtra("titleHome");
+    private void initDataFromIntent() {
+        menuTitle = getIntent().getStringExtra("MenuTitle");
 //        int idMenu = getIntent().getIntExtra("idHome", -1);
     }
 
@@ -72,7 +72,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         progressBar = findViewById(R.id.progressBar);
         imRefresh = findViewById(R.id.imRefresh);
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, titleHome, true);
+        actionBar.eventToolbar(this, menuTitle, true);
         listChapter = findViewById(R.id.listView);
     }
 
@@ -218,6 +218,6 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d(TAG, "onPostExecute: "+ titleHome);
+        Log.d(TAG, "onPostExecute: "+ menuTitle);
     }
 }

@@ -6,29 +6,28 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook.ListBook;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory.ListCategory;
 
 import java.util.ArrayList;
 
 
 public class CategoryAdapter extends RecyclerView.Adapter {
-    private ArrayList<Chapter> chapters;
+    private ArrayList<Category> categories;
     private Activity activity;
-    private View view;
 
-    public CategoryAdapter(Activity activity, ArrayList<Chapter> chapters) {
-        this.chapters = chapters;
+    public CategoryAdapter(Activity activity, ArrayList<Category> categories) {
+        this.categories = categories;
         this.activity = activity;
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
         return new ChapterHolder(view);
 
     }
@@ -37,7 +36,8 @@ public class CategoryAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ChapterHolder) {
             ChapterHolder chapterHolder = (ChapterHolder) holder;
-            chapterHolder.name.setText(chapters.get(position).getTitle());
+
+            chapterHolder.name.setText(categories.get(position).getTitle());
         }
 
     }
@@ -49,18 +49,18 @@ public class CategoryAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return chapters.size();
+        return categories.size();
     }
 
     class ChapterHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView name;
-        private ImageView imgNext;
+//        private ImageView imgNext;
 
-        public ChapterHolder(View itemView) {
+        ChapterHolder(View itemView) {
             super(itemView);
-            name = (TextView) itemView.findViewById(R.id.nameStory);
-            imgNext = (ImageView) itemView.findViewById(R.id.imgNext);
+            name = itemView.findViewById(R.id.nameStory);
+//            imgNext = itemView.findViewById(R.id.imgNext);
 
             itemView.setOnClickListener(this);
         }
@@ -68,11 +68,25 @@ public class CategoryAdapter extends RecyclerView.Adapter {
         @Override
         public void onClick(View view) {
             if(view == itemView) {
-                Intent intent = new Intent(activity, ListBook.class);
-                intent.putExtra("idChapter", chapters.get(getAdapterPosition()).getId());
-                intent.putExtra("titleChapter", chapters.get(getAdapterPosition()).getTitle());
-                intent.putExtra("content", chapters.get(getAdapterPosition()).getContent());
-                activity.startActivity(intent);
+                int numOfChild = categories.get(getAdapterPosition()).getNumOfChild();
+                if (numOfChild != 0) {
+                    Intent intent = new Intent(activity, ListCategory.class);
+                    intent.putExtra("CategoryId", categories.get(getAdapterPosition()).getId());
+                    intent.putExtra("CategoryTitle", categories.get(getAdapterPosition()).getTitle());
+                    intent.putExtra("CategoryDescription", categories.get(getAdapterPosition()).getDescription());
+                    intent.putExtra("CategoryParent", categories.get(getAdapterPosition()).getParentId());
+                    intent.putExtra("NumOfChild", categories.get(getAdapterPosition()).getNumOfChild());
+                    activity.startActivity(intent);
+                } else {
+                    Intent intent = new Intent(activity, ListBook.class);
+                    intent.putExtra("CategoryId", categories.get(getAdapterPosition()).getId());
+                    intent.putExtra("CategoryTitle", categories.get(getAdapterPosition()).getTitle());
+                    intent.putExtra("CategoryDescription", categories.get(getAdapterPosition()).getDescription());
+                    intent.putExtra("CategoryParent", categories.get(getAdapterPosition()).getParentId());
+                    intent.putExtra("NumOfChild", categories.get(getAdapterPosition()).getNumOfChild());
+                    activity.startActivity(intent);
+                }
+
             }
         }
     }

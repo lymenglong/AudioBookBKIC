@@ -3,17 +3,16 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Account.Login;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
@@ -21,7 +20,8 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 
 public class PresenterLogin implements PresenterLoginImp {
     private ViewLoginActivity loginActivity;
-    private Session session;
+    private String Email;
+    private String TAG = getClass().getSimpleName();
 
     public PresenterLogin(ViewLoginActivity loginActivity) {
         this.loginActivity = loginActivity;
@@ -33,6 +33,20 @@ public class PresenterLogin implements PresenterLoginImp {
         RequestLogin(email,password);
     }
 
+    private void RequestLogin(final String email, final String password) {
+        this.Email = email;
+        HashMap<String,String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\": \"login\", " +
+                        "\"UserName\": \""+email+"\", " +
+                        "\"UserPassword\": \""+password+"\"" +
+                "}";
+        ResultHash.put(keyPost,valuePost);
+        HttpWebCall(loginActivity,ResultHash,HttpURL_API);
+    }
+
     @Override
     public void UserDetail(String email){
         HashMap<String, String> ResultHash = new HashMap<>();
@@ -42,20 +56,7 @@ public class PresenterLogin implements PresenterLoginImp {
                 "{" +
                         "\"Action\": \"getUserDetail\", " +
                         "\"UserName\": \"" + email + "\" " +
-                "}";
-        ResultHash.put(keyPost,valuePost);
-        HttpWebCall(loginActivity,ResultHash,HttpURL_API);
-    }
-
-    private void RequestLogin(final String email, final String password) {
-        HashMap<String,String> ResultHash = new HashMap<>();
-        String keyPost = "json";
-        String valuePost =
-                "{" +
-                        "\"Action\": \"login\", " +
-                        "\"UserName\": \""+email+"\", " +
-                        "\"UserPassword\": \""+password+"\"" +
-                "}";
+                        "}";
         ResultHash.put(keyPost,valuePost);
         HttpWebCall(loginActivity,ResultHash,HttpURL_API);
     }
@@ -104,17 +105,17 @@ public class PresenterLogin implements PresenterLoginImp {
 
     //region Parsing Complete JSON Object.
     @SuppressLint("StaticFieldLeak")
-    private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, String>
+    private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
     {
         public Activity activity;
 
-        Boolean LogInSuccess = false;
+        String jsonAction = null;
 
-        ArrayList<User> tempArray;
+        Boolean LogSuccess = false;
 
         String ResultJsonObject;
 
-        String Result = null;
+        String message;
 
         GetHttpResponseFromHttpWebCall(Activity activity)
         {
@@ -128,35 +129,24 @@ public class PresenterLogin implements PresenterLoginImp {
         }
 
         @Override
-        protected String doInBackground(Void... arg0)
+        protected Void doInBackground(Void... arg0)
         {
             try
             {
-                if(FinalJSonObject != null && !FinalJSonObject.equals("No Results Found.")) //When no data, it will return "No Results Found." Value to String JSONObject.
+                if(FinalJSonObject != null )
                 {
                     JSONObject jsonObject;
-                    JSONArray jsonArrayResult;
 
                     try {
                         jsonObject = new JSONObject(FinalJSonObject);
 
-                        tempArray = new ArrayList<>();
+                        jsonAction = jsonObject.getString("Action");
 
                         ResultJsonObject = jsonObject.getString("Result");
 
-                        try {
-                            jsonArrayResult = new JSONArray(ResultJsonObject);
+                        LogSuccess = jsonObject.getString("Log").equals("Success");
 
-                            if (jsonArrayResult.length()==0) {
-
-                                LogInSuccess = jsonObject.getString("Log").equals("Success");
-
-                                Result = null;
-
-                            }
-                        } catch (JSONException ignored) {
-                            Result = ResultJsonObject;
-                        }
+                        message = jsonObject.getString("Message");
 
                     }
                     catch (JSONException e) {
@@ -170,52 +160,63 @@ public class PresenterLogin implements PresenterLoginImp {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
-            return Result;
+            return null;
         }
 
         @Override
-        protected void onPostExecute(String Result)
+        protected void onPostExecute(Void aVoid)
         {
-            if(Result == null) {
-                session = new Session(loginActivity);
-                if (LogInSuccess) {
-                    session.setLoggedin(true);
-                    loginActivity.LoginSuccess();
-                } else {
-                    loginActivity.LoginFailed();
-                }
-            } else {
-                try {
-                    GetUserDetail(Result);
-                } catch (JSONException ignored) {
-                }
+            switch (jsonAction){
+                case "login":
+                    if (LogSuccess) {
+                        Session session = new Session(loginActivity);
+                        session.setLoggedin(true);
+                        session.setNameLoggedIn(Email);
+                        loginActivity.LoginSuccess(message);
+                    } else {
+                        loginActivity.LoginFailed(message);
+                    }
+                    break;
+                case "getUserDetail":
+                    if(LogSuccess){
+                        try {
+                            GetUserDetail(ResultJsonObject);
+                        } catch (JSONException ignored) {
+                        }
+                    }
+                    break;
+                default:
+                    Log.d(TAG, "onPostExecute: "+ jsonAction);
+                    break;
             }
+
         }
     }
+    //endregion
+    //endregion
 
     private void GetUserDetail(String ResultJsonObject) throws JSONException {
         JSONObject jsonObjectResult = new JSONObject(ResultJsonObject);
         if (jsonObjectResult.length()!=0){
             User userModel = new User();
             userModel.setId(Integer.parseInt(jsonObjectResult.getString("UserId")));
-//            userModel.setName(jsonObjectResult.getString("UserFullName"));
+            userModel.setUsername(jsonObjectResult.getString("UserName"));
             userModel.setEmail(jsonObjectResult.getString("UserMail"));
+            userModel.setFirstName(jsonObjectResult.getString("UserFirstName"));
+            userModel.setLastName(jsonObjectResult.getString("UserLastName"));
 //            userModel.setPassword(jsonObjectResult.getString("Password"));
             userModel.setAddress(jsonObjectResult.getString("UserAddress"));
 //            userModel.setIdentitynumber(jsonObjectResult.getString("IdentityNumber"));
 //            userModel.setBirthday(jsonObjectResult.getString("Birthday"));
             userModel.setPhonenumber(jsonObjectResult.getString("UserPhone"));
-            userModel.setUsername(jsonObjectResult.getString("UserName"));
             // add to list
-    //                           users.add(userModel);
-//            session = new Session(loginActivity);
+            //                           users.add(userModel);
+            Session session = new Session(loginActivity);
             session.setUserInfo(userModel);
-            session.setUserIdLoggedIn(String.valueOf(userModel.getId()));
-            session.setNameLoggedIn(userModel.getName());
-            session.getUserInfo();
+//            session.setUserIdLoggedIn(String.valueOf(userModel.getId()));
+//            session.setNameLoggedIn(userModel.getName());
+            session.getListUserInfo();
         }
     }
-    //endregion
-    //endregion
 
 }

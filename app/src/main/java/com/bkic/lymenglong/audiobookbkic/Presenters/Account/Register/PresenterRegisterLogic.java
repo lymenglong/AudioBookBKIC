@@ -1,39 +1,34 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.Account.Register;
 
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
+import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Register.ViewRegisterActivity;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
-import java.util.Map;
 
 
 public class PresenterRegisterLogic implements PresenterRegisterImp {
     private ViewRegisterActivity registerActivity;
-    //    private static final String HttpUrl_Register = "http://192.168.1.27:80/audiobook/mobile_registration/register.php";
-    private static final String HttpUrl_Register = "http://20121969.tk/audiobook/mobile_registration/register.php";
 
     public PresenterRegisterLogic(ViewRegisterActivity registerActivity) {
         this.registerActivity = registerActivity;
     }
     @Override
-    public void Register(User userModel) {
+    public void Register(Activity activity, HashMap<String, String> ResultHash, String HttpUrl_API) {
         String TAG = "PresenterRegisterLogic";
-        Log.d(TAG, "Register: " + userModel.toString());
-        RequestRegister(userModel);
+        Log.d(TAG, "Register: " + ResultHash.toString());
+        HttpWebCall(registerActivity, ResultHash, HttpUrl_API);
     }
 
+    //region RequestRegister Old Code
+/*
     private void RequestRegister(final User userModel) {
         RequestQueue requestQueue = Volley.newRequestQueue(registerActivity);
         StringRequest request = new StringRequest(Request.Method.POST, HttpUrl_Register, new Response.Listener<String>() {
@@ -73,6 +68,116 @@ public class PresenterRegisterLogic implements PresenterRegisterImp {
             }
         };
         requestQueue.add(request);
+    }*/
+    //endregion
+
+    private String FinalJSonObject;
+    private String ParseResult;
+    private HttpParse httpParse = new HttpParse();
+    private void HttpWebCall(final Activity activity, final HashMap<String,String> ResultHash, final String httpHolder){
+
+        @SuppressLint("StaticFieldLeak")
+        class HttpWebCallFunction extends AsyncTask<Void,Void,String> {
+
+            @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+//                pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
+            }
+
+            @Override
+            protected String doInBackground(Void... voids) {
+
+                ParseResult = httpParse.postRequest(ResultHash, httpHolder);
+
+                return ParseResult;
+            }
+
+            @Override
+            protected void onPostExecute(String httpResponseMsg) {
+
+                super.onPostExecute(httpResponseMsg);
+
+                //Storing Complete JSon Object into String Variable.
+                FinalJSonObject = httpResponseMsg ;
+                //Parsing the Stored JSOn String to GetHttpResponse Method.
+//                pDialog.dismiss();
+                new GetHttpResponseFromHttpWebCall(activity).execute();
+            }
+
+        }
+
+        HttpWebCallFunction httpWebCallFunction = new HttpWebCallFunction();
+
+        httpWebCallFunction.execute();
+    }
+
+    //region Parsing Complete JSON Object.
+    @SuppressLint("StaticFieldLeak")
+    private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
+    {
+        public Activity activity;
+
+        Boolean RegisterSuccess = false;
+
+        String ResultJsonObject;
+
+        String message = null;
+
+        GetHttpResponseFromHttpWebCall(Activity activity)
+        {
+            this.activity = activity;
+        }
+
+        @Override
+        protected void onPreExecute()
+        {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... arg0)
+        {
+            try
+            {
+                if(FinalJSonObject != null)
+                {
+                    JSONObject jsonObject;
+
+                    try {
+
+                        jsonObject = new JSONObject(FinalJSonObject);
+
+                        ResultJsonObject = jsonObject.getString("Result");
+
+                        RegisterSuccess = jsonObject.getString("Log").equals("Success");
+
+                        message = jsonObject.getString("Message");
+
+                    }
+                    catch (JSONException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid)
+        {
+            if (RegisterSuccess){
+                registerActivity.RegisterSuccess(message);
+            } else{
+                registerActivity.RegisterFailed(message);
+            }
+        }
     }
 
 }

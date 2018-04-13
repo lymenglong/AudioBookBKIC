@@ -16,7 +16,7 @@ import com.bkic.lymenglong.audiobookbkic.R;
 public class HelpActivity extends AppCompatActivity implements HelpImp{
     PresenterHelp presenterHelp = new PresenterHelp(this);
     private TextView tvReadFile;
-    private String titleHome;
+    private String menuTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +33,7 @@ public class HelpActivity extends AppCompatActivity implements HelpImp{
      * Lấy dữ liệu thông qua intent
      */
     private void getDataFromIntent() {
-        titleHome = getIntent().getStringExtra("titleHome");
+        menuTitle = getIntent().getStringExtra("MenuTitle");
 //        int idHome = getIntent().getIntExtra("idHome", -1);
     }
 
@@ -48,7 +48,7 @@ public class HelpActivity extends AppCompatActivity implements HelpImp{
      */
     private void initView() {
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, titleHome, false );
+        actionBar.eventToolbar(this, menuTitle, false );
         tvReadFile = findViewById(R.id.tv_read_file);
     }
 

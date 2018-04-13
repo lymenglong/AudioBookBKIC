@@ -10,10 +10,12 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.ChapterAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
@@ -34,21 +36,24 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private ChapterAdapter chapterAdapter;
-    private String title;
-    private int id;
     private Activity activity = ListChapter.this;
     private DBHelper dbHelper;
     private static ArrayList<Chapter> list;
     private ProgressBar progressBar;
     private View imRefresh;
+    private int bookId;
+    private String bookTitle;
+    private int categoryId;
+    private String bookUrlImage;
+    private int bookLength;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
-        getDataFromIntent();
+        initDataFromIntent();
         initView();
-        setTitle(title);
+        setTitle(bookTitle);
         initDatabase();
         initObject();
     }
@@ -57,9 +62,12 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     /**
      * Lấy dữ liệu thông qua intent
      */
-    private void getDataFromIntent() {
-        title = getIntent().getStringExtra("titleChapter");
-        id = getIntent().getIntExtra("idChapter", -1);
+    private void initDataFromIntent() {
+        bookId = getIntent().getIntExtra("BookId", -1);
+        bookTitle = getIntent().getStringExtra("BookTitle");
+        bookUrlImage = getIntent().getStringExtra("BookImage");
+        bookLength = getIntent().getIntExtra("BookLength", 0);
+        categoryId = getIntent().getIntExtra("CategoryId", -1);
     }
 
     /**
@@ -67,7 +75,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
      */
     private void initView() {
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, title, true);
+        actionBar.eventToolbar(this, bookTitle, true);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
         imRefresh = findViewById(R.id.imRefresh);
@@ -76,42 +84,18 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
 
     private void initDatabase() {
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
-        String CREATE_TABLE_CHAPTER =
-                "CREATE TABLE IF NOT EXISTS chapter " +
-                "(" +
-                "ChapterId INTEGER PRIMARY KEY, " +
-                "ChapterTitle VARCHAR(255), " +
-                "ChapterUrl VARCHAR(255), " +
-                "ChapterLength INTEGER, " +
-                "BookId INTEGER " +
-                ");";
-        dbHelper.QueryData(CREATE_TABLE_CHAPTER);
-
     }
 
     private void initObject() {
+        //Update BookDetail
         //set chapterAdapter to list view
         SetAdapterToListView();
         //update list
         GetCursorData();
-
         //region get data from json parsing
         if(list.isEmpty()){
-            //todo: for new api
-            HashMap<String, String> ResultHash = new HashMap<>();
-            int BookId = 232;
-            String keyPost = "json";
-            String postValue =
-                    "{" +
-                            "\"Action\":\"getBookDetail\", " +
-                            "\"BookId\":\""+BookId+"\"" +
-                    "}";
-            ResultHash.put(keyPost,postValue);
-            /*HashMap<String, String> ResultHash = new HashMap<>();
-            String keyPost = "CategoryId";
-            String postValue =String.valueOf(id);
-            ResultHash.put(keyPost,postValue);*/
-            presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
+            SetRequestUpdateBookDetail();
+            RequestLoadList();
         } else {
             progressBar.setVisibility(View.GONE);
         }
@@ -121,24 +105,40 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // todo: check internet connection before be abel to press Button Refresh
-                HashMap<String, String> ResultHash = new HashMap<>();
-                int BookId = 232;
-                String keyPost = "json";
-                String postValue =
-                        "{" +
-                                "\"Action\":\"getBookDetail\", " +
-                                "\"BookId\":\""+BookId+"\"" +
-                        "}";
-                ResultHash.put(keyPost,postValue);
-            /*HashMap<String, String> ResultHash = new HashMap<>();
-            String keyPost = "CategoryId";
-            String postValue =String.valueOf(id);
-            ResultHash.put(keyPost,postValue);*/
-                presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
+                SetRequestUpdateBookDetail();
+                RequestLoadList();
             }
         });
     }
+
+    private void SetRequestUpdateBookDetail() {
+        HashMap<String, String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"getBookDetail\", " +
+                        "\"BookId\":"+ bookId +"" +
+                "}";
+        ResultHash.put(keyPost,valuePost);
+        presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
+    }
+
+    private void RequestLoadList() {
+        // todo: check internet connection before be abel to press Button Refresh
+        HashMap<String, String> ResultHash = new HashMap<>();
+        int BookId = bookId;
+        int Page = 1;
+        String keyPost = "json";
+        String postValue =
+                "{" +
+                        "\"Action\":\"getChapterList\", " +
+                        "\"BookId\":\""+BookId+"\", " +
+                        "\"Page\":\""+Page+"\"" +
+                        "}";
+        ResultHash.put(keyPost,postValue);
+        presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
+    }
+
 
     private void SetAdapterToListView() {
         list = new ArrayList<>();
@@ -150,29 +150,15 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
 
     //region Method to get data for database
     private void GetCursorData() {
-        /*list.clear();
-        Cursor cursor = dbHelper.GetData("SELECT * FROM book");
-        while (cursor.moveToNext()){
-            if(cursor.getInt(2)== id){
-                String name = cursor.getString(1);
-                int id = cursor.getInt(0);
-                String fileUrl = cursor.getString(3);
-                String textContent = cursor.getString(4);
-                list.add(new Book(id,name,textContent,fileUrl));
-            }
-        }
-        cursor.close();
-        chapterAdapter.notifyDataSetChanged();
-        dbHelper.close();*/
         //todo: for new api
         list.clear();
-        Cursor cursor = dbHelper.GetData("SELECT * FROM chapter");
+        Cursor cursor = dbHelper.GetData("SELECT * FROM chapter WHERE BookId = '"+ bookId +"'");
         while (cursor.moveToNext()){
             Chapter chapterModel = new Chapter();
             chapterModel.setId(cursor.getInt(0));
             chapterModel.setTitle(cursor.getString(1));
             chapterModel.setFileUrl(cursor.getString(2));
-//            chapterModel.setLength(cursor.getInt(3));
+            chapterModel.setLength(cursor.getInt(3));
             chapterModel.setBookId(cursor.getInt(4));
             list.add(chapterModel);
         }
@@ -188,14 +174,49 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     }
 
     @Override
+    public void SetUpdateBookDetail(JSONObject jsonObject) throws JSONException {
+        Book bookModel = new Book();
+        bookModel.setId(Integer.parseInt(jsonObject.getString("BookId")));
+        bookModel.setTitle(jsonObject.getString("BookTitle"));
+        bookModel.setAuthor(jsonObject.getString("Author"));
+        bookModel.setPublishDate(jsonObject.getString("PublishDate"));
+        bookModel.setUrlImage(jsonObject.getString("BookImage"));
+        bookModel.setContent(jsonObject.getString("BookContent"));
+        bookModel.setLength(Integer.parseInt(jsonObject.getString("BookLength")));
+        bookModel.setFileUrl(jsonObject.getString("BookURL"));
+        bookModel.setCategoryList(jsonObject.getString("CategoryList"));
+        bookModel.setNumOfChapter(Integer.parseInt(jsonObject.getString("NumOfChapter")));
+        String UPDATE_DATA = null;
+        try {
+            UPDATE_DATA =
+                    "UPDATE books SET " +
+                            "BookTitle = '"+bookModel.getTitle()+"', " +
+                            "BookAuthor = '"+bookModel.getAuthor()+"', " +
+                            "BookPublishDate = '"+bookModel.getPublishDate()+"', " +
+                            "BookImage = '"+bookModel.getUrlImage()+"', " +
+                            "BookContent = '"+bookModel.getContent()+"', " +
+                            "BookLength = '"+bookModel.getLength()+"', " +
+                            "BookURL = '"+bookModel.getFileUrl()+"', " +
+//                            "CategoryId = '"+bookModel.getCategoryId()+"', " +
+                            "NumOfChapter = '"+bookModel.getNumOfChapter()+"' " +
+                                    "WHERE " +
+                                            "BookId = '"+bookModel.getId()+"'" +
+                    ";";
+            dbHelper.QueryData(UPDATE_DATA);
+        } catch (Exception ignored) {
+            Log.d(TAG, "SetUpdateBookDetail: " + UPDATE_DATA);
+        }
+    }
+
+    @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
         //todo: for new api
         Chapter chapterModel = new Chapter();
         chapterModel.setId(Integer.parseInt(jsonObject.getString("ChapterId")));
-        chapterModel.setTitle(jsonObject.getString("ChapterName"));
+        chapterModel.setTitle(jsonObject.getString("ChapterTitle"));
         chapterModel.setFileUrl(jsonObject.getString("ChapterURL"));
-//        chapterModel.setLength(Integer.parseInt(jsonObject.getString("ChapterLength")));
-        int BookId = id;
+        chapterModel.setLength(Integer.parseInt(jsonObject.getString("ChapterLength")));
+        int BookId = bookId;
         String INSERT_DATA;
         try {
             INSERT_DATA =
@@ -205,53 +226,30 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
                             "'"+chapterModel.getId()+"', " +
                             "'"+chapterModel.getTitle()+"', " +
                             "'"+chapterModel.getFileUrl() +"', " +
-//                            "'"+chapterModel.getLength() +"', " +
-                            "'', " +
+                            "'"+chapterModel.getLength() +"', " +
                             "'"+BookId+"'" + //BookId
                             ")";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
-            String UPDATE_DATA = "UPDATE books SET " +
+            String UPDATE_DATA = "UPDATE chapter SET " +
                     "ChapterTitle = '"+chapterModel.getTitle()+"', " +
                     "ChapterUrl = '"+chapterModel.getFileUrl()+"', " +
-                    "ChapterLength = '"+chapterModel.getLength()+"' ," +
+                    "ChapterLength = '"+chapterModel.getLength()+"', " +
                     "BookId = '"+BookId+"' " + //BookId
                     "WHERE ChapterId = '"+chapterModel.getId()+"'";
             dbHelper.QueryData(UPDATE_DATA);
         }
-
-/*        Book bookModel = new Book();
-        bookModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-        bookModel.setTitle(jsonObject.getString("Name"));
-        bookModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
-        bookModel.setContent(jsonObject.getString("TextContent"));
-        bookModel.setFileUrl(jsonObject.getString("FileUrl"));
-
-*//*        int Id = bookModel.getId();
-        int CategoryId = bookModel.getCategoryId();
-        String Name = bookModel.getTitle();
-        String TextContent = bookModel.getContent();
-        String FileUrl = bookModel.getFileUrl();
-        String INSERT_DATA = null;
-        try {
-            INSERT_DATA = "INSERT INTO book VALUES('"+Id+"','"+Name+"','"+ id +"','"+FileUrl+"','"+TextContent+"')";
-            dbHelper.QueryData(INSERT_DATA);
-        } catch (Exception e) {
-            Log.d(TAG, "SetInsertTableData: failed "+INSERT_DATA);
-            String UPDATE_DATA = "UPDATE book SET " +
-                    "Name = '"+Name+"', " +
-                    "CategoryId = '"+CategoryId+"', " +
-                    "FileUrl = '"+FileUrl+"' ," +
-                    "TextContent = '"+TextContent+"' " +
-                    "WHERE Id = '"+Id+"'";
-            dbHelper.QueryData(UPDATE_DATA);
-        }*/
     }
 
     @Override
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d(TAG, "onPostExecute: "+ title);
+        Log.d(TAG, "onPostExecute: "+ bookTitle);
+    }
+
+    @Override
+    public void LoadListDataFailed(String jsonMessage) {
+        Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT).show();
     }
 }

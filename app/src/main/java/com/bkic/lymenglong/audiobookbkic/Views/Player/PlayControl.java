@@ -25,9 +25,12 @@ import com.bkic.lymenglong.audiobookbkic.R;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_Audio;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_InsertFavorite;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_InsertHistory;
 
@@ -39,17 +42,19 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     public int lastPlayDuration = 0;
     private RequestQueue requestQueueHistory, requestQueueFavorite;
     private Session session;
-    private String getFileUrlChapter;
-    private String getTitleChapter;
-    private int getIdChapter;
-    public int getPauseTime;
+    private String ChapterUrl;
+    private String ChapterTitle;
+    private int ChapterId;
+    private int ChapterLength;
+    public int PauseTime;
+    private int BookId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_control);
         initDataFromIntent();
-        setTitle(getTitleChapter);
+        setTitle(ChapterTitle);
         initToolbar();
         initView();
         initObject();
@@ -147,7 +152,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             @Override
             protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
-                hashMap.put("IdBook", String.valueOf(getIdChapter));
+                hashMap.put("IdBook", String.valueOf(ChapterId));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());
                 hashMap.put("InsertTime", "30032018");
                 hashMap.put("PauseTime ", String.valueOf(lastPlayDuration));
@@ -187,7 +192,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             @Override
             protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
-                hashMap.put("IdBook", String.valueOf(getIdChapter));
+                hashMap.put("IdBook", String.valueOf(ChapterId));
                 hashMap.put("IdUser", session.getUserIdLoggedIn());
 //                hashMap.put("InsertTime","1234");
 //                hashMap.put("Status","3210");
@@ -200,12 +205,13 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
 
     @Override
     public void initCheckAudioUrl() {
-        if (getFileUrlChapter.isEmpty()) {
+        if (ChapterUrl.isEmpty()) {
             Toast.makeText(playControlActivity, getString(R.string.no_data), Toast.LENGTH_SHORT).show();
             playControlActivity.finish();
         } else{
             //prepareMediaData
-            presenterPlayer.PrepareMediaPlayer(getFileUrlChapter);
+            String AudioUrl = HttpURL_Audio + ChapterUrl;
+            presenterPlayer.PrepareMediaPlayer(AudioUrl);
         }
     }
 
@@ -216,15 +222,20 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     }
 
     private void initDataFromIntent() {
-        getFileUrlChapter = getIntent().getStringExtra("fileUrl");
-        getIdChapter = getIntent().getIntExtra("idChapter",-1);
-        getTitleChapter = getIntent().getStringExtra("titleChapter");
-        getPauseTime = getIntent().getIntExtra("pauseTime", 0);
+        ChapterId = getIntent().getIntExtra("ChapterId",-1);
+        ChapterTitle = getIntent().getStringExtra("ChapterTitle");
+        ChapterUrl = getIntent().getStringExtra("ChapterUrl");
+        ChapterLength = getIntent().getIntExtra("ChapterLength",0);
+        BookId = getIntent().getIntExtra("BookId",-1);
+/*        Calendar calendar = Calendar.getInstance();
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
+                new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        String InsertTimeHolder = simpledateformat.format(calendar.getTime());*/
     }
 
     private void initToolbar() {
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, getTitleChapter, false);
+        actionBar.eventToolbar(this, ChapterTitle, false);
     }
 
     private void initView() {
@@ -278,7 +289,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 postFavoriteDataToServer();
                 //region Update to favorite with httpWebCall
 //                    String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
-//                    String IdBookHolder = String.valueOf(getIdChapter);
+//                    String IdBookHolder = String.valueOf(ChapterId);
 //                    String InsertTimeHolder = String.valueOf(12345); //todo get current date when post to server
 //                    String PauseTimeHolder = String.valueOf(lastPlayDuration);
 //                    String HttpUrlHolder = String.valueOf(HttpUrlUpdateFavorite);
@@ -313,22 +324,26 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        if (!getFileUrlChapter.isEmpty()) {
+        if (!ChapterUrl.isEmpty()) {
             presenterPlayer.GetLastMediaData();
             try {
                 postHistoryDataToServer();
             } catch (Exception e) {
                 //TODO update history when destroy activity
-                //region UpdateHistoryRecordData
-                String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
-                String IdBookHolder = String.valueOf(getIdChapter);
-                String InsertTimeHolder = String.valueOf(12345); //todo get current date when post to server
-                String PauseTimeHolder = String.valueOf(lastPlayDuration);
-                String HttpUrlHolder = String.valueOf(HttpUrlUpdateHistory);
-                UpdateRecordData(IdUserHolder,IdBookHolder,InsertTimeHolder,PauseTimeHolder,HttpUrlHolder,"0");
-                //endregion
+            //region UpdateHistoryRecordData
+
+            String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
+            String IdBookHolder = String.valueOf(ChapterId);
+            Calendar calendar = Calendar.getInstance();
+            @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
+                    new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+            String InsertTimeHolder = simpledateformat.format(calendar.getTime());
+            String PauseTimeHolder = String.valueOf(lastPlayDuration);
+            String HttpUrlHolder = String.valueOf(HttpUrlUpdateHistory);
+            UpdateRecordData(IdUserHolder,IdBookHolder, InsertTimeHolder,PauseTimeHolder,HttpUrlHolder,"0");
+            //endregion
             }
         }
+        super.onDestroy();
     }
 }

@@ -7,12 +7,13 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_BOOK;
-import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_BOOKS;
-import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_BOOK_TYPE;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_CATEGORY;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_CHAPTER;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_FAVORITE;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_HISTORY;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_MENU;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_REVIEW;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.INSERT_MENU_VALUES;
 
 public class DBHelper extends SQLiteOpenHelper {
     private String TAG = "DBHelper";
@@ -37,12 +38,16 @@ public class DBHelper extends SQLiteOpenHelper {
         Log.d(TAG,"OnCreate Database");
         //create table
         dbHelper.execSQL(CREATE_TABLE_MENU);
-        dbHelper.execSQL(CREATE_TABLE_BOOK_TYPE);
         dbHelper.execSQL(CREATE_TABLE_CATEGORY);
         dbHelper.execSQL(CREATE_TABLE_BOOK);
-        dbHelper.execSQL(CREATE_TABLE_BOOKS);
+        dbHelper.execSQL(CREATE_TABLE_CHAPTER);
         dbHelper.execSQL(CREATE_TABLE_HISTORY);
         dbHelper.execSQL(CREATE_TABLE_FAVORITE);
+        dbHelper.execSQL(CREATE_TABLE_REVIEW);
+        //insert menu value
+        dbHelper.execSQL(INSERT_MENU_VALUES);
+
+        String s = "SELECT * FROM book ORDER BY book-title ASC"; //DESC
     }
 
     @Override

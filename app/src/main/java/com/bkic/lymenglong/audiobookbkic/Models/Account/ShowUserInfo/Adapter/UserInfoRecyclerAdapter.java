@@ -62,7 +62,7 @@ public class UserInfoRecyclerAdapter extends RecyclerView.Adapter<UserInfoRecycl
         public AppCompatTextView textViewIdNumber;
         public AppCompatTextView textViewPhoneNumber;
 
-        public UserViewHolder(View view) {
+        UserViewHolder(View view) {
             super(view);
             textViewName = view.findViewById(R.id.textViewName);
             textViewEmail = view.findViewById(R.id.textViewEmail);

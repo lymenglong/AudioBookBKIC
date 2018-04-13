@@ -5,62 +5,16 @@ public class Book {
     private int id;
     private String title;
     private String content;
-    private Boolean status; //when status is true, it means that you select audio book
     private String FileUrl;
     private String urlImage;
     private int length;
-
-    public int getCategoryId() {
-        return CategoryId;
-    }
-
-    public void setCategoryId(int categoryId) {
-        CategoryId = categoryId;
-    }
-
+    private String author;
+    private String publishDate;
+    private int numOfChapter;
     private int CategoryId;
+    private String categoryList;
 
-    public String getFileUrl() {
-        return FileUrl;
-    }
-
-    public void setFileUrl(String fileUrl) {
-        FileUrl = fileUrl;
-    }
-
-    public Book(int id, String title, String content, String fileUrl) {
-
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        FileUrl = fileUrl;
-    }
-
-    public Book(int id, String title, String content, Boolean status) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.status = status;
-    }
-
-    public Book(int id, String title, String content) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-    }
-    public Book(int id, String title) {
-        this.id = id;
-        this.title = title;
-    }
     public Book() {
-    }
-
-    public Boolean getStatus() {
-        return status;
-    }
-
-    public void setStatus(Boolean status) {
-        this.status = status;
     }
 
     public int getId() {
@@ -87,12 +41,20 @@ public class Book {
         this.content = content;
     }
 
-    public void setUrlImage(String urlImage) {
-        this.urlImage = urlImage;
+    public String getFileUrl() {
+        return FileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        FileUrl = fileUrl;
     }
 
     public String getUrlImage() {
         return urlImage;
+    }
+
+    public void setUrlImage(String urlImage) {
+        this.urlImage = urlImage;
     }
 
     public int getLength() {
@@ -101,5 +63,45 @@ public class Book {
 
     public void setLength(int length) {
         this.length = length;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getPublishDate() {
+        return publishDate;
+    }
+
+    public void setPublishDate(String publishDate) {
+        this.publishDate = publishDate;
+    }
+
+    public int getCategoryId() {
+        return CategoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        CategoryId = categoryId;
+    }
+
+    public int getNumOfChapter() {
+        return numOfChapter;
+    }
+
+    public void setNumOfChapter(int numOfChapter) {
+        this.numOfChapter = numOfChapter;
+    }
+
+    public void setCategoryList(String categoryList) {
+        this.categoryList = categoryList;
+    }
+
+    public String getCategoryList() {
+        return categoryList;
     }
 }

@@ -1,12 +1,12 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Account.Register;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatTextView;
@@ -19,13 +19,18 @@ import com.bkic.lymenglong.audiobookbkic.Presenters.Account.Register.PresenterRe
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
 
+import java.util.HashMap;
+
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
+
 
 public class ViewRegisterActivity extends AppCompatActivity implements ViewRegisterImp, View.OnClickListener {
     PresenterRegisterLogic presenterRegisterLogic;
     private Activity registerActivity = ViewRegisterActivity.this;
-    private NestedScrollView nestedScrollView;
+//    private NestedScrollView nestedScrollView;
 
-    private TextInputLayout textInputLayoutName;
+    private TextInputLayout textInputLayoutFirstName;
+    private TextInputLayout textInputLayoutLastName;
     private TextInputLayout textInputLayoutUserName;
     private TextInputLayout textInputLayoutEmail;
     private TextInputLayout textInputLayoutPassword;
@@ -33,7 +38,8 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
     private TextInputLayout textInputLayoutAddress;
     private TextInputLayout textInputLayoutPhoneNumber;
 
-    private TextInputEditText textInputEditTextName;
+    private TextInputEditText textInputEditTextFirstName;
+    private TextInputEditText textInputEditTextLastName;
     private TextInputEditText textInputEditTextUserName;
     private TextInputEditText textInputEditTextEmail;
     private TextInputEditText textInputEditTextPassword;
@@ -42,11 +48,10 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
     private TextInputEditText textInputEditTextPhoneNumber;
 
     private AppCompatButton appCompatButtonRegister;
-    private AppCompatTextView appCompatTextViewLoginLink;
+//    private AppCompatTextView appCompatTextViewLoginLink;
 
     private InputValidation inputValidation;
 
-    private User userModel;
     private AppCompatTextView textViewLinkLogin;
 
 
@@ -65,11 +70,13 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
         inputValidation = new InputValidation(registerActivity);
     }
 
+    @SuppressLint("CutPasteId")
     private void initView() {
         textViewLinkLogin = findViewById(R.id.appCompatTextViewLoginLink);
-        nestedScrollView = findViewById(R.id.nestedScrollView);
+//        nestedScrollView = findViewById(R.id.nestedScrollView);
 
-        textInputLayoutName = findViewById(R.id.textInputLayoutName);
+        textInputLayoutFirstName = findViewById(R.id.textInputLayoutFirstName);
+        textInputLayoutLastName = findViewById(R.id.textInputLayoutLastName);
         textInputLayoutUserName = findViewById(R.id.textInputLayoutUserName);
         textInputLayoutEmail = findViewById(R.id.textInputLayoutEmail);
         textInputLayoutPassword = findViewById(R.id.textInputLayoutPassword);
@@ -77,7 +84,8 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
         textInputLayoutAddress = findViewById(R.id.textInputLayoutAddress);
         textInputLayoutPhoneNumber = findViewById(R.id.textInputLayoutPhoneNumber);
 
-        textInputEditTextName = findViewById(R.id.textInputEditTextName);
+        textInputEditTextFirstName = findViewById(R.id.textInputEditTextFirstName);
+        textInputEditTextLastName = findViewById(R.id.textInputEditTextLastName);
         textInputEditTextUserName = findViewById(R.id.textInputEditTextUserName);
         textInputEditTextEmail = findViewById(R.id.textInputEditTextEmail);
         textInputEditTextPassword = findViewById(R.id.textInputEditTextPassword);
@@ -87,7 +95,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
 
         appCompatButtonRegister = findViewById(R.id.appCompatButtonRegister);
 
-        appCompatTextViewLoginLink = findViewById(R.id.appCompatTextViewLoginLink);
+//        appCompatTextViewLoginLink = findViewById(R.id.appCompatTextViewLoginLink);
     }
 
     private void initListener() {
@@ -97,14 +105,14 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
 
     @Override
     public void RegisterSuccess(String message) {
-        Toast.makeText(registerActivity,"Thành công: "+message,Toast.LENGTH_SHORT).show();
+        Toast.makeText(registerActivity,message,Toast.LENGTH_SHORT).show();
         startActivity(new Intent(registerActivity,ViewLoginActivity.class));
         registerActivity.finish();
     }
 
     @Override
     public void RegisterFailed(String message) {
-        Toast.makeText(registerActivity, "Lỗi: " +message, Toast.LENGTH_SHORT).show();
+        Toast.makeText(registerActivity, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -114,11 +122,16 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
                     IntentViewLoginActivity();
                 break;
             case R.id.appCompatButtonRegister:
-                userModel = new User();
-                if (!inputValidation.isInputEditTextFilled(textInputEditTextName, textInputLayoutName, getString(R.string.error_message_name))) {
+                User userModel = new User();
+                if (!inputValidation.isInputEditTextFilled(textInputEditTextFirstName, textInputLayoutFirstName, getString(R.string.error_message_first_name))) {
                     return;
                 } else {
-                    userModel.setName(textInputEditTextName.getText().toString());
+                    userModel.setFirstName(textInputEditTextFirstName.getText().toString());
+                }
+                if (!inputValidation.isInputEditTextFilled(textInputEditTextLastName, textInputLayoutLastName, getString(R.string.error_message_last_name))) {
+                    return;
+                } else {
+                    userModel.setLastName(textInputEditTextFirstName.getText().toString());
                 }
 
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextUserName, textInputLayoutUserName, getString(R.string.error_message_username))) {
@@ -151,7 +164,25 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
                         textInputLayoutConfirmPassword, getString(R.string.error_password_match))) {
                     return;
                 } else userModel.setConfirmPassword(textInputEditTextConfirmPassword.getText().toString());
-                presenterRegisterLogic.Register(userModel);
+
+                HashMap<String, String> ResultHash = new HashMap<>();
+                // GetUserDetail
+                String keyPost = "json";
+                String valuePost =
+                        "{" +
+                                "\"Action\":\"register\", " +
+                                "\"UserName\":\""+ userModel.getUsername()+"\"," +
+                                "\"UserMail\":\""+ userModel.getEmail()+"\", " +
+                                "\"UserFirstName\":\""+ userModel.getFirstName() +"\", " +
+                                "\"UserLastName\":\""+ userModel.getLastName() +"\"," +
+                                "\"UserPassword\":\""+ userModel.getPassword()+"\"," +
+                                "\"UserAddress\":\""+ userModel.getAddress()+"\", " +
+                                "\"UserPhone\":\""+ userModel.getPhonenumber()+"\" " +
+                        "}";
+                ResultHash.put(keyPost,valuePost);
+
+                presenterRegisterLogic.Register(registerActivity, ResultHash, HttpURL_API);
+
                 break;
         }
     }

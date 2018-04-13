@@ -10,4 +10,8 @@ public interface ListChapterImp {
     void SetTableSelectedData(JSONObject jsonObject) throws JSONException;
 
     void ShowListFromSelected();
+
+    void LoadListDataFailed(String jsonMessage);
+
+    void SetUpdateBookDetail(JSONObject jsonObject) throws JSONException;
 }

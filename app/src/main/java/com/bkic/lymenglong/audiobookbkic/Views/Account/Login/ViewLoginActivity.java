@@ -91,8 +91,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                         textInputLayoutEmail,
                         getString(R.string.error_message_email_or_username)))
                 {
-                    return;
-
+                    break;
                 }   else{
                     textEmail = textInputEditTextEmail.getText().toString().trim();
                 }
@@ -102,7 +101,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                         textInputLayoutPassword,
                         getString(R.string.error_message_password)))
                 {
-                    return;
+                    break;
                 } else {
                     textPassword = textInputEditTextPassword.getText().toString();
                 }
@@ -119,17 +118,18 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     }
 
     @Override
-    public void LoginSuccess() {
+    public void LoginSuccess(String message) {
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
         Intent accountsIntent = new Intent(activity, MainActivity.class);
         accountsIntent.putExtra("EMAIL", textInputEditTextEmail.getText().toString().trim());
         startActivity(accountsIntent);
-        activity.finish();
         presenter.UserDetail(textEmail);
+        activity.finish();
     }
 
     @Override
-    public void LoginFailed() {
-        Toast.makeText(ViewLoginActivity.this, "Login Failed", Toast.LENGTH_SHORT).show();
+    public void LoginFailed(String message) {
+        Toast.makeText(ViewLoginActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 }
 

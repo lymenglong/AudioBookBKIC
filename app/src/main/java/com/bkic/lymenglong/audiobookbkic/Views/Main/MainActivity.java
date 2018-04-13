@@ -12,10 +12,8 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Main.Adapters.MainAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Main.Utils.Menu;
-import com.bkic.lymenglong.audiobookbkic.Presenters.Main.PresenterMain;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
 
@@ -26,15 +24,14 @@ import java.util.ArrayList;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
-import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_ALLMenuData;
 
 public class MainActivity extends AppCompatActivity implements MainImp{
-    PresenterMain presenterMain = new PresenterMain(this);
+//    PresenterMain presenterMain = new PresenterMain(this);
     private static final String TAG = "MainActivity";
     private RecyclerView homeList;
     private MainAdapter mainAdapter;
     DBHelper dbHelper;
-    private static ArrayList<Chapter> menuList;
+    private static ArrayList<Menu> menuList;
     private ProgressBar progressBar;
 
     @Override
@@ -47,7 +44,7 @@ public class MainActivity extends AppCompatActivity implements MainImp{
         initObject();
         GetCursorData();
         //get data from json parsing
-        presenterMain.GetHttpResponse(HttpUrl_ALLMenuData);
+//        presenterMain.GetHttpResponse(HttpUrl_ALLMenuData);
     }
 
     // to make application remember pass LoginActivity in to MainActivity
@@ -82,20 +79,22 @@ public class MainActivity extends AppCompatActivity implements MainImp{
 
     private void GetCursorData() {
         menuList.clear();
-        Cursor cursor = dbHelper.GetData("SELECT * FROM menu");
+        String SELECT_MENU_DATA = "SELECT * FROM menu";
+        Cursor cursor = dbHelper.GetData(SELECT_MENU_DATA);
         while (cursor.moveToNext()) {
-            String name = cursor.getString(1);
+            String title = cursor.getString(1);
             int id = cursor.getInt(0);
-            menuList.add(new Chapter(id, name));
+            menuList.add(new Menu(id, title));
         }
         cursor.close();
         mainAdapter.notifyDataSetChanged();
         dbHelper.close();
+        progressBar.setVisibility(View.GONE);
     }
 
     @Override
     public void ShowListMenu() {
-        progressBar.setVisibility(View.GONE);
+//        progressBar.setVisibility(View.GONE);
         GetCursorData();
         Log.d(TAG, "onPostExecute: " + getTitle());
     }

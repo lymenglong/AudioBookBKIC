@@ -11,6 +11,9 @@ public class User {
     private String identitynumber;
     private String address;
     private String confirmPassword;
+    private String firstName;
+    private String lastName;
+    private String getCity;
 
     public String getConfirmPassword() {
         return confirmPassword;
@@ -101,5 +104,29 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setGetCity(String getCity) {
+        this.getCity = getCity;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getGetCity() {
+        return getCity;
     }
 }

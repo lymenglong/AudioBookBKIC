@@ -1,23 +1,16 @@
 package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook.ListBook;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter.ListChapter;
-import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 import com.bkic.lymenglong.audiobookbkic.R;
-import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter.ListChapter;
 
 import java.util.ArrayList;
 
@@ -86,9 +79,11 @@ private String getTitleChapter, getContentChapter, getfileUrlChapter;
                 getfileUrlChapter = books.get(getAdapterPosition()).getFileUrl();
                 showAlertDialog();*/
                 Intent intent = new Intent(activity, ListChapter.class);
-                intent.putExtra("idChapter", books.get(getAdapterPosition()).getId());
-                intent.putExtra("titleChapter", books.get(getAdapterPosition()).getTitle());
-                intent.putExtra("content", books.get(getAdapterPosition()).getContent());
+                intent.putExtra("BookId", books.get(getAdapterPosition()).getId());
+                intent.putExtra("BookTitle", books.get(getAdapterPosition()).getTitle());
+                intent.putExtra("BookImage", books.get(getAdapterPosition()).getUrlImage());
+                intent.putExtra("BookLength", books.get(getAdapterPosition()).getLength());
+                intent.putExtra("CategoryId", books.get(getAdapterPosition()).getCategoryId());
                 activity.startActivity(intent);
             }
         }

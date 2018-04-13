@@ -2,6 +2,7 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Account.ShowUserInfo;
 
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
+
 import com.bkic.lymenglong.audiobookbkic.Views.Account.ShowUserInfo.UserInfoActivity;
 
 
@@ -11,6 +12,7 @@ public class PresenterUserInfo implements PresenterUserInfoImp {
     public PresenterUserInfo(UserInfoActivity userInfoActivity) {
         this.userInfoActivity = userInfoActivity;
     }
+
 
     @Override
     public void ShowAlertLogoutDialog() {
@@ -34,4 +36,6 @@ public class PresenterUserInfo implements PresenterUserInfoImp {
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
     }
+
+
 }

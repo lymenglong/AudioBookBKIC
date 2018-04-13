@@ -36,16 +36,24 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
     private List<User> listUsers;
     private UserInfoRecyclerAdapter userInfoRecyclerAdapter;
     private Session session;
+    private String message;
+    private String menuTitle;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_info);
+        initDataFromIntent();
         initToolbar();
         initViews();
         initObjects();
         initListener();
+
         new getDataFromPrefs(this).execute();
+    }
+
+    private void initDataFromIntent() {
+        menuTitle = getIntent().getStringExtra("MenuTitle");
     }
 
     /**
@@ -63,6 +71,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
     /**
      * This method is to initialize objects to be used
      */
+    @SuppressLint("SetTextI18n")
     private void initObjects() {
         session = new Session(this);
         listUsers = new ArrayList<>();
@@ -74,8 +83,8 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         recyclerViewUsers.setHasFixedSize(true);
         recyclerViewUsers.setAdapter(userInfoRecyclerAdapter);
 
-        String Name = session.getNameLoggedIn();
-        textViewName.setText(getString(R.string.text_hello )+ Name.toUpperCase());
+        String Name = session.getFullName();
+        textViewName.setText(getString(R.string.text_hello)+" "+ Name.toUpperCase());
 
     }
 
@@ -101,7 +110,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
 
     private void initToolbar() {
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, "Tải Khoản", false);
+        actionBar.eventToolbar(this, menuTitle, false);
     }
 
     /**
@@ -120,7 +129,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         @Override
         protected Void doInBackground(Void... voids) {
             listUsers.clear();
-            listUsers.addAll(session.getUserInfo());
+            listUsers.addAll(session.getListUserInfo());
             return null;
         }
 
@@ -142,7 +151,8 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
 
     @Override
     public void LogoutFailed() {
-        Toast.makeText(activity, "Tài khoản chưa được đăng xuất", Toast.LENGTH_SHORT).show();
+        message = getString(R.string.message_logout_failed);
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -153,10 +163,12 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         Intent intent = new Intent(activity, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);// This flag ensures all activities on top of the MainActivity are cleared.
         intent.putExtra("EXIT", true);
-        Toast.makeText(activity, "Đăng Xuất Thành Công", Toast.LENGTH_SHORT).show();
+        message = getString(R.string.message_logout_success);
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
         String TAG = "UserInfoActivity";
         Log.d(TAG, "LogoutSuccess");
         activity.startActivity(intent);
         activity.finish();
+        //todo: Drop Database on phone when logout
     }
 }

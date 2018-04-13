@@ -2,17 +2,18 @@ package com.bkic.lymenglong.audiobookbkic.Models.Main.Adapters;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.Main.Utils.Menu;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.ShowUserInfo.UserInfoActivity;
 import com.bkic.lymenglong.audiobookbkic.Views.Favorite.ListFavorite;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBookType.ListBookType;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory.ListCategory;
 import com.bkic.lymenglong.audiobookbkic.Views.Help.HelpActivity;
 import com.bkic.lymenglong.audiobookbkic.Views.History.ListHistory;
 
@@ -20,11 +21,11 @@ import java.util.ArrayList;
 
 
 public class MainAdapter extends RecyclerView.Adapter {
-    private ArrayList<Chapter> chapters;
+    private ArrayList<Menu> menus;
     private Activity activity;
 
-    public MainAdapter(Activity activity, ArrayList<Chapter> chapters) {
-        this.chapters = chapters;
+    public MainAdapter(Activity activity, ArrayList<Menu> menus) {
+        this.menus = menus;
         this.activity = activity;
     }
 
@@ -40,7 +41,7 @@ public class MainAdapter extends RecyclerView.Adapter {
         if (holder instanceof HomeHolder) {
             HomeHolder homeHolder = (HomeHolder) holder;
 
-            homeHolder.name.setText(chapters.get(position).getTitle());
+            homeHolder.name.setText(menus.get(position).getTitle());
         }
 
     }
@@ -52,7 +53,7 @@ public class MainAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return chapters.size();
+        return menus.size();
     }
 
     class HomeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -70,35 +71,40 @@ public class MainAdapter extends RecyclerView.Adapter {
         @Override
         public void onClick(View view) {
             if(view == itemView){
-                if (chapters.get(getAdapterPosition()).getTitle().equals(activity.getString(R.string.prompt_book_type))) {
-                    Intent intent = new Intent(activity, ListBookType.class);
-                    intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
-                    intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
+                String title = menus.get(getAdapterPosition()).getTitle();
+                if (title.equals(activity.getString(R.string.prompt_book_type))) {
+                    Intent intent = new Intent(activity, ListCategory.class);
+                    intent.putExtra("MenuId", menus.get(getAdapterPosition()).getId());
+                    intent.putExtra("MenuTitle", menus.get(getAdapterPosition()).getTitle());
                     activity.startActivity(intent);
                 }
-                if (chapters.get(getAdapterPosition()).getTitle().equals(activity.getString(R.string.prompt_history))){
+                if (title.equals(activity.getString(R.string.prompt_history))){
                     Intent intent = new Intent(activity, ListHistory.class);
-                    intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
-                    intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
+                    intent.putExtra("MenuId", menus.get(getAdapterPosition()).getId());
+                    intent.putExtra("MenuTitle", menus.get(getAdapterPosition()).getTitle());
                     activity.startActivity(intent);
                 }
-                if (chapters.get(getAdapterPosition()).getTitle().equals(activity.getString(R.string.prompt_favorite))){
+                if (title.equals(activity.getString(R.string.prompt_favorite))){
                     Intent intent = new Intent(activity, ListFavorite.class);
-                    intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
-                    intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
+                    intent.putExtra("MenuId", menus.get(getAdapterPosition()).getId());
+                    intent.putExtra("MenuTitle", menus.get(getAdapterPosition()).getTitle());
                     activity.startActivity(intent);
                 }
-                if (chapters.get(getAdapterPosition()).getTitle().equals(activity.getString(R.string.prompt_help))){
+                if (title.equals(activity.getString(R.string.prompt_help))){
                     Intent intent = new Intent(activity, HelpActivity.class);
-                    intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
-                    intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
+                    intent.putExtra("MenuId", menus.get(getAdapterPosition()).getId());
+                    intent.putExtra("MenuTitle", menus.get(getAdapterPosition()).getTitle());
                     activity.startActivity(intent);
                 }
-                if (chapters.get(getAdapterPosition()).getTitle().equals(activity.getString(R.string.prompt_account))){
+                if (title.equals(activity.getString(R.string.prompt_account))){
                     Intent intent = new Intent(activity, UserInfoActivity.class);
-                    intent.putExtra("idHome", chapters.get(getAdapterPosition()).getId());
-                    intent.putExtra("titleHome", chapters.get(getAdapterPosition()).getTitle());
+                    intent.putExtra("MenuId", menus.get(getAdapterPosition()).getId());
+                    intent.putExtra("MenuTitle", menus.get(getAdapterPosition()).getTitle());
                     activity.startActivity(intent);
+                }
+                if (title.equals("Thoát")){
+                    ActivityCompat.finishAffinity(activity);
+                    System.exit(0);
                 }
             }
 

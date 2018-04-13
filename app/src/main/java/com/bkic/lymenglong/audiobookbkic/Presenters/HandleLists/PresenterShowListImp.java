@@ -6,6 +6,5 @@ import android.app.Activity;
 import java.util.HashMap;
 
 public interface PresenterShowListImp {
-    void GetDataResponse(String httpUrl);
     void GetSelectedResponse(Activity activity, HashMap<String,String> ResultHash, String httpUrl);
 }

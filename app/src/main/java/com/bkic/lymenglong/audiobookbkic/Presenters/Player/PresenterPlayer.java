@@ -41,7 +41,6 @@ public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
                     mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     mediaPlayer.reset();
                     mediaPlayer.setDataSource(playControlActivity, Uri.parse(strings[0]));
-//            mediaPlayer.prepareAsync();
                     mediaPlayer.prepare();
                     mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                         @Override
@@ -52,7 +51,6 @@ public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
                         }
                     });
 
-//            songProgressBar.setMax(intSoundMax);
                     prepared = true;
 
                 } catch (Exception e) {
@@ -132,15 +130,21 @@ public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
     public void PlayMedia() {
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
+            if(mediaPlayer.isPlaying()) Log.d(TAG, "PlayMedia: "+ mediaPlayer.isPlaying());
             mediaPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener() {
                 @Override
                 public void onBufferingUpdate(MediaPlayer mp, int percent) {
                     Log.d(TAG, "onBufferingUpdate: percent = "+percent);
-                    Log.d(TAG, "onBufferingUpdate: percent = "+mp.getDuration());
+                    Log.d(TAG, "onBufferingUpdate: mp.getDuration = "+mp.getDuration());
+                }
+
+                @Override
+                protected void finalize() throws Throwable {
+                    super.finalize();
                 }
             });
-            if(mediaPlayer.getCurrentPosition()< playControlActivity.getPauseTime){
-                mediaPlayer.seekTo(playControlActivity.getPauseTime);
+            if(mediaPlayer.getCurrentPosition()< playControlActivity.PauseTime){
+                mediaPlayer.seekTo(playControlActivity.PauseTime);
 //                    mediaPlayer.start();
             } else{
                 mediaPlayer.start();
