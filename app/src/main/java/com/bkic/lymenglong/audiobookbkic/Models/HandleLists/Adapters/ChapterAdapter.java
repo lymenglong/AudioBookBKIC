@@ -2,11 +2,11 @@ package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
@@ -27,15 +27,16 @@ public class ChapterAdapter extends RecyclerView.Adapter {
         this.activity = activity;
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
         return new ChapterHolder(view);
 
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ChapterHolder) {
             ChapterHolder chapterHolder = (ChapterHolder) holder;
 
@@ -57,12 +58,12 @@ public class ChapterAdapter extends RecyclerView.Adapter {
     class ChapterHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView name;
-        private ImageView imgNext;
+//        private ImageView imgNext;
 
         ChapterHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.nameStory);
-            imgNext = itemView.findViewById(R.id.imgNext);
+//            imgNext = itemView.findViewById(R.id.imgNext);
 
             itemView.setOnClickListener(this);
         }

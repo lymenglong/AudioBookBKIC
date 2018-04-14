@@ -1,5 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Models.Account.ShowUserInfo.Adapter;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,8 +23,9 @@ public class UserInfoRecyclerAdapter extends RecyclerView.Adapter<UserInfoRecycl
         this.listUsers = listUsers;
     }
 
+    @NonNull
     @Override
-    public UserViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         // inflating recycler item view
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_user_info_recycler, parent, false);
@@ -32,7 +34,7 @@ public class UserInfoRecyclerAdapter extends RecyclerView.Adapter<UserInfoRecycl
     }
 
     @Override
-    public void onBindViewHolder(UserViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         holder.textViewName.setText(listUsers.get(position).getName());
         holder.textViewEmail.setText(listUsers.get(position).getEmail());
         holder.textViewUsername.setText(listUsers.get(position).getUsername());
@@ -56,10 +58,10 @@ public class UserInfoRecyclerAdapter extends RecyclerView.Adapter<UserInfoRecycl
 
         public AppCompatTextView textViewName;
         public AppCompatTextView textViewEmail;
-        public AppCompatTextView textViewBirthday;
+//        public AppCompatTextView textViewBirthday;
         public AppCompatTextView textViewUsername;
         public AppCompatTextView textViewAddress;
-        public AppCompatTextView textViewIdNumber;
+//        public AppCompatTextView textViewIdNumber;
         public AppCompatTextView textViewPhoneNumber;
 
         UserViewHolder(View view) {

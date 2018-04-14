@@ -61,9 +61,6 @@ package="com.bkic.lymenglong.audiobookbkic">
         android:name=".Views.HandleLists.ListCategory.ListCategory"
         android:windowSoftInputMode="adjustResize|stateHidden" />
     <activity
-        android:name=".Views.HandleLists.ListSubCategory.ListSubCategory"
-        android:windowSoftInputMode="adjustResize|stateHidden" />
-    <activity
         android:name=".Views.HandleLists.ListBook.ListBook"
         android:windowSoftInputMode="adjustResize|stateHidden" />
     <activity
