@@ -16,7 +16,8 @@ import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.Favorite.Adapters.FavoriteAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Favorite.Utils.Favorite;
-import com.bkic.lymenglong.audiobookbkic.Presenters.Favorite.PresenterShowListFavorite;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
+import com.bkic.lymenglong.audiobookbkic.Presenters.Favorite.ShowListFavorite.PresenterShowListFavorite;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 import org.json.JSONArray;
@@ -28,7 +29,7 @@ import java.util.HashMap;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
-import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_FilterFavoriteData;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 
 public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
     private static final String TAG = "ListFavorite";
@@ -41,8 +42,7 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
     private Session session;
     private ProgressBar progressBar;
     private DBHelper dbHelper;
-    private static ArrayList <Favorite> list = new ArrayList<>();
-    private final String tableDB = "favorite";
+    private static ArrayList <Book> list = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,23 +75,14 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         actionBar.eventToolbar(this, menuTitle, true);
         listChapter = findViewById(R.id.listView);
     }
-
-    private void SetTempModel(Favorite tempModel, JSONObject jsonObject) throws JSONException {
-        tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-        tempModel.setTitle(jsonObject.getString("Name"));
-        tempModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
-        tempModel.setStatus(Integer.parseInt(jsonObject.getString("Status")));
-        tempModel.setInsertTime(Integer.parseInt(jsonObject.getString("InsertTime")));
-        tempModel.setContent(jsonObject.getString("TextContent"));
-        tempModel.setFileUrl(jsonObject.getString("FileUrl"));
-    }
-
-    private void SetUpdateTableData(Favorite arrayModel) {
+    private void SetUpdateTableData(Book arrayModel) {
         String UPDATE_DATA = "UPDATE favorite SET " +
-                            "InsertTime = '"+arrayModel.getInsertTime()+"', " +
-                            "Status = '"+arrayModel.getStatus()+"' " +
-                            "WHERE " +
-                            "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
+                                    "BookTitle = '"+arrayModel.getTitle()+"', " +
+                                    "BookImage = '"+arrayModel.getUrlImage()+"', " +
+                                    "BookLength = '"+arrayModel.getUrlImage()+"', " +
+                                    "BookAuthor = '"+arrayModel.getUrlImage()+"' " +
+                                        "WHERE " +
+                                            "BookId = '"+arrayModel.getId()+"'; ";
         dbHelper.QueryData(UPDATE_DATA);
 }
 
@@ -102,19 +93,15 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
     private void GetCursorData() {
         Cursor cursor;
         list.clear();
-        cursor = dbHelper.GetData("SELECT * FROM favorite, book WHERE favorite.IdBook = book.Id");
+        cursor = dbHelper.GetData("SELECT * FROM favorite");
         while (cursor.moveToNext()) {
-//                    int userId = cursor.getInt(0);
-//                    int historybookId = cursor.getInt(1);
-            int insertTime = cursor.getInt(2);
-            int status = cursor.getInt(3);
-            int bookId = cursor.getInt(4);
-            String bookName = cursor.getString(5);
-            int categoryId = cursor.getInt(6);
-            String content = cursor.getString(8);
-            String fileURL = cursor.getString(7);
+            int bookId = cursor.getInt(0);
+            String bookTitle = cursor.getString(1);
+            String bookImage = cursor.getString(2);
+            int bookLength = cursor.getInt(3);
+            String bookAuthor = cursor.getString(4);
 
-            list.add(new Favorite(bookId, bookName, content, insertTime, fileURL, categoryId, status));
+            list.add(new Book(bookId,bookTitle,bookImage,bookLength,bookAuthor));
         }
         cursor.close();
         favoriteAdapter.notifyDataSetChanged();
@@ -125,11 +112,7 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                HashMap<String,String> ResultHash = new HashMap<>();
-                String keyPost = "UserID";
-                String valuePost = String.valueOf(session.getUserIdLoggedIn());
-                ResultHash.put(keyPost,valuePost);
-                presenterShowList.GetSelectedResponse(activity, ResultHash,HttpUrl_FilterFavoriteData);
+                RequestLoadingData();
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
@@ -139,34 +122,36 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         GetCursorData();
         //get data from json parsing
         if(list.isEmpty()) {
-            HashMap<String,String> ResultHash = new HashMap<>();
-            String keyPost = "UserID";
-            String valuePost = String.valueOf(session.getUserIdLoggedIn());
-            ResultHash.put(keyPost,valuePost);
-            presenterShowList.GetSelectedResponse(activity, ResultHash,HttpUrl_FilterFavoriteData);
+            RequestLoadingData();
         } else {
             progressBar.setVisibility(View.GONE);
         }
     }
 
-    private void SetInsertTableData(Favorite arrayModel, String tableName) {
-        String INSERT_DATA = "INSERT INTO '"+tableName+"' VALUES(" +
+    private void RequestLoadingData() {
+        int userId =session.getUserIdLoggedIn();
+        HashMap<String,String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"getFavourite\", " +
+                        "\"UserId\":\""+userId+"\"" +
+                        "}";
+        ResultHash.put(keyPost,valuePost);
+        presenterShowList.GetSelectedResponse(activity, ResultHash,HttpURL_API);
+    }
+
+    private void SetInsertTableData(Book arrayModel) {
+        String INSERT_DATA =
+                "INSERT INTO favorite VALUES" +
+                "(" +
                         "'"+arrayModel.getId()+"'," +
-                        "'"+session.getUserIdLoggedIn()+"'," +
-                        "'"+arrayModel.getInsertTime()+"'," +
-                        "'"+arrayModel.getStatus()+"')";
+                        "'"+arrayModel.getTitle()+"'," +
+                        "'"+arrayModel.getUrlImage()+"'," +
+                        "'"+arrayModel.getLength()+"'," +
+                        "'"+arrayModel.getAuthor()+"'" +
+                ");";
         dbHelper.QueryData(INSERT_DATA);
-        try {
-            INSERT_DATA = "INSERT INTO book VALUES (" +
-                    "'"+arrayModel.getId()+"'," +
-                    "'"+arrayModel.getTitle()+"'," +
-                    "'"+arrayModel.getCategoryId()+"'," +
-                    "'"+arrayModel.getFileUrl()+"'," +
-                    "'"+arrayModel.getContent()+"');";
-            dbHelper.QueryData(INSERT_DATA);
-        } catch (Exception e) {
-            Log.d(TAG, "SetInsertTableData: failed "+INSERT_DATA);
-        }
     }
 
     @Override
@@ -187,19 +172,22 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
             arrayList.add(new Favorite(bookId, bookName, content, insertTime, fileURL, categoryId,status));
         }
         if (arrayList.size() > jsonArray.length()) {
-            dbHelper.QueryData("DELETE FROM '" +tableDB + "'");
+            dbHelper.QueryData("DELETE FROM favorite");
         }
     }
 
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
 
-        Favorite tempModel = new Favorite();
-        //return tempModel value from jsonObject
-        SetTempModel(tempModel,jsonObject);
+        Book tempModel = new Book();
+        tempModel.setId(Integer.parseInt(jsonObject.getString("BookId")));
+        tempModel.setTitle(jsonObject.getString("BookTitle"));
+        tempModel.setUrlImage(jsonObject.getString("BookImage"));
+        tempModel.setLength(Integer.parseInt(jsonObject.getString("BookLength")));
+        tempModel.setAuthor(jsonObject.getString("Author"));
 
         try {
-            SetInsertTableData(tempModel,tableDB);
+            SetInsertTableData(tempModel);
         } catch (Exception e) {
             SetUpdateTableData(tempModel);
         }
@@ -212,4 +200,8 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         Log.d(TAG, "onPostExecute: "+ menuTitle);
     }
 
+    @Override
+    public void LoadListDataFailed(String jsonMessage) {
+        Log.d(TAG, "LoadListDataFailed: "+ jsonMessage);
+    }
 }

@@ -17,6 +17,14 @@ public class Book {
     public Book() {
     }
 
+    public Book(int id, String title, String urlImage, int length, String author) {
+        this.id = id;
+        this.title = title;
+        this.urlImage = urlImage;
+        this.length = length;
+        this.author = author;
+    }
+
     public int getId() {
         return id;
     }

@@ -87,7 +87,7 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
         detailReading = String.valueOf(Html.fromHtml(detailReadingHtml));
         scrollView = findViewById(R.id.scrollView);
         actionBar.eventToolbar(this, titleChapter, false);
-        btnFavorite = findViewById(R.id.btn_add_favorite);
+        btnFavorite = findViewById(R.id.btn_add_favorite_book);
 
     }
 
@@ -159,7 +159,7 @@ public class ViewReading extends AppCompatActivity implements ViewReadingImp, Vi
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.btn_add_favorite:
+            case R.id.btn_add_favorite_book:
                 presenterViewReading.postFavoriteDataToServer(HttpUrl_InsertFavorite,idChapter);
                 break;
         }

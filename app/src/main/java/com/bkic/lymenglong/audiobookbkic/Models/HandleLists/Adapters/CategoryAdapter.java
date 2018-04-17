@@ -44,6 +44,7 @@ public class CategoryAdapter extends RecyclerView.Adapter {
 
     }
 
+
     @Override
     public int getItemViewType(int position) {
         return 1;
@@ -79,6 +80,15 @@ public class CategoryAdapter extends RecyclerView.Adapter {
                     intent.putExtra("CategoryParent", categories.get(getAdapterPosition()).getParentId());
                     intent.putExtra("NumOfChild", categories.get(getAdapterPosition()).getNumOfChild());
                     activity.startActivity(intent);
+                    /*Bundle bundle = new Bundle();
+                    bundle.putInt("CategoryId", categories.get(getAdapterPosition()).getId());
+                    bundle.putString("CategoryTitle", categories.get(getAdapterPosition()).getTitle());
+                    bundle.putString("CategoryDescription", categories.get(getAdapterPosition()).getDescription());
+                    bundle.putInt("CategoryParent", categories.get(getAdapterPosition()).getParentId());
+                    bundle.putInt("NumOfChild", categories.get(getAdapterPosition()).getNumOfChild());
+                    Intent intent = new Intent(activity, ListCategory.class);
+                    intent.putExtras(bundle);
+                    activity.startActivityForResult(intent,100);*/
                 } else {
                     Intent intent = new Intent(activity, ListBook.class);
                     intent.putExtra("CategoryId", categories.get(getAdapterPosition()).getId());

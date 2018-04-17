@@ -189,7 +189,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         String UPDATE_DATA = null;
         try {
             UPDATE_DATA =
-                    "UPDATE books SET " +
+                    "UPDATE book SET " +
                             "BookTitle = '"+bookModel.getTitle()+"', " +
                             "BookAuthor = '"+bookModel.getAuthor()+"', " +
                             "BookPublishDate = '"+bookModel.getPublishDate()+"', " +

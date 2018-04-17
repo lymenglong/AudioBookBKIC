@@ -38,7 +38,7 @@ public class Session {
     public List<User> getListUserInfo(){
         List<User> userList = new ArrayList<>();
         User user = new User();
-        user.setId(prefs.getInt("USER_ID", -1));
+        user.setId(prefs.getInt("ID_USER", -1));
         user.setUsername(prefs.getString("USERNAME","DEFAULT"));
         user.setFirstName(prefs.getString("FIRST_NAME","DEFAULT"));
         user.setLastName(prefs.getString("LAST_NAME","DEFAULT"));
@@ -82,9 +82,9 @@ public class Session {
         return prefs.getString("NAME_LOGGED_IN", "DEFAULT");
     }
 
-    public String getUserIdLoggedIn(){
+    public int getUserIdLoggedIn(){
 //        Log.d(TAG, "EmailState: "+"Email: "+prefs.getString("EMAIL_LOGGED_IN", "Email"));
-        return prefs.getString("USER_ID", "DEFAULT");
+        return prefs.getInt("ID_USER", -1);
     }
 
     public void getClearSession(){

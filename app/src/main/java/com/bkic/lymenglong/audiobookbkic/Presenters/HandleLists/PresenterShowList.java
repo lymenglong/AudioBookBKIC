@@ -2,7 +2,6 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -22,7 +21,7 @@ public class PresenterShowList implements PresenterShowListImp{
     private ListCategory listCategoryActivity;
     private ListBook listBookActivity;
     private ListChapter listChapterActivity;
-    private ProgressDialog pDialog;
+//    private ProgressDialog pDialog;
     private static final String TAG = "PresenterShowList";
 
     public PresenterShowList(ListChapter listChapterActivity) {
@@ -56,7 +55,7 @@ public class PresenterShowList implements PresenterShowListImp{
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-                pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
+//                pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
             }
 
             @Override
@@ -75,7 +74,7 @@ public class PresenterShowList implements PresenterShowListImp{
                 //Storing Complete JSon Object into String Variable.
                 FinalJSonObject = httpResponseMsg ;
                 //Parsing the Stored JSOn String to GetHttpResponse Method.
-                pDialog.dismiss();
+//                pDialog.dismiss();
                 new GetHttpResponseFromHttpWebCall(activity).execute();
             }
 
@@ -108,6 +107,7 @@ public class PresenterShowList implements PresenterShowListImp{
         protected void onPreExecute()
         {
             super.onPreExecute();
+//            pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
         }
 
         @Override
@@ -123,90 +123,6 @@ public class PresenterShowList implements PresenterShowListImp{
                     jsonMessage = jsonObject.getString("Message");
                     jsonLog = jsonObject.getString("Log");
                     logSuccess = jsonLog.equals("Success");
-
-                    //region Old Parsing Code
-                    /*
-                    JSONArray jsonArray;
-
-                    JSONArray jsonArrayResult;
-
-                    //region Get data from json server in ListCategoryActivity
-                    if (activity == listSubCategoryActivity){
-                    try {
-                        jsonArray = new JSONArray(FinalJSonObject);
-                        JSONObject jsonObject;
-
-
-                            //compare if data on server is less than phone we del data from phone
-                            listSubCategoryActivity.CompareDataPhoneWithServer(jsonArray);
-
-                            for(int i=0; i<jsonArray.length(); i++)
-                            {
-                                jsonObject = jsonArray.getJSONObject(i);
-
-                                listSubCategoryActivity.SetTableSelectedData(jsonObject);
-
-                            }
-                    } catch (Exception ignored){
-                    }
-                }
-                //endregion
-
-                    //region Get data from json server in ListBookActivity
-                    if (activity == listBookActivity) {
-                        try {
-                            //for new api////
-                            JSONObject jsonActionObject = new JSONObject(FinalJSonObject);
-                            ////////////////
-                            tempArray = new ArrayList<>();
-
-                            //compare if data on server is less than phone we del data from phone
-//                            listBookActivity.CompareDataPhoneWithServer(jsonArray);
-
-                            String jsonResult = jsonActionObject.getString("Result");
-
-                            jsonArrayResult = new JSONArray(jsonResult);
-
-                            for (int j = 0; j < jsonArrayResult.length(); j++) {
-                                listBookActivity.SetTableSelectedData(jsonArrayResult.getJSONObject(j));
-                            }
-
-                            *//*for(int i=0; i<jsonArray.length(); i++)
-                            {
-                                jsonObject = jsonArray.getJSONObject(i);
-
-                                listBookActivity.SetTableSelectedData(jsonObject);
-
-                            }*//*
-
-
-                        } catch (JSONException ignored) {
-                        }
-                    }
-                    //endregion
-
-                    //region Get data from json server in ListChapterActivity
-                    if(activity == listChapterActivity){
-                        try {
-                            JSONObject jsonObject = new JSONObject(FinalJSonObject);
-                            String resultJsonObject = jsonObject.getString("Result");
-                            JSONObject jsonObjectResult = new JSONObject(resultJsonObject);
-                            String arrayJsonChapter = jsonObjectResult.getString("ChapterList");
-                            JSONArray jsonArrayChapter = new JSONArray(arrayJsonChapter);
-
-                            for (int i = 0; i< jsonArrayChapter.length(); i++){
-                                try {
-                                    listChapterActivity.SetTableSelectedData(jsonArrayChapter.getJSONObject(i));
-                                } catch (JSONException ignored) {
-                                }
-                            }
-                        } catch (JSONException ignored) {
-                        }
-
-                    }
-                    //endregion
-                */
-                //endregion
                 }
             }
             catch (Exception e)
@@ -225,14 +141,12 @@ public class PresenterShowList implements PresenterShowListImp{
                     //region ListCategory : getListCategory
                     case "getListCategory":
                         try {
-                            JSONArray jsonArrayChapter = new JSONArray(jsonResult);
-                            if (jsonArrayChapter.length()!=0) {
-                                for (int i = 0; i< jsonArrayChapter.length(); i++){
-                                    try {
-                                        listCategoryActivity.SetTableSelectedData(jsonArrayChapter.getJSONObject(i));
-                                    } catch (JSONException ignored) {
-                                        Log.d(TAG, "onPostExecute: "+jsonArrayChapter.getJSONObject(i));
-                                    }
+                            JSONArray jsonArray = new JSONArray(jsonResult);
+                            if (jsonArray.length()!=0) {
+                                try {
+                                    listCategoryActivity.SetTableSelectedData(jsonArray);
+                                } catch (JSONException ignored) {
+                                    Log.d(TAG, "onPostExecute: "+jsonArray.toString());
                                 }
                             } else {
                                 listCategoryActivity.LoadListDataFailed(jsonMessage);
@@ -305,12 +219,11 @@ public class PresenterShowList implements PresenterShowListImp{
                         listBookActivity.ShowListFromSelected();
                         break;
                     //endregion
-
                 }
             } else {
-                Log.d(TAG, "onPostExecute:" + jsonLog);
+                Log.d(TAG, "onPostExecute: jsonMessage: " + jsonMessage);
             }
-
+//            pDialog.dismiss(); // khong thuc hien duoc dialog dismiss
         }
     }
 

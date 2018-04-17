@@ -1,6 +1,7 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
@@ -62,6 +63,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
         initObject();
     }
 
+
     private void SetToolBarTitle() {
         if(menuTitle == null){
             title = categoryTitle;
@@ -111,10 +113,9 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
     }
 
-    private void GetCursorData() {
+    private void GetCursorData(int parentId) {
         Cursor cursor;
         list.clear();
-        int parentId = categoryId; //getIntent
         String SELECT_DATA = SELECT_CATEGORY_BY_PARENT_ID(parentId);
         cursor = dbHelper.GetData(SELECT_DATA);
         while (cursor.moveToNext()){
@@ -141,7 +142,8 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
         listChapter.setLayoutManager(mLinearLayoutManager);
         adapter = new CategoryAdapter(ListCategory.this, list);
         listChapter.setAdapter(adapter);
-        GetCursorData();
+        int parentId = categoryId; //getIntent
+        GetCursorData(parentId);
         //get data from json parsing
         if(list.isEmpty()){
             RefreshLoadingData();
@@ -179,7 +181,8 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
     @Override
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
-        GetCursorData();
+        int parentId = categoryId; //getIntent
+        GetCursorData(parentId);
         Log.d(TAG, "onPostExecute: "+ title);
     }
 
@@ -189,34 +192,39 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
     }
 
     @Override
-    public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
-        Category tempModel;
-        JSONArray jsonArrayCategoryChildren;
-        do {
-            int j = 0;
-            do {
-                tempModel = new Category();
-                tempModel.setId(Integer.parseInt(jsonObject.getString("CategoryId")));
-                tempModel.setTitle(jsonObject.getString("CategoryName"));
-                tempModel.setDescription(jsonObject.getString("CategoryDescription"));
-                tempModel.setParentId(Integer.parseInt(jsonObject.getString("CategoryParent")));
-//                tempModel.setNumOfChild(Integer.parseInt(jsonObject.getString("NumOfChild")));
-                tempModel.setCategoryChildren(jsonObject.getString("CategoryChildren"));
-                jsonArrayCategoryChildren = new JSONArray(tempModel.getCategoryChildren());
-                int numOfChild = jsonArrayCategoryChildren.length();
-                tempModel.setNumOfChild(numOfChild);
-                try {
-                    SetInsertTableData(tempModel);
-                } catch (Exception e) {
-                    SetUpdateTableData(tempModel);
+    public void SetTableSelectedData(JSONArray jsonArray) throws JSONException {
+        JSONArray jsonArrayChild;
+        JSONArray jsonArrayChild2;
+        JSONObject jsonObject;
+        for (int i = 0; i < jsonArray.length(); i++) {
+            jsonObject = jsonArray.getJSONObject(i);
+            jsonArrayChild = new JSONArray(jsonObject.getString("CategoryChildren"));
+            SetDataFromJsonObject(jsonObject);
+            for (int j = 0; j < jsonArrayChild.length(); j++){
+                jsonObject = jsonArrayChild.getJSONObject(j);
+                SetDataFromJsonObject(jsonObject);
+                jsonArrayChild2 = new JSONArray(jsonObject.getString("CategoryChildren"));
+                for (int k = 0; k < jsonArrayChild2.length(); k++){
+                    jsonObject = jsonArrayChild2.getJSONObject(k);
+                    SetDataFromJsonObject(jsonObject);
                 }
-                try {
-                    jsonObject = jsonArrayCategoryChildren.getJSONObject(j++);
-                } catch (JSONException ignored) {
-                    Log.d(TAG, "SetTableSelectedData: "+j);
-                }
-            } while (j <= jsonArrayCategoryChildren.length());
-        } while (jsonArrayCategoryChildren.length()!=0);
+            }
+        }
     }
 
+    private void SetDataFromJsonObject(JSONObject jsonObject) throws JSONException {
+        Category tempModel = new Category();
+        tempModel.setId(Integer.parseInt(jsonObject.getString("CategoryId")));
+        tempModel.setTitle(jsonObject.getString("CategoryName"));
+        tempModel.setDescription(jsonObject.getString("CategoryDescription"));
+        tempModel.setParentId(Integer.parseInt(jsonObject.getString("CategoryParent")));
+//                tempModel.setNumOfChild(Integer.parseInt(jsonObject.getString("NumOfChild")));
+        tempModel.setCategoryChildren(jsonObject.getString("CategoryChildren"));
+        tempModel.setNumOfChild(new JSONArray(tempModel.getCategoryChildren()).length());
+        try {
+            SetInsertTableData(tempModel);
+        } catch (Exception e) {
+            SetUpdateTableData(tempModel);
+        }
+    }
 }

@@ -69,30 +69,17 @@ public class PresenterLogin implements PresenterLoginImp {
 
         @SuppressLint("StaticFieldLeak")
         class HttpWebCallFunction extends AsyncTask<Void,Void,String> {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-//                pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
-            }
-
             @Override
             protected String doInBackground(Void... voids) {
-
                 ParseResult = httpParse.postRequest(ResultHash, httpHolder);
-
                 return ParseResult;
             }
-
             @Override
             protected void onPostExecute(String httpResponseMsg) {
-
                 super.onPostExecute(httpResponseMsg);
-
                 //Storing Complete JSon Object into String Variable.
                 FinalJSonObject = httpResponseMsg ;
                 //Parsing the Stored JSOn String to GetHttpResponse Method.
-//                pDialog.dismiss();
                 new GetHttpResponseFromHttpWebCall(activity).execute();
             }
 

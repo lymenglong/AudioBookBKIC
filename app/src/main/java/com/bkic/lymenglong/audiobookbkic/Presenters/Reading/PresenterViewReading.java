@@ -55,7 +55,7 @@ public class PresenterViewReading implements PresenterViewReadingImp {
             protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(idChapter));
-                hashMap.put("IdUser", session.getUserIdLoggedIn());
+                hashMap.put("IdUser", String.valueOf(session.getUserIdLoggedIn()));
                 return hashMap;
             }
         };
@@ -90,7 +90,7 @@ public class PresenterViewReading implements PresenterViewReadingImp {
             protected Map<String, String> getParams() {
                 HashMap<String, String> hashMap = new HashMap<>();
                 hashMap.put("IdBook", String.valueOf(idChapter));
-                hashMap.put("IdUser", session.getUserIdLoggedIn());
+                hashMap.put("IdUser", String.valueOf(session.getUserIdLoggedIn()));
                 return hashMap;
             }
         };

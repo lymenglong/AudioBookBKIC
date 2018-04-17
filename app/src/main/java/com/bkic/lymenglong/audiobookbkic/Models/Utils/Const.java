@@ -13,7 +13,7 @@ public final class Const {
 
     //<editor-fold desc="New URL">
 //    public static final String HttpUrl_AllBookTypeData = "http://20121969.tk/SachNoiBKIC/AllBookTypeData.php";
-    public static final String HttpUrl_FilterFavoriteData = "http://20121969.tk/SachNoiBKIC/FilterFavoriteData.php";
+//    public static final String HttpUrl_FilterFavoriteData = "http://20121969.tk/SachNoiBKIC/FilterFavoriteData.php";
 //    public static final String HttpUrl_ALLMenuData = "http://20121969.tk/SachNoiBKIC/AllMenuData.php";
 //    public static final String HttpURL_FilterBookData = "http://20121969.tk/SachNoiBKIC/FilterBookData.php";
 //    public static final String HttpURL_FilterCategoryData = "http://20121969.tk/SachNoiBKIC/FilterCategoryData.php";
@@ -33,9 +33,11 @@ public final class Const {
     public static final int DB_VERSION = 1;
 
     public static final String CREATE_TABLE_MENU =
-            "CREATE TABLE IF NOT EXISTS menu(" +
-                    "Id INTEGER PRIMARY KEY, " +
-                    "Title VARCHAR(255));";
+            "CREATE TABLE IF NOT EXISTS menu" +
+                    "(" +
+                            "Id INTEGER PRIMARY KEY, " +
+                            "Title VARCHAR(255)" +
+                    ");";
 
     public static final String INSERT_MENU_VALUES =
             "INSERT INTO menu VALUES" +
@@ -50,62 +52,72 @@ public final class Const {
     public static final String CREATE_TABLE_CATEGORY =
             "CREATE TABLE IF NOT EXISTS category" +
                     "(" +
-                    "CategoryId INTEGER PRIMARY KEY, " +
-                    "CategoryTitle VARCHAR(255), " +
-                    "CategoryDescription VARCHAR(255), " +
-                    "CategoryParent INTEGER, " +
-                    "NumOfChild INTEGER" +
+                            "CategoryId INTEGER PRIMARY KEY, " +
+                            "CategoryTitle VARCHAR(255), " +
+                            "CategoryDescription VARCHAR(255), " +
+                            "CategoryParent INTEGER, " +
+                            "NumOfChild INTEGER" +
                     ");";
 
     public static final String CREATE_TABLE_BOOK =
-            "CREATE TABLE IF NOT EXISTS books " +
+            "CREATE TABLE IF NOT EXISTS book " +
                     "(" +
-                    "BookId INTEGER PRIMARY KEY, " +
-                    "BookTitle VARCHAR(255), " +
-                    "BookAuthor VARCHAR(255), " +
-                    "BookPublishDate VARCHAR(255), " +
-                    "BookImage VARCHAR(255), " +
-                    "BookContent VARCHAR(255), " +
-                    "BookLength INTEGER, " +
-                    "BookURL VARCHAR(255), " +
-                    "CategoryId INTEGER, " +
-                    "NumOfChapter INTEGER " +
+                            "BookId INTEGER PRIMARY KEY, " +
+                            "BookTitle VARCHAR(255), " +
+                            "BookAuthor VARCHAR(255), " +
+                            "BookPublishDate VARCHAR(255), " +
+                            "BookImage VARCHAR(255), " +
+                            "BookContent VARCHAR(255), " +
+                            "BookLength INTEGER, " +
+                            "BookURL VARCHAR(255), " +
+                            "CategoryId INTEGER, " +
+                            "NumOfChapter INTEGER " +
                     ");";
     public static final String CREATE_TABLE_CHAPTER =
             "CREATE TABLE IF NOT EXISTS chapter " +
                     "(" +
-                    "ChapterId INTEGER PRIMARY KEY, " +
-                    "ChapterTitle VARCHAR(255), " +
-                    "ChapterUrl VARCHAR(255), " +
-                    "ChapterLength INTEGER, " +
-                    "BookId INTEGER " +
+                            "ChapterId INTEGER PRIMARY KEY, " +
+                            "ChapterTitle VARCHAR(255), " +
+                            "ChapterUrl VARCHAR(255), " +
+                            "ChapterLength INTEGER, " +
+                            "BookId INTEGER " +
                     ");";
 
     public static final String CREATE_TABLE_HISTORY =
             "CREATE TABLE IF NOT EXISTS history" +
                     "(" +
-                    "IdBook INTEGER PRIMARY KEY, " +
-                    "IdUser INTEGER, " +
-                    "InsertTime INTEGER, " +
-                    "PauseTime INTEGER" +
+                            "BookId INTEGER PRIMARY KEY, " +
+                            "BookTitle VARCHAR(255), " +
+                            "BookImage VARCHAR(255), " +
+                            "BookLength INTEGER, " +
+                            "BookAuthor VARCHAR(255)" +
+                    ");";
+    public static final String CREATE_TABLE_PLAYBACK_HISTORY =
+            "CREATE TABLE IF NOT EXISTS playHistory" +
+                    "(" +
+                            "ChapterId INTEGER PRIMARY KEY, " +
+                            "BookId INTEGER, " +
+                            "PauseTime VARCHAR(255), " +
+                            "LastDate VARCHAR(255)" +
                     ");";
 
     public static final String CREATE_TABLE_FAVORITE =
             "CREATE TABLE IF NOT EXISTS favorite" +
                     "(" +
-                    "IdBook INTEGER PRIMARY KEY, " +
-                    "IdUser INTEGER, " +
-                    "InsertTime INTEGER, " +
-                    "Status INTEGER" +
+                            "BookId INTEGER PRIMARY KEY, " +
+                            "BookTitle VARCHAR(255), " +
+                            "BookImage VARCHAR(255), " +
+                            "BookLength INTEGER, " +
+                            "BookAuthor VARCHAR(255)" +
                     ");";
 
     public static final String CREATE_TABLE_REVIEW =
-            "CREATE TABLE IF NOT EXISTS favorite" +
+            "CREATE TABLE IF NOT EXISTS review" +
                     "(" +
-                    "IdUser INTEGER PRIMARY KEY, " +
-                    "IdUser INTEGER, " +
-                    "InsertTime INTEGER, " +
-                    "Status INTEGER" +
+                        "ReviewId INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "BookId INTEGER, " +
+                        "InsertTime INTEGER, " +
+                        "Review VARCHAR(255)" +
                     ");";
 
     public static String SELECT_CATEGORY_BY_PARENT_ID (int parentId){
@@ -129,7 +141,7 @@ public final class Const {
     }
 
     public static String SELECT_ALL_BOOK_BY_CATEGORY_ID(int categoryId){
-        return "SELECT * FROM books WHERE CategoryId = '"+categoryId+"'";
+        return "SELECT * FROM book WHERE CategoryId = '"+categoryId+"'";
     }
 
     //endregion

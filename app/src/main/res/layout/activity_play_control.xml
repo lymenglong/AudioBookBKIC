@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/background">
 
-    <include layout="@layout/action_bar"></include>
+    <include layout="@layout/action_bar"/>
 
 
         <LinearLayout
@@ -16,7 +16,7 @@
             android:id="@+id/linearLayout">
 
             <Button
-                android:id="@+id/btn_add_favorite"
+                android:id="@+id/btn_add_favorite_book"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"

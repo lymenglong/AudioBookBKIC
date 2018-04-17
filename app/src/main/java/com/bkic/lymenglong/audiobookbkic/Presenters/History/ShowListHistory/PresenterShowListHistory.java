@@ -1,11 +1,11 @@
-package com.bkic.lymenglong.audiobookbkic.Presenters.History;
+package com.bkic.lymenglong.audiobookbkic.Presenters.History.ShowListHistory;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.util.Log;
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Views.History.ListHistory;
 
@@ -13,23 +13,22 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PresenterShowListHistory implements PresenterShowListHistoryImp {
 
     private ListHistory listHistoryActivity;
     private ProgressDialog pDialog;
+    private static final String TAG = "PresenterShowListHistory";
 
     public PresenterShowListHistory(ListHistory listHistoryActivity) {
         this.listHistoryActivity = listHistoryActivity;
     }
 
     @Override
-    public void GetSelectedResponse(Activity activity, HashMap<String,String> ResultHash, String HttpHolder) {
+    public void GetSelectedResponse(Activity activity, HashMap<String, String> ResultHash, String HttpHolder) {
         HttpWebCall(activity, ResultHash, HttpHolder);
     }
-
 
     //region Method to show current record Current Selected Record
     private String FinalJSonObject;
@@ -38,7 +37,7 @@ public class PresenterShowListHistory implements PresenterShowListHistoryImp {
     private void HttpWebCall(final Activity activity, final HashMap<String,String> ResultHash, final String httpHolder){
 
         @SuppressLint("StaticFieldLeak")
-        class HttpWebCallFunction extends AsyncTask<String,Void,String> {
+        class HttpWebCallFunction extends AsyncTask<Void,Void,String> {
 
             @Override
             protected void onPreExecute() {
@@ -47,7 +46,7 @@ public class PresenterShowListHistory implements PresenterShowListHistoryImp {
             }
 
             @Override
-            protected String doInBackground(String... voids) {
+            protected String doInBackground(Void... voids) {
 
                 ParseResult = httpParse.postRequest(ResultHash, httpHolder);
 
@@ -78,8 +77,11 @@ public class PresenterShowListHistory implements PresenterShowListHistoryImp {
     private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
     {
         public Activity activity;
-
-        ArrayList<Chapter> tempArray;
+        private String jsonAction;
+        private String jsonResult;
+        private String jsonMessage;
+        private String jsonLog;
+        private Boolean logSuccess = false;
 
         GetHttpResponseFromHttpWebCall(Activity activity)
         {
@@ -97,32 +99,14 @@ public class PresenterShowListHistory implements PresenterShowListHistoryImp {
         {
             try
             {
-                if(FinalJSonObject != null && !FinalJSonObject.equals("No Results Found.")) //When no data, it will return "No Results Found." Value to String JSONObject.
+                if(FinalJSonObject != null)
                 {
-                    JSONArray jsonArray;
-
-                    try {
-                        jsonArray = new JSONArray(FinalJSonObject);
-
-                        JSONObject jsonObject;
-
-                        tempArray = new ArrayList<>();
-
-                        //compare if data on server is less than phone we del data from phone
-                        listHistoryActivity.CompareDataPhoneWithServer(jsonArray);
-
-                        for(int i=0; i<jsonArray.length(); i++)
-                        {
-                            jsonObject = jsonArray.getJSONObject(i);
-
-                            listHistoryActivity.SetTableSelectedData(jsonObject);
-
-                        }
-                    }
-                    catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    JSONObject jsonObject = new JSONObject(FinalJSonObject);
+                    jsonAction = jsonObject.getString("Action");
+                    jsonResult = jsonObject.getString("Result");
+                    jsonMessage = jsonObject.getString("Message");
+                    jsonLog = jsonObject.getString("Log");
+                    logSuccess = jsonLog.equals("Success");
                 }
             }
             catch (Exception e)
@@ -133,13 +117,42 @@ public class PresenterShowListHistory implements PresenterShowListHistoryImp {
             return null;
         }
 
+        @SuppressLint("LongLogTag")
         @Override
         protected void onPostExecute(Void result)
         {
-            listHistoryActivity.ShowListFromSelected();
+            if (logSuccess) {
+                switch (jsonAction){
+                    //region ListHistoryBook : getHistory
+                    case "getHistory":
+                        try {
+                            JSONArray jsonArrayChapter = new JSONArray(jsonResult);
+                            if (jsonArrayChapter.length()!=0) {
+                                for (int i = 0; i< jsonArrayChapter.length(); i++){
+                                    try {
+                                        listHistoryActivity.SetTableSelectedData(jsonArrayChapter.getJSONObject(i));
+                                    } catch (JSONException ignored) {
+                                        Log.d(TAG, "onPostExecute: "+jsonArrayChapter.getJSONObject(i));
+                                    }
+                                }
+                            } else {
+                                listHistoryActivity.LoadListDataFailed(jsonMessage);
+                            }
+                        } catch (JSONException ignored) {
+                            Log.d(TAG, "onPostExecute: "+ jsonResult);
+                        }
+                        listHistoryActivity.ShowListFromSelected();
+                        break;
+                    //endregion
+                }
+            } else {
+                Log.d(TAG, "onPostExecute:" + jsonLog);
+            }
+
         }
     }
-    //endregion
 
+
+    //endregion
     //endregion
 }

@@ -1,11 +1,11 @@
-package com.bkic.lymenglong.audiobookbkic.Presenters.Favorite;
+package com.bkic.lymenglong.audiobookbkic.Presenters.Favorite.ShowListFavorite;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.util.Log;
 
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Views.Favorite.ListFavorite;
 
@@ -13,13 +13,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
 
     private ProgressDialog pDialog;
     private ListFavorite listFavoriteActivity;
+    private static final String TAG = "PresenterShowListFavorite";
 
     public PresenterShowListFavorite(ListFavorite listFavoriteActivity) {
         this.listFavoriteActivity = listFavoriteActivity;
@@ -34,10 +34,10 @@ public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
     private String FinalJSonObject;
     private String ParseResult;
     private HttpParse httpParse = new HttpParse();
-    private void HttpWebCall(final Activity activity, final HashMap<String, String> ResultHash, final String httpHolder){
+    private void HttpWebCall(final Activity activity, final HashMap<String,String> ResultHash, final String httpHolder){
 
         @SuppressLint("StaticFieldLeak")
-        class HttpWebCallFunction extends AsyncTask<String,Void,String> {
+        class HttpWebCallFunction extends AsyncTask<Void,Void,String> {
 
             @Override
             protected void onPreExecute() {
@@ -46,7 +46,7 @@ public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
             }
 
             @Override
-            protected String doInBackground(String... voids) {
+            protected String doInBackground(Void... voids) {
 
                 ParseResult = httpParse.postRequest(ResultHash, httpHolder);
 
@@ -77,8 +77,11 @@ public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
     private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
     {
         public Activity activity;
-
-        ArrayList<Chapter> tempArray;
+        private String jsonAction;
+        private String jsonResult;
+        private String jsonMessage;
+        private String jsonLog;
+        private Boolean logSuccess = false;
 
         GetHttpResponseFromHttpWebCall(Activity activity)
         {
@@ -96,34 +99,14 @@ public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
         {
             try
             {
-                if(FinalJSonObject != null && !FinalJSonObject.equals("No Results Found.")) //When no data, it will return "No Results Found." Value to String JSONObject.
+                if(FinalJSonObject != null)
                 {
-                    JSONArray jsonArray;
-
-                    try {
-                        jsonArray = new JSONArray(FinalJSonObject);
-
-                        JSONObject jsonObject;
-
-                        tempArray = new ArrayList<>();
-
-                        //compare if data on server is less than phone we del data from phone
-                        listFavoriteActivity.CompareDataPhoneWithServer(jsonArray);
-
-                        for(int i=0; i<jsonArray.length(); i++)
-                        {
-                            jsonObject = jsonArray.getJSONObject(i);
-
-                            listFavoriteActivity.SetTableSelectedData(jsonObject);
-
-                        }
-
-
-                    }
-                    catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
+                    JSONObject jsonObject = new JSONObject(FinalJSonObject);
+                    jsonAction = jsonObject.getString("Action");
+                    jsonResult = jsonObject.getString("Result");
+                    jsonMessage = jsonObject.getString("Message");
+                    jsonLog = jsonObject.getString("Log");
+                    logSuccess = jsonLog.equals("Success");
                 }
             }
             catch (Exception e)
@@ -134,13 +117,42 @@ public class PresenterShowListFavorite implements PresenterShowListFavoriteImp {
             return null;
         }
 
+        @SuppressLint("LongLogTag")
         @Override
         protected void onPostExecute(Void result)
         {
-                listFavoriteActivity.ShowListFromSelected();
+            if (logSuccess) {
+                switch (jsonAction){
+                    //region ListFavoriteBook : getFavorite
+                    case "getFavourite":
+                        try {
+                            JSONArray jsonArrayChapter = new JSONArray(jsonResult);
+                            if (jsonArrayChapter.length()!=0) {
+                                for (int i = 0; i< jsonArrayChapter.length(); i++){
+                                    try {
+                                        listFavoriteActivity.SetTableSelectedData(jsonArrayChapter.getJSONObject(i));
+                                    } catch (JSONException ignored) {
+                                        Log.d(TAG, "onPostExecute: "+jsonArrayChapter.getJSONObject(i));
+                                    }
+                                }
+                            } else {
+                                listFavoriteActivity.LoadListDataFailed(jsonMessage);
+                            }
+                        } catch (JSONException ignored) {
+                            Log.d(TAG, "onPostExecute: "+ jsonResult);
+                        }
+                        listFavoriteActivity.ShowListFromSelected();
+                        break;
+                    //endregion
+                }
+            } else {
+                Log.d(TAG, "onPostExecute:" + jsonLog);
+            }
+
         }
     }
-    //endregion
 
+
+    //endregion
     //endregion
 }

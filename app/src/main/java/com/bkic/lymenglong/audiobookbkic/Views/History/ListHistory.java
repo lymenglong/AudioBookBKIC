@@ -14,9 +14,9 @@ import android.widget.ProgressBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.History.Adapter.HistoryAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.History.Utils.History;
-import com.bkic.lymenglong.audiobookbkic.Presenters.History.PresenterShowListHistory;
+import com.bkic.lymenglong.audiobookbkic.Presenters.History.ShowListHistory.PresenterShowListHistory;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 import org.json.JSONArray;
@@ -28,11 +28,11 @@ import java.util.HashMap;
 
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
-import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpUrl_FilterHistoryData;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 
 public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     private static final String TAG = "ListHistory";
-    PresenterShowListHistory presenterShowListHistory = new PresenterShowListHistory(this);
+    PresenterShowListHistory presenterShowList = new PresenterShowListHistory(this);
     private RecyclerView listChapter;
     private View imRefresh;
     private HistoryAdapter historyAdapter;
@@ -41,15 +41,14 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     private Session session;
     private ProgressBar progressBar;
     private DBHelper dbHelper;
-    private static ArrayList <History> list = new ArrayList<>();
-    private String tableDB = "history";
+    private static ArrayList <Book> list = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        initDataFromIntent();
+        getDataFromIntent();
         setTitle(menuTitle);
         initView();
         initDatabase();
@@ -59,7 +58,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     /**
      * Lấy dữ liệu thông qua intent
      */
-    private void initDataFromIntent() {
+    private void getDataFromIntent() {
         menuTitle = getIntent().getStringExtra("MenuTitle");
 //        int idMenu = getIntent().getIntExtra("idHome", -1);
     }
@@ -75,36 +74,14 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         actionBar.eventToolbar(this, menuTitle, true);
         listChapter = findViewById(R.id.listView);
     }
-
-    private void SetTempModel(History tempModel, JSONObject jsonObject, String tableSwitched) throws JSONException {
-        switch (tableSwitched){
-            case "history":
-                tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-                tempModel.setTitle(jsonObject.getString("Name"));
-                tempModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
-                tempModel.setPauseTime(Integer.parseInt(jsonObject.getString("PauseTime")));
-                tempModel.setInsertTime(Integer.parseInt(jsonObject.getString("InsertTime")));
-                tempModel.setContent(jsonObject.getString("TextContent"));
-                tempModel.setFileUrl(jsonObject.getString("FileUrl"));
-                break;
-            case "favorite":
-                tempModel.setId(Integer.parseInt(jsonObject.getString("Id")));
-                tempModel.setTitle(jsonObject.getString("Name"));
-                tempModel.setCategoryId(Integer.parseInt(jsonObject.getString("CategoryId")));
-                tempModel.setStatus(Integer.parseInt(jsonObject.getString("Status")));
-                tempModel.setInsertTime(Integer.parseInt(jsonObject.getString("InsertTime")));
-                tempModel.setContent(jsonObject.getString("TextContent"));
-                tempModel.setFileUrl(jsonObject.getString("FileUrl"));
-                break;
-        }
-    }
-
-    private void SetUpdateTableData(History arrayModel) {
+    private void SetUpdateTableData(Book arrayModel) {
         String UPDATE_DATA = "UPDATE history SET " +
-                        "InsertTime = '"+arrayModel.getInsertTime()+"', " +
-                        "PauseTime = '"+arrayModel.getPauseTime()+"' " +
-                        "WHERE " +
-                        "IdBook = '"+arrayModel.getId()+"' AND IdUser = '"+session.getUserIdLoggedIn()+"';";
+                "BookTitle = '"+arrayModel.getTitle()+"', " +
+                "BookImage = '"+arrayModel.getUrlImage()+"', " +
+                "BookLength = '"+arrayModel.getUrlImage()+"', " +
+                "BookAuthor = '"+arrayModel.getUrlImage()+"' " +
+                "WHERE " +
+                "BookId = '"+arrayModel.getId()+"'; ";
         dbHelper.QueryData(UPDATE_DATA);
     }
 
@@ -115,16 +92,15 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
     private void GetCursorData() {
         Cursor cursor;
         list.clear();
-        cursor = dbHelper.GetData("SELECT * FROM history, book WHERE history.IdBook = book.Id");
-        while (cursor.moveToNext()){
-            int insertTime = cursor.getInt(2);
-            int pauseTime = cursor.getInt(3);
-            int bookId = cursor.getInt(4);
-            String bookName = cursor.getString(5);
-            int categoryId = cursor.getInt(6);
-            String content = cursor.getString(8);
-            String fileURL = cursor.getString(7);
-            list.add(new History(bookId,bookName,content,pauseTime,insertTime,fileURL,categoryId));
+        cursor = dbHelper.GetData("SELECT * FROM history");
+        while (cursor.moveToNext()) {
+            int bookId = cursor.getInt(0);
+            String bookTitle = cursor.getString(1);
+            String bookImage = cursor.getString(2);
+            int bookLength = cursor.getInt(3);
+            String bookAuthor = cursor.getString(4);
+
+            list.add(new Book(bookId,bookTitle,bookImage,bookLength,bookAuthor));
         }
         cursor.close();
         historyAdapter.notifyDataSetChanged();
@@ -135,11 +111,7 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                HashMap<String,String> ResultHash = new HashMap<>();
-                String keyPost = "UserID";
-                String postValue = String.valueOf(session.getUserIdLoggedIn());
-                ResultHash.put(keyPost,postValue);
-                presenterShowListHistory.GetSelectedResponse(activity, ResultHash,HttpUrl_FilterHistoryData);
+                RequestLoadingData();
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
@@ -149,66 +121,55 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         GetCursorData();
         //get data from json parsing
         if(list.isEmpty()) {
-            HashMap<String,String> ResultHash = new HashMap<>();
-            String keyPost = "UserID";
-            String postValue = String.valueOf(session.getUserIdLoggedIn());
-            ResultHash.put(keyPost,postValue);
-            presenterShowListHistory.GetSelectedResponse(activity, ResultHash,HttpUrl_FilterHistoryData);
+            RequestLoadingData();
         } else {
             progressBar.setVisibility(View.GONE);
         }
     }
 
-    private void SetInsertTableData(History arrayModel, String tableName) {
-        String INSERT_DATA = "INSERT INTO '"+tableName+"' VALUES(" +
+    private void RequestLoadingData() {
+        int userId =session.getUserIdLoggedIn();
+        HashMap<String,String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"getHistory\", " +
+                        "\"UserId\":\""+userId+"\"" +
+                        "}";
+        ResultHash.put(keyPost,valuePost);
+        presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
+    }
+
+    private void SetInsertTableData(Book arrayModel) {
+        String INSERT_DATA =
+                "INSERT INTO history VALUES" +
+                        "(" +
                         "'"+arrayModel.getId()+"'," +
-                        "'"+session.getUserIdLoggedIn()+"'," +
-                        "'"+arrayModel.getInsertTime()+"'," +
-                        "'"+arrayModel.getPauseTime()+"')";
+                        "'"+arrayModel.getTitle()+"'," +
+                        "'"+arrayModel.getUrlImage()+"'," +
+                        "'"+arrayModel.getLength()+"'," +
+                        "'"+arrayModel.getAuthor()+"'" +
+                        ");";
         dbHelper.QueryData(INSERT_DATA);
-        try {
-            INSERT_DATA = "INSERT INTO book VALUES (" +
-                    "'"+arrayModel.getId()+"'," +
-                    "'"+arrayModel.getTitle()+"'," +
-                    "'"+arrayModel.getCategoryId()+"'," +
-                    "'"+arrayModel.getFileUrl()+"'," +
-                    "'"+arrayModel.getContent()+"');";
-            dbHelper.QueryData(INSERT_DATA);
-        } catch (Exception e) {
-            Log.d(TAG, "SetInsertTableData: failed "+INSERT_DATA);
-        }
     }
 
     @Override
     public void CompareDataPhoneWithServer(JSONArray jsonArray) {
-        Cursor cursor;
-       // if list of database in sqlite on phone we delete all data in history table in sqlite phone
-        cursor = dbHelper.GetData("SELECT * FROM history, book WHERE history.IdBook = book.Id");
-        ArrayList<History> arrayList = new ArrayList<>();
-        while (cursor.moveToNext()) {
-            int insertTime = cursor.getInt(2);
-            int pauseTime = cursor.getInt(3);
-            int bookId = cursor.getInt(4);
-            String bookName = cursor.getString(5);
-            int categoryId = cursor.getInt(6);
-            String content = cursor.getString(8);
-            String fileURL = cursor.getString(7);
-            arrayList.add(new History(bookId, bookName, content, pauseTime, insertTime, fileURL, categoryId));
-        }
-        if (arrayList.size() > jsonArray.length()) {
-            dbHelper.QueryData("DELETE FROM '" + tableDB + "'");
-        }
+
     }
 
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
 
-        History tempModel = new History();
-        //return tempModel value from jsonObject
-        SetTempModel(tempModel,jsonObject,tableDB);
+        Book tempModel = new Book();
+        tempModel.setId(Integer.parseInt(jsonObject.getString("BookId")));
+        tempModel.setTitle(jsonObject.getString("BookTitle"));
+        tempModel.setUrlImage(jsonObject.getString("BookImage"));
+        tempModel.setLength(Integer.parseInt(jsonObject.getString("BookLength")));
+        tempModel.setAuthor(jsonObject.getString("Author"));
 
         try {
-            SetInsertTableData(tempModel,tableDB);
+            SetInsertTableData(tempModel);
         } catch (Exception e) {
             SetUpdateTableData(tempModel);
         }
@@ -219,5 +180,10 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
         Log.d(TAG, "onPostExecute: "+ menuTitle);
+    }
+
+    @Override
+    public void LoadListDataFailed(String jsonMessage) {
+        Log.d(TAG, "LoadListDataFailed: "+ jsonMessage);
     }
 }

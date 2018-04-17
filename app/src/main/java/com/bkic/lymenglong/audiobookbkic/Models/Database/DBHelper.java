@@ -12,6 +12,7 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_FAVORITE;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_HISTORY;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_MENU;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_PLAYBACK_HISTORY;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_REVIEW;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.INSERT_MENU_VALUES;
 
@@ -44,6 +45,7 @@ public class DBHelper extends SQLiteOpenHelper {
         dbHelper.execSQL(CREATE_TABLE_HISTORY);
         dbHelper.execSQL(CREATE_TABLE_FAVORITE);
         dbHelper.execSQL(CREATE_TABLE_REVIEW);
+        dbHelper.execSQL(CREATE_TABLE_PLAYBACK_HISTORY);
         //insert menu value
         dbHelper.execSQL(INSERT_MENU_VALUES);
 

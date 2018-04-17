@@ -1,50 +1,46 @@
 package com.bkic.lymenglong.audiobookbkic.Models.Favorite.Adapters;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v7.app.AlertDialog;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.bkic.lymenglong.audiobookbkic.Models.Favorite.Utils.Favorite;
-import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.R;
-import com.bkic.lymenglong.audiobookbkic.Views.Reading.ViewReading;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter.ListChapter;
 
 import java.util.ArrayList;
 
 
 public class FavoriteAdapter extends RecyclerView.Adapter {
-    private ArrayList<Favorite> index;
+    private ArrayList<Book> books;
     private Activity activity;
-    private View view;
-    private int getIdChapter;
-    private String getTitleChapter,getContentChapter, getFileUrlChapter;
+    //    private int getIdChapter;
+//    private String getTitleChapter,getContentChapter, getFileUrlChapter;
 
-    public FavoriteAdapter(Activity activity, ArrayList<Favorite> index) {
-        this.index = index;
+    public FavoriteAdapter(Activity activity, ArrayList<Book> books) {
+        this.books = books;
         this.activity = activity;
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list, parent, false);
         return new ChapterHolder(view);
 
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ChapterHolder) {
             ChapterHolder chapterHolder = (ChapterHolder) holder;
 
-            chapterHolder.name.setText(index.get(position).getTitle());
+            chapterHolder.name.setText(books.get(position).getTitle());
         }
 
     }
@@ -56,18 +52,18 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return index.size();
+        return books.size();
     }
 
     class ChapterHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView name;
-        private ImageView imgNext;
+//        private ImageView imgNext;
 
         ChapterHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.nameStory);
-            imgNext = itemView.findViewById(R.id.imgNext);
+//            imgNext = itemView.findViewById(R.id.imgNext);
 
             itemView.setOnClickListener(this);
         }
@@ -75,16 +71,25 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
         @Override
         public void onClick(View view) {
             if(view == itemView) {
-                getIdChapter = index.get(getAdapterPosition()).getId();
-                getTitleChapter = index.get(getAdapterPosition()).getTitle();
-                getContentChapter = index.get(getAdapterPosition()).getContent();
-                getFileUrlChapter = index.get(getAdapterPosition()).getFileUrl();
-                showAlertDialog();
+/*
+getIdChapter = books.get(getAdapterPosition()).getId();
+getTitleChapter = books.get(getAdapterPosition()).getTitle();
+getContentChapter = books.get(getAdapterPosition()).getContent();
+getFileUrlChapter = books.get(getAdapterPosition()).getFileUrl();
+showAlertDialog();
+*/
+                Intent intent = new Intent(activity, ListChapter.class);
+                intent.putExtra("BookId", books.get(getAdapterPosition()).getId());
+                intent.putExtra("BookTitle", books.get(getAdapterPosition()).getTitle());
+                intent.putExtra("BookImage", books.get(getAdapterPosition()).getUrlImage());
+                intent.putExtra("BookLength", books.get(getAdapterPosition()).getLength());
+                intent.putExtra("BookAuthor", books.get(getAdapterPosition()).getAuthor());
+                activity.startActivity(intent);
             }
         }
     }
 
-    private void showAlertDialog(){
+    /*private void showAlertDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 //        builder.setTitle("Chọn Dạng Sách");
         builder.setMessage("Bạn muốn chọn dạng nào?");
@@ -125,5 +130,5 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
 
-    }
+    }*/
 }

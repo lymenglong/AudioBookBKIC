@@ -123,8 +123,8 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
         Intent accountsIntent = new Intent(activity, MainActivity.class);
         accountsIntent.putExtra("EMAIL", textInputEditTextEmail.getText().toString().trim());
         startActivity(accountsIntent);
-        presenter.UserDetail(textEmail);
         activity.finish();
+        presenter.UserDetail(textEmail);
     }
 
     @Override

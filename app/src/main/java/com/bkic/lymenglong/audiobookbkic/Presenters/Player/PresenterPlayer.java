@@ -12,13 +12,16 @@ import android.widget.Toast;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 
-public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
+public class PresenterPlayer
+        extends MediaPlayer
+        implements PresenterPlayerImp{
 
     private PlayControl playControlActivity;
     private ProgressDialog progressDialog;
     private boolean initialStage = true;
     private static String TAG = "PresenterPlayer";
     private MediaPlayer mediaPlayer = new MediaPlayer();
+    private int intSoundMax;
 
     public PresenterPlayer(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
@@ -86,7 +89,7 @@ public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
     public void RewindMedia() {
         int intCurrentPosition = mediaPlayer.getCurrentPosition();
         // check if seekBackward time is greater than 0 sec
-        int seekBackwardTime = 5000;
+        int seekBackwardTime = 10000; //10sec
         if(intCurrentPosition - seekBackwardTime >= 0){
             // forward song
             mediaPlayer.seekTo(intCurrentPosition - seekBackwardTime);
@@ -98,18 +101,16 @@ public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
     @Override
     public void ForwardMedia() {
         int intCurrentPosition = mediaPlayer.getCurrentPosition();
-        int seekForwardTime = 5000;
-        int targetPossition = intCurrentPosition + seekForwardTime;
-//        int intSoundMax = mediaPlayer.getDuration();
-        mediaPlayer.seekTo(targetPossition);
-        /*if(targetPossition < intSoundMax){
+        int seekForwardTime = 10000;//10sec
+        int targetPosition = intCurrentPosition + seekForwardTime;
+        if(targetPosition < intSoundMax){
             // forward song
-            mediaPlayer.seekTo(targetPossition);
-            Log.d("MyTagView", "forwardMedia: "+ targetPossition);
+            mediaPlayer.seekTo(targetPosition);
+            Log.d(TAG, "forwardMedia: "+ targetPosition);
         }else{
             // forward to end position
             mediaPlayer.seekTo(mediaPlayer.getDuration());
-        }*/
+        }
     }
     @Override
     public void PreviousMedia() {
@@ -131,17 +132,12 @@ public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
             if(mediaPlayer.isPlaying()) Log.d(TAG, "PlayMedia: "+ mediaPlayer.isPlaying());
-            mediaPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener() {
-                @Override
-                public void onBufferingUpdate(MediaPlayer mp, int percent) {
-                    Log.d(TAG, "onBufferingUpdate: percent = "+percent);
-                    Log.d(TAG, "onBufferingUpdate: mp.getDuration = "+mp.getDuration());
-                }
-
-                @Override
-                protected void finalize() throws Throwable {
-                    super.finalize();
-                }
+                    mediaPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener() {
+                    @Override
+                    public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                        Log.d(TAG, "onBufferingUpdate: percent = "+percent);
+                        intSoundMax = mp.getDuration();
+                    }
             });
             if(mediaPlayer.getCurrentPosition()< playControlActivity.PauseTime){
                 mediaPlayer.seekTo(playControlActivity.PauseTime);
@@ -164,7 +160,7 @@ public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
         }
     }
     @Override
-    public void GetLastMediaData(){
+    public int GetLastMediaData(){
         int lastPlayDuration;
         if(mediaPlayer.getCurrentPosition()==mediaPlayer.getDuration()){
             lastPlayDuration = 0;
@@ -172,6 +168,6 @@ public class PresenterPlayer extends MediaPlayer implements PresenterPlayerImp {
             lastPlayDuration = mediaPlayer.getCurrentPosition();
         }
         mediaPlayer.release();
-        playControlActivity.lastPlayDuration = lastPlayDuration;
+        return lastPlayDuration;
     }
 }

@@ -11,4 +11,6 @@ public interface ListHistoryImp {
     void SetTableSelectedData(JSONObject jsonObject) throws JSONException;
 
     void ShowListFromSelected();
+
+    void LoadListDataFailed(String jsonMessage);
 }

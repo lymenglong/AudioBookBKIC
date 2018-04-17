@@ -171,7 +171,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         try {
             INSERT_DATA =
                     //todo: create new book table for sqlite
-                    "INSERT INTO books VALUES(" +
+                    "INSERT INTO book VALUES(" +
                             "'"+bookModel.getId()+"', " +
                             "'"+bookModel.getTitle()+"', " +
                             "'"+bookModel.getAuthor()+"', " +
@@ -185,7 +185,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
                             ")";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
-            String UPDATE_DATA = "UPDATE books SET " +
+            String UPDATE_DATA = "UPDATE book SET " +
                     "BookTitle = '"+bookModel.getTitle()+"', " +
                     "BookImage = '"+bookModel.getUrlImage()+"', " +
                     "BookLength = '"+bookModel.getLength()+"' ," +

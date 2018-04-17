@@ -91,7 +91,7 @@
     <string name="add_to_favorite">Ghim vào yêu thích</string>
     <string name="logout">Đăng Xuất</string>
     <string name="sach_noi_bkic">Sách Nói BKIC</string>
-    <string name="add_favorite">Ghim vào yêu thích</string>
+    <string name="add_favorite_book">Ghim Sách Vào Yêu Thích</string>
     <string name="already_a_member_login">Đã có tài khoản, Đăng nhập</string>
     <string name="hint_home_screen">Giao diện chủ</string>
     <string name="time">00:00</string>
@@ -108,5 +108,6 @@
     <string name="toolbar">Toolbar</string>
     <string name="message_logout_failed">Bạn xác định không đăng xuất.</string>
     <string name="message_logout_success">Đăng Xuất Thành Công</string>
+    <string name="text">text</string>
 
 </resources>
