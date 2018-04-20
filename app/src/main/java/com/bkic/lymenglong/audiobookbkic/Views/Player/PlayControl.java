@@ -222,7 +222,8 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 break;
             case R.id.btn_pause:
                 presenterPlayer.PauseMedia();
-                presenterReview.ReviewBookDialog();
+//                presenterReview.ReviewBookDialog(playControlActivity);
+                presenterReview.ReviewDialog(playControlActivity);
                 break;
             case R.id.btn_replay:
                 presenterPlayer.ReplayMedia();

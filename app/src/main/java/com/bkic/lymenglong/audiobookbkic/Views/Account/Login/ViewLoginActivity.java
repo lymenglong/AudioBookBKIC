@@ -3,6 +3,7 @@ package com.bkic.lymenglong.audiobookbkic.Views.Account.Login;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -36,6 +37,9 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
 
     private AppCompatTextView textViewLinkRegister;
     private String textEmail;
+
+    // variable to track event time
+    private long mLastClickTime = 0;
 
 
 
@@ -83,6 +87,10 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
 
     @Override
     public void onClick(View v) {
+        if (SystemClock.elapsedRealtime() - mLastClickTime < 1000) {
+            return;
+        }
+        mLastClickTime = SystemClock.elapsedRealtime();
         switch (v.getId()){
             case R.id.appCompatButtonLogin:
 

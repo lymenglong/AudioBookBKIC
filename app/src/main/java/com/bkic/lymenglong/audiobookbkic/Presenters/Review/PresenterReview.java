@@ -3,14 +3,17 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Review;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
@@ -37,6 +40,7 @@ public class PresenterReview
     private RadioButton radioButton4;
     private RadioButton radioButton5;
     private int rateNumber;
+    private int clickCount = 0;
     private Boolean SubmitBntIsClicked = false;
     public PresenterReview(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
@@ -44,8 +48,77 @@ public class PresenterReview
     private Dialog dialog;
 
     @Override
-    public void ReviewBookDialog() {
-        dialog = new Dialog(playControlActivity);
+    public void ReviewDialog(final Context context){
+        dialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_review2);
+//        dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        View view = dialog.findViewById(R.id.viewReview);
+        view.setContentDescription(context.getString(R.string.prompt_review_question));
+//        ViewCompat.setImportantForAccessibility(view, ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+        dialog.show();
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                clickCount++;
+                final Handler handler = new Handler();
+                final Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        SubmitBntIsClicked = true;
+                        switch (clickCount){
+                            case 1:
+                                Toast.makeText(context, "Single Click", Toast.LENGTH_SHORT).show();
+                                rateNumber = clickCount;
+                                playControlActivity.ReviewBook();
+                                playControlActivity.setRateNumber(rateNumber);
+                                dialog.dismiss();
+                                playControlActivity.ReviewBook();
+                                break;
+                            case 2:
+                                Toast.makeText(context, "Double Click", Toast.LENGTH_SHORT).show();
+                                rateNumber = clickCount;
+                                playControlActivity.setRateNumber(rateNumber);
+                                dialog.dismiss();
+                                playControlActivity.ReviewBook();
+                                break;
+                            case 3:
+                                Toast.makeText(context, "Triple Click", Toast.LENGTH_SHORT).show();
+                                rateNumber = clickCount;
+                                playControlActivity.setRateNumber(rateNumber);
+                                dialog.dismiss();
+                                playControlActivity.ReviewBook();
+                                break;
+                            case 4:
+                                Toast.makeText(context, "4 Times Click", Toast.LENGTH_SHORT).show();
+                                rateNumber = clickCount;
+                                playControlActivity.setRateNumber(rateNumber);
+                                dialog.dismiss();
+                                playControlActivity.ReviewBook();
+                                break;
+                            case 5:
+                                Toast.makeText(context, "5 Times Click", Toast.LENGTH_SHORT).show();
+                                rateNumber = clickCount;
+                                playControlActivity.setRateNumber(rateNumber);
+                                dialog.dismiss();
+                                playControlActivity.ReviewBook();
+                                break;
+                            /*default:
+                                Toast.makeText(context, "Unknown Click", Toast.LENGTH_SHORT).show();
+                                break; //no need*/
+                        }
+                        clickCount = 0;
+                    }
+                };
+                handler.postDelayed(runnable,3000);
+            }
+        });
+
+    }
+
+    @Override
+    public void ReviewBookDialog(Context context) {
+        dialog = new Dialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_review);
         Button buttonDismiss = dialog.findViewById(R.id.button_dismiss);

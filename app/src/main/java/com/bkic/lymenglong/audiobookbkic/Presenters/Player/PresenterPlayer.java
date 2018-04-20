@@ -192,7 +192,8 @@ public class PresenterPlayer
                         String message = "Đã chạy xong chương này";
                         Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
                         PresenterReview presenterReview = new PresenterReview(playControlActivity);
-                        presenterReview.ReviewBookDialog();
+                        presenterReview.ReviewDialog(playControlActivity);
+//                        presenterReview.ReviewBookDialog(playControlActivity.getBaseContext());
                     }
                 });
             }

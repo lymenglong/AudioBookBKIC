@@ -78,8 +78,8 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
         String UPDATE_DATA = "UPDATE history SET " +
                 "BookTitle = '"+arrayModel.getTitle()+"', " +
                 "BookImage = '"+arrayModel.getUrlImage()+"', " +
-                "BookLength = '"+arrayModel.getUrlImage()+"', " +
-                "BookAuthor = '"+arrayModel.getUrlImage()+"' " +
+                "BookLength = '"+arrayModel.getLength()+"', " +
+                "BookAuthor = '"+arrayModel.getAuthor()+"' " +
                 "WHERE " +
                 "BookId = '"+arrayModel.getId()+"'; ";
         dbHelper.QueryData(UPDATE_DATA);

@@ -79,8 +79,8 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
         String UPDATE_DATA = "UPDATE favorite SET " +
                                     "BookTitle = '"+arrayModel.getTitle()+"', " +
                                     "BookImage = '"+arrayModel.getUrlImage()+"', " +
-                                    "BookLength = '"+arrayModel.getUrlImage()+"', " +
-                                    "BookAuthor = '"+arrayModel.getUrlImage()+"' " +
+                                    "BookLength = '"+arrayModel.getLength()+"', " +
+                                    "BookAuthor = '"+arrayModel.getAuthor()+"' " +
                                         "WHERE " +
                                             "BookId = '"+arrayModel.getId()+"'; ";
         dbHelper.QueryData(UPDATE_DATA);
