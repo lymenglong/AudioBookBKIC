@@ -17,7 +17,7 @@ public final class Const {
 //    public static final String HttpUrl_ALLMenuData = "http://20121969.tk/SachNoiBKIC/AllMenuData.php";
 //    public static final String HttpURL_FilterBookData = "http://20121969.tk/SachNoiBKIC/FilterBookData.php";
 //    public static final String HttpURL_FilterCategoryData = "http://20121969.tk/SachNoiBKIC/FilterCategoryData.php";
-    public static final String HttpUrl_FilterHistoryData = "http://20121969.tk/SachNoiBKIC/FilterHistoryData.php";
+//    public static final String HttpUrl_FilterHistoryData = "http://20121969.tk/SachNoiBKIC/FilterHistoryData.php";
     //</editor-fold>
 
     //<editor-fold desc="New API URL">
@@ -145,4 +145,5 @@ public final class Const {
     }
 
     //endregion
+
 }

@@ -93,8 +93,8 @@
     <string name="play">Chạy sách nói</string>
     <string name="pause">Đừng lại</string>
     <string name="stop">Nghe lại từ đầu</string>
-    <string name="next">Sách nói tiếp theo</string>
-    <string name="previous">Sách nói trước đây</string>
+    <string name="nextChapter">Chương tiếp theo</string>
+    <string name="previousChapter">Chương trước đây</string>
     <string name="backward">Lùi lại 10 giây</string>
     <string name="forward">Lùi đi 10 giây</string>
     <string name="add_book_to_favorite">Ghim sách vào yêu thích</string>
@@ -128,5 +128,14 @@
     <string name="no_data">Chưa cấp nhật dữ liệu</string>
     <string name="buffering_data">Buffering…</string>
     <!--endregion-->
+    <string name="prompt_review_question">bạn cảm thấy quyển sách này có chất lượng thế nào</string>
+    <string name="text_review">Đánh giá</string>
+    <string name="text_1">1</string>
+    <string name="text_2">2</string>
+    <string name="text_3">3</string>
+    <string name="text_4">4</string>
+    <string name="text_5">5</string>
+    <string name="btn_submit">Cập nhật</string>
+    <string name="btn_dismiss">Thoát</string>
 
 </resources>

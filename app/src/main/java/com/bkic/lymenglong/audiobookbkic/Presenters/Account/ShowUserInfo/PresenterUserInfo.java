@@ -13,7 +13,6 @@ public class PresenterUserInfo implements PresenterUserInfoImp {
         this.userInfoActivity = userInfoActivity;
     }
 
-
     @Override
     public void ShowAlertLogoutDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(userInfoActivity);

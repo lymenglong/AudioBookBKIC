@@ -123,7 +123,7 @@ public class PresenterUpdateHistory implements PresenterUpdateHistoryImp {
     //Update Favorite Or History To Server (addHistory, addFavorite)
     @Override
     public void RequestUpdateToServer(String actionRequest, String userId, String bookId, String insertTime) {
-        HashMap<String,String> ResultHash = new HashMap<>();
+        HashMap<String, String> ResultHash = new HashMap<>();
         String keyPost = "json";
         String valuePost =
                 "{" +

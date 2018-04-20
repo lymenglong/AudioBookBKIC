@@ -19,6 +19,10 @@ public interface PresenterPlayerImp {
 
     void PlayMedia();
 
+    void StopMedia();
+
+    void RemoveCallBacksUpdateHandler();
+
     int GetLastMediaData();
 
 }
