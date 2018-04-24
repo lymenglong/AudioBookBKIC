@@ -25,4 +25,5 @@ public interface PresenterPlayerImp {
 
     int GetLastMediaData();
 
+    void ReleaseMediaPlayer();
 }

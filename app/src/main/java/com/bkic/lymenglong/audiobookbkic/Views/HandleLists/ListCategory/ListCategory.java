@@ -1,7 +1,6 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
@@ -43,13 +42,14 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
     private Activity activity = ListCategory.this;
     private ProgressBar progressBar;
     private DBHelper dbHelper;
-    private static ArrayList <Category> list = new ArrayList<>();
+    private ArrayList <Category> list = new ArrayList<>();
     private String menuTitle;
-    private String categoryTitle;
+/*    private String categoryTitle;
     private int categoryId;
     private String categoryDescription;
     private int categoryParent;
-    private int numOfChild;
+    private int numOfChild;*/
+    private Category categoryFromIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +63,9 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
         initObject();
     }
 
-
     private void SetToolBarTitle() {
         if(menuTitle == null){
-            title = categoryTitle;
+            title = categoryFromIntent.getTitle();
         } else{
             title = menuTitle;
         }
@@ -78,12 +77,19 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
      */
     private void getDataFromIntent() {
         menuTitle = getIntent().getStringExtra("MenuTitle");
-        categoryTitle = getIntent().getStringExtra("CategoryTitle");
+        /*categoryTitle = getIntent().getStringExtra("CategoryTitle");
         categoryId = getIntent().getIntExtra("CategoryId", 0);
         categoryDescription = getIntent().getStringExtra("CategoryDescription");
         categoryParent = getIntent().getIntExtra("CategoryParent",0);
-        numOfChild = getIntent().getIntExtra("NumOfChild",0);
-
+        numOfChild = getIntent().getIntExtra("NumOfChild",0);*/
+        categoryFromIntent =
+                new Category(
+                        getIntent().getIntExtra("CategoryId", 0),
+                        getIntent().getStringExtra("CategoryTitle"),
+                        getIntent().getStringExtra("CategoryDescription"),
+                        getIntent().getIntExtra("CategoryParent",0),
+                        getIntent().getIntExtra("NumOfChild",0)
+                        );
     }
 
     /**
@@ -142,7 +148,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
         listChapter.setLayoutManager(mLinearLayoutManager);
         adapter = new CategoryAdapter(ListCategory.this, list);
         listChapter.setAdapter(adapter);
-        int parentId = categoryId; //getIntent
+        int parentId = categoryFromIntent.getId(); //getIntent
         GetCursorData(parentId);
         //get data from json parsing
         if(list.isEmpty()){
@@ -181,7 +187,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
     @Override
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
-        int parentId = categoryId; //getIntent
+        int parentId = categoryFromIntent.getParentId(); //getIntent
         GetCursorData(parentId);
         Log.d(TAG, "onPostExecute: "+ title);
     }

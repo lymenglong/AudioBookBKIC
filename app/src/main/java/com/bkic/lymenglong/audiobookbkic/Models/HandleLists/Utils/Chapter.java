@@ -8,6 +8,17 @@ public class Chapter {
     private int length;
     private int bookId;
 
+    public Chapter(int id, String title, String fileUrl, int length, int bookId) {
+        this.id = id;
+        this.title = title;
+        this.fileUrl = fileUrl;
+        this.length = length;
+        this.bookId = bookId;
+    }
+
+    public Chapter() {
+    }
+
     public int getId() {
         return id;
     }

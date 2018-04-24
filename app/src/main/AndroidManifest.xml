@@ -8,6 +8,9 @@ package="com.bkic.lymenglong.audiobookbkic">
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
 <application
     android:allowBackup="true"
     android:icon="@mipmap/ic_launcher"
@@ -15,6 +18,7 @@ package="com.bkic.lymenglong.audiobookbkic">
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/AppTheme">
+    <service android:name=".Models.Player.MediaPlayerService" />
     <activity
         android:name=".Views.SplashScreen"
         android:screenOrientation="portrait">

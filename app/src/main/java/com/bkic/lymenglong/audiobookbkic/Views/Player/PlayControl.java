@@ -17,6 +17,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.History.Utils.PlaybackHistory;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Favorite.UpdateFavorite.PresenterUpdateFavorite;
 import com.bkic.lymenglong.audiobookbkic.Presenters.History.UpdateHistory.PresenterUpdateHistory;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Player.PresenterPlayer;
@@ -39,11 +40,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     private static final String TAG = "PlayControl";
     private Activity playControlActivity = PlayControl.this;
     private Session session;
-    private String ChapterUrl;
-    private String ChapterTitle;
-    private int ChapterId;
-    public int PauseTime;
-    private int BookId;
+    private int ResumeTime;
     private DBHelper dbHelper;
     private Button btnPlay, btnStop, btnPause, btnForward, btnBackward, btnNext, btnPrev, btnFavorite;
     private SeekBar seekBar;
@@ -51,6 +48,15 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     private TextView txtCurrentDuration;
     private int RateNumber;
     private String Review;
+    private Chapter chapterFromIntent;
+
+    public int getResumeTime() {
+        return ResumeTime;
+    }
+
+    public void setResumeTime(int resumeTime) {
+        ResumeTime = resumeTime;
+    }
 
     public void setRateNumber(int rateNumber) {
         RateNumber = rateNumber;
@@ -82,26 +88,50 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     public SeekBar getSeekBar() {
         return seekBar;
     }
-    private int indexAudio = 0;
+    private int indexChapterAudio = -1;
     private HashMap<String, Chapter> hashMapChapter = new HashMap<>();
     private Boolean InitialState = true;
+    private HashMap<String, PlaybackHistory> historyHashMap = new HashMap<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_control);
         initDataFromIntent();
-        initToolbar(ChapterTitle);
+        initToolbar(chapterFromIntent.getTitle());
         initView();
         initObject();
         initCollectChapterUrl();
+        initHistoryState();
         initCheckAudioUrl();
         intListener();
 
     }
 
+    private void initHistoryState() {
+        String SELECT_PLAY_BACK_HISTORY =
+                "SELECT * FROM playHistory " +
+                    "WHERE " +
+                        "BookId = '"+chapterFromIntent.getBookId()+"' " +
+                        "AND " +
+                        "ChapterId = '"+chapterFromIntent.getId()+"'" +
+                ";";
+        Cursor cursor = dbHelper.GetData(SELECT_PLAY_BACK_HISTORY);
+        while (cursor.moveToNext()){
+            PlaybackHistory history = new PlaybackHistory
+                    (
+                            cursor.getInt(0),
+                            cursor.getInt(1),
+                            cursor.getInt(2),
+                            cursor.getString(3)
+                    );
+            historyHashMap.put(String.valueOf(cursor.getInt(0)),history); //key = ChapterId
+        }
+    }
+
     private void initCollectChapterUrl(){
         /*JSONArray jsonArray = new JSONArray();*/
-        String SELECT_FROM_CHAPTER = "SELECT * FROM CHAPTER WHERE BookId = '"+BookId+"'";
+        String SELECT_FROM_CHAPTER = "SELECT * FROM CHAPTER WHERE BookId = '"+chapterFromIntent.getBookId()+"'";
         Cursor cursor = dbHelper.GetData(SELECT_FROM_CHAPTER);
         while(cursor.moveToNext()){
             /*JSONObject jsonObject = new JSONObject();
@@ -118,8 +148,8 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             chapterModel.setLength(cursor.getInt(3));
             chapterModel.setBookId(cursor.getInt(4));
             hashMapChapter.put(String.valueOf(cursor.getPosition()), chapterModel);
-            if(chapterModel.getId() == ChapterId){
-                indexAudio = cursor.getPosition();
+            if(chapterModel.getId() == chapterFromIntent.getId()){
+                indexChapterAudio = cursor.getPosition();
             }
         }
     }
@@ -146,7 +176,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
 
     @Override
     public void initCheckAudioUrl() {
-        if (ChapterUrl.isEmpty()) {
+        if (chapterFromIntent.getFileUrl().isEmpty()) {
             Toast.makeText(playControlActivity, getString(R.string.no_data), Toast.LENGTH_SHORT).show();
             playControlActivity.finish();
         } else{
@@ -155,22 +185,29 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     }
 
     private void PrepareChapter() {
-        if (0 <= indexAudio && indexAudio < hashMapChapter.size()) {
+        if (0 <= indexChapterAudio && indexChapterAudio < hashMapChapter.size()) {
             if (!InitialState) presenterPlayer.StopMedia();
-            initToolbar(hashMapChapter.get(String.valueOf(indexAudio)).getTitle());
+            initToolbar(hashMapChapter.get(String.valueOf(indexChapterAudio)).getTitle());
             //prepareMediaData
             //todo check internet connection
 
-            String ChapterUrlFromIndex = hashMapChapter.get(String.valueOf(indexAudio)).getFileUrl();
+            try {
+                int ChapterIdFromIndex = hashMapChapter.get(String.valueOf(indexChapterAudio)).getId();
+                int ResumePosition = historyHashMap.get(String.valueOf(ChapterIdFromIndex)).getPauseTime();
+                setResumeTime(ResumePosition);
+            } catch (Exception ignored) {
+                setResumeTime(0);
+            }
+            String ChapterUrlFromIndex = hashMapChapter.get(String.valueOf(indexChapterAudio)).getFileUrl();
             String AudioUrl = HttpURL_Audio + ChapterUrlFromIndex;
             presenterPlayer.PrepareMediaPlayer(AudioUrl);
             InitialState = false;
-        } else if(indexAudio < 0 ) {
-            indexAudio = 0;
+        } else if(indexChapterAudio < 0 ) {
+            indexChapterAudio = 0;
             String message = "Chương bạn đã yêu cầu không tồn tại";
             Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
         } else {
-            indexAudio = hashMapChapter.size()-1;
+            indexChapterAudio = hashMapChapter.size()-1;
             String message = "Chương bạn đã yêu cầu không tồn tại";
             Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
         }
@@ -186,15 +223,15 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     }
 
     private void initDataFromIntent() {
-        ChapterId = getIntent().getIntExtra("ChapterId",-1);
-        ChapterTitle = getIntent().getStringExtra("ChapterTitle");
-        ChapterUrl = getIntent().getStringExtra("ChapterUrl");
-//        int chapterLength = getIntent().getIntExtra("ChapterLength", 0);
-        BookId = getIntent().getIntExtra("BookId",-1);
-/*        Calendar calendar = Calendar.getInstance();
-        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
-                new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-        String InsertTimeHolder = simpledateformat.format(calendar.getTime());*/
+        chapterFromIntent = new Chapter
+                (
+                        getIntent().getIntExtra("ChapterId",-1),
+                        getIntent().getStringExtra("ChapterTitle"),
+                        getIntent().getStringExtra("ChapterUrl"),
+                        getIntent().getIntExtra("ChapterLength", 0),
+                        getIntent().getIntExtra("BookId",-1)
+                );
+
     }
 
     private void initToolbar(String ChapterTitle) {
@@ -229,7 +266,6 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
         seekBar.setOnSeekBarChangeListener(presenterPlayer);
     }
 
-
     @Override
     public void onClick(View v) {
         //region Switch Button
@@ -250,11 +286,11 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 presenterPlayer.ReplayMedia();
                 break;
             case R.id.btn_next:
-                indexAudio++;
+                indexChapterAudio++;
                 PrepareChapter();
                 break;
             case R.id.btn_previous:
-                indexAudio--;
+                indexChapterAudio--;
                 PrepareChapter();
                 break;
             case R.id.btn_ffw:
@@ -270,7 +306,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     @Override
     public void AddReviewBookToServer() {
         int userId = session.getUserIdLoggedIn();
-        int bookId = BookId;
+        int bookId = chapterFromIntent.getBookId();
         int rateNumber = getRateNumber();
         String review = getReview();
         presenterReview.RequestReviewBook(playControlActivity,userId,bookId,rateNumber,review);
@@ -281,7 +317,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
         //todo check internet connection
         String jsonAction = "addFavourite";
         String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
-        String IdBookHolder = String.valueOf(BookId);
+        String IdBookHolder = String.valueOf(chapterFromIntent.getBookId());
         Calendar calendar = Calendar.getInstance();
         @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
                 new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
@@ -299,7 +335,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                         "BookAuthor " +
                         "FROM " +
                         "book " +
-                        "WHERE BookId = '"+BookId+"'" +
+                        "WHERE BookId = '"+chapterFromIntent.getBookId()+"'" +
                         ";";
         Cursor cursor = dbHelper.GetData(SELECT_BOOK_BY_BOOK_ID);
         Book bookModel = new Book();
@@ -325,10 +361,10 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
         } catch (Exception ignored) {
             String UPDATE_BOOK_IN_TABLE_FAVORITE =
                     "UPDATE favorite SET " +
-                            "BookTitle = '"+bookModel.getId()+"', " +
-                            "BookImage = '"+bookModel.getId()+"', " +
-                            "BookLength = '"+bookModel.getId()+"', " +
-                            "BookAuthor = '"+bookModel.getId()+"' " +
+                            "BookTitle = '"+bookModel.getTitle()+"', " +
+                            "BookImage = '"+bookModel.getUrlImage()+"', " +
+                            "BookLength = '"+bookModel.getLength()+"', " +
+                            "BookAuthor = '"+bookModel.getAuthor()+"' " +
                             "WHERE " +
                             "BookId = '"+bookModel.getId()+"'" +
                             ";";
@@ -344,15 +380,16 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
         presenterPlayer.RemoveCallBacksUpdateHandler();
         //</editor-fold>
         UpdateHistoryData();
+        presenterPlayer.ReleaseMediaPlayer();
         super.onDestroy();
     }
 
     private void UpdateHistoryData() {
-        if (!ChapterUrl.isEmpty()) {
+        if (!chapterFromIntent.getFileUrl().isEmpty()) {
             int lastPlayDuration = presenterPlayer.GetLastMediaData();
             String jsonAction = "addHistory";
             String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
-            String IdBookHolder = String.valueOf(BookId);
+            String IdBookHolder = String.valueOf(chapterFromIntent.getBookId());
             Calendar calendar = Calendar.getInstance();
             @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
                     new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
@@ -364,7 +401,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 String INSERT_PLAY_HISTORY =
                         "INSERT INTO playHistory VALUES" +
                                 "(" +
-                                "'"+ChapterId+"', " +
+                                "'"+chapterFromIntent.getId()+"', " +
                                 "'"+IdBookHolder+"', " +
                                 "'"+lastPlayDuration +"', " +
                                 "'"+InsertTimeHolder+"'"+
@@ -376,9 +413,9 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                                 "PauseTime = '"+ lastPlayDuration +"', " +
                                 "LastDate ='"+InsertTimeHolder+"' " +
                                 "WHERE " +
-                                "ChapterId = '"+ChapterId+"' " +
+                                "ChapterId = '"+chapterFromIntent.getId()+"' " +
                                 "AND " +
-                                "BookId = '"+BookId+"'" +
+                                "BookId = '"+chapterFromIntent.getBookId()+"'" +
                                 ";";
                 dbHelper.QueryData(UPDATE_PLAY_HISTORY);
             }
@@ -393,7 +430,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                             "BookAuthor " +
                             "FROM " +
                             "book " +
-                            "WHERE BookId = '"+BookId+"'" +
+                            "WHERE BookId = '"+chapterFromIntent.getBookId()+"'" +
                             ";";
             Cursor cursor = dbHelper.GetData(SELECT_BOOK_BY_BOOK_ID);
             Book bookModel = new Book();
@@ -409,7 +446,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 String INSERT_BOOK_INTO_TABLE_HISTORY =
                         "INSERT INTO history VALUES" +
                                 "(" +
-                                "'"+bookModel.getId()+"', " +
+                                "'"+bookModel.getTitle()+"', " +
                                 "'"+bookModel.getTitle()+"', " +
                                 "'"+bookModel.getUrlImage()+"', " +
                                 "'"+bookModel.getLength()+"', " +
@@ -419,7 +456,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             } catch (Exception ignored) {
                 String UPDATE_BOOK_IN_TABLE_HISTORY =
                         "UPDATE history SET " +
-                                "BookTitle = '"+bookModel.getId()+"', " +
+                                "BookTitle = '"+bookModel.getTitle()+"', " +
                                 "BookImage = '"+bookModel.getUrlImage()+"', " +
                                 "BookLength = '"+bookModel.getLength()+"', " +
                                 "BookAuthor = '"+bookModel.getAuthor()+"' " +

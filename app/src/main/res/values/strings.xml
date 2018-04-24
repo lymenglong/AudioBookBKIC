@@ -91,7 +91,7 @@
     <!--region Player-->
     <string name="tv_now_playing">NOW PLAYING</string>
     <string name="play">Chạy sách nói</string>
-    <string name="pause">Đừng lại</string>
+    <string name="pause">Dừng lại</string>
     <string name="stop">Nghe lại từ đầu</string>
     <string name="nextChapter">Chương tiếp theo</string>
     <string name="previousChapter">Chương trước đây</string>
