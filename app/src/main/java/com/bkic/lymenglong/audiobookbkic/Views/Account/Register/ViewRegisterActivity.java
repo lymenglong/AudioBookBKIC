@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
@@ -53,7 +54,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
     private InputValidation inputValidation;
 
     private AppCompatTextView textViewLinkLogin;
-
+    private long mLastClickTime = 0;
 
 
     @Override
@@ -117,6 +118,12 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
 
     @Override
     public void onClick(View v) {
+        /////tranh viec bấm nút liên tuc trong 1s/////
+        if (SystemClock.elapsedRealtime() - mLastClickTime < 1000) {
+            return;
+        }
+        mLastClickTime = SystemClock.elapsedRealtime();
+        /////////////////////////////////////////////
         switch (v.getId()){
             case R.id.appCompatTextViewLoginLink:
                     IntentViewLoginActivity();

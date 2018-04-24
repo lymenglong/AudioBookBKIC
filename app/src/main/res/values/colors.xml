@@ -18,5 +18,6 @@
     <color name="colorText">#565656</color>
     <color name="colorTextHint">#51d8c7</color>
     <color name="colorWelcome">#00bbff</color>
+    <color name="colorDialogTitle">#fa3c7d</color>
     <!--end color copy-->
 </resources>

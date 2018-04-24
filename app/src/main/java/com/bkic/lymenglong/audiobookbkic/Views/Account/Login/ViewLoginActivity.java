@@ -87,10 +87,12 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
 
     @Override
     public void onClick(View v) {
+        /////tranh viec bấm nút liên tuc trong 1s/////
         if (SystemClock.elapsedRealtime() - mLastClickTime < 1000) {
             return;
         }
         mLastClickTime = SystemClock.elapsedRealtime();
+        /////////////////////////////////////////////
         switch (v.getId()){
             case R.id.appCompatButtonLogin:
 

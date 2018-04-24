@@ -3,7 +3,7 @@ package com.bkic.lymenglong.audiobookbkic.Views.Player;
 public interface PlayerImp {
     void initCheckAudioUrl();
 
-    void ReviewBook();
+    void AddReviewBookToServer();
 
     void UpdateHistorySuccess(String message);
 

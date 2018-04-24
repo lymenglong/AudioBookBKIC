@@ -13,6 +13,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RatingBar;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
@@ -39,6 +40,7 @@ public class PresenterReview
     private RadioButton radioButton3;
     private RadioButton radioButton4;
     private RadioButton radioButton5;
+    private RatingBar ratingBar;
     private int rateNumber;
     private int clickCount = 0;
     private Boolean SubmitBntIsClicked = false;
@@ -48,7 +50,26 @@ public class PresenterReview
     private Dialog dialog;
 
     @Override
-    public void ReviewDialog(final Context context){
+    public void ReviewBookDialog(Context context) {
+        dialog = new Dialog(context);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_review);
+        Button buttonDismiss = dialog.findViewById(R.id.button_dismiss);
+        Button buttonSubmit = dialog.findViewById(R.id.button_submit);
+        radioButton = dialog.findViewById(R.id.rb1);
+        radioButton2 = dialog.findViewById(R.id.rb2);
+        radioButton3 = dialog.findViewById(R.id.rb3);
+        radioButton4 = dialog.findViewById(R.id.rb4);
+        radioButton5 = dialog.findViewById(R.id.rb5);
+        buttonSubmit.setOnClickListener(this);
+        buttonDismiss.setOnClickListener(this);
+        dialog.setOnShowListener(this);
+        dialog.setOnDismissListener(this);
+        dialog.show();
+    }
+
+    @Override
+    public void ReviewBookDialog2(final Context context){
         dialog = new Dialog(context, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.dialog_review2);
@@ -70,38 +91,38 @@ public class PresenterReview
                             case 1:
                                 Toast.makeText(context, "Single Click", Toast.LENGTH_SHORT).show();
                                 rateNumber = clickCount;
-                                playControlActivity.ReviewBook();
+                                playControlActivity.AddReviewBookToServer();
                                 playControlActivity.setRateNumber(rateNumber);
                                 dialog.dismiss();
-                                playControlActivity.ReviewBook();
+                                playControlActivity.AddReviewBookToServer();
                                 break;
                             case 2:
                                 Toast.makeText(context, "Double Click", Toast.LENGTH_SHORT).show();
                                 rateNumber = clickCount;
                                 playControlActivity.setRateNumber(rateNumber);
                                 dialog.dismiss();
-                                playControlActivity.ReviewBook();
+                                playControlActivity.AddReviewBookToServer();
                                 break;
                             case 3:
                                 Toast.makeText(context, "Triple Click", Toast.LENGTH_SHORT).show();
                                 rateNumber = clickCount;
                                 playControlActivity.setRateNumber(rateNumber);
                                 dialog.dismiss();
-                                playControlActivity.ReviewBook();
+                                playControlActivity.AddReviewBookToServer();
                                 break;
                             case 4:
                                 Toast.makeText(context, "4 Times Click", Toast.LENGTH_SHORT).show();
                                 rateNumber = clickCount;
                                 playControlActivity.setRateNumber(rateNumber);
                                 dialog.dismiss();
-                                playControlActivity.ReviewBook();
+                                playControlActivity.AddReviewBookToServer();
                                 break;
                             case 5:
                                 Toast.makeText(context, "5 Times Click", Toast.LENGTH_SHORT).show();
                                 rateNumber = clickCount;
                                 playControlActivity.setRateNumber(rateNumber);
                                 dialog.dismiss();
-                                playControlActivity.ReviewBook();
+                                playControlActivity.AddReviewBookToServer();
                                 break;
                             /*default:
                                 Toast.makeText(context, "Unknown Click", Toast.LENGTH_SHORT).show();
@@ -117,17 +138,13 @@ public class PresenterReview
     }
 
     @Override
-    public void ReviewBookDialog(Context context) {
+    public void ReviewBookDialog3(Context context){
         dialog = new Dialog(context);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.dialog_review);
+        dialog.setContentView(R.layout.dialog_review3);
         Button buttonDismiss = dialog.findViewById(R.id.button_dismiss);
         Button buttonSubmit = dialog.findViewById(R.id.button_submit);
-        radioButton = dialog.findViewById(R.id.rb1);
-        radioButton2 = dialog.findViewById(R.id.rb2);
-        radioButton3 = dialog.findViewById(R.id.rb3);
-        radioButton4 = dialog.findViewById(R.id.rb4);
-        radioButton5 = dialog.findViewById(R.id.rb5);
+        ratingBar = dialog.findViewById(R.id.ratingBar);
         buttonSubmit.setOnClickListener(this);
         buttonDismiss.setOnClickListener(this);
         dialog.setOnShowListener(this);
@@ -161,7 +178,7 @@ public class PresenterReview
     public void onDismiss(DialogInterface dialog) {
         Log.d(TAG, "onDismiss: " +dialog.toString());
         if(SubmitBntIsClicked){
-            playControlActivity.ReviewBook();
+            playControlActivity.AddReviewBookToServer();
             SubmitBntIsClicked = false;
         }
     }
@@ -170,25 +187,42 @@ public class PresenterReview
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.button_submit:
-                SubmitBntIsClicked = true;
-                if(radioButton.isChecked()){
-                    rateNumber = 1;
-                } else if(radioButton2.isChecked()){
-                    rateNumber = 2;
-                } else if(radioButton3.isChecked()){
-                    rateNumber = 3;
-                } else if(radioButton4.isChecked()){
-                    rateNumber = 4;
-                } else if(radioButton5.isChecked()){
-                    rateNumber = 5;
-                }
-                playControlActivity.setRateNumber(rateNumber);
-                playControlActivity.setReview("");//todo add Comment Review Of User
-                dialog.dismiss();
+//                SubmitFromDialog();
+                SubmitFromDialog3();
                 break;
             case R.id.button_dismiss:
                 dialog.dismiss();
         }
+    }
+
+    private void SubmitFromDialog3() {
+        SubmitBntIsClicked = true;
+        ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+            @Override
+            public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+                Log.d(TAG, "onRatingChanged: "+rating);
+            }
+        });
+        playControlActivity.setRateNumber((int) ratingBar.getRating());
+        dialog.dismiss();
+    }
+
+    private void SubmitFromDialog() {
+        SubmitBntIsClicked = true;
+        if(radioButton.isChecked()){
+            rateNumber = 1;
+        } else if(radioButton2.isChecked()){
+            rateNumber = 2;
+        } else if(radioButton3.isChecked()){
+            rateNumber = 3;
+        } else if(radioButton4.isChecked()){
+            rateNumber = 4;
+        } else if(radioButton5.isChecked()){
+            rateNumber = 5;
+        }
+        playControlActivity.setRateNumber(rateNumber);
+        playControlActivity.setReview("");//todo add Comment Review Of User
+        dialog.dismiss();
     }
 
     @Override

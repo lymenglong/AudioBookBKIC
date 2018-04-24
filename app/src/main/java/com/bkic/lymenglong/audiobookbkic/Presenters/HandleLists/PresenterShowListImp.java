@@ -7,4 +7,5 @@ import java.util.HashMap;
 
 public interface PresenterShowListImp {
     void GetSelectedResponse(Activity activity, HashMap<String,String> ResultHash, String httpUrl);
+
 }

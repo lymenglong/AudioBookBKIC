@@ -124,6 +124,26 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
         }
     }
 
+    /*private static final String TALKBACK_SERVICE_NAME = "com.google.android.marvin.talkback/.TalkBackService";
+
+    private void updateTalkBackState(boolean enableTalkBack) {
+        if (enableTalkBack) {
+            enableAccessibilityService(TALKBACK_SERVICE_NAME);
+        } else {
+            disableAccessibilityServices();
+        }
+    }
+
+    private void enableAccessibilityService(String name) {
+        Settings.Secure.putString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, name);
+        Settings.Secure.putString(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, VALUE_ENABLED);
+    }
+
+    private void disableAccessibilityServices() {
+        Settings.Secure.putString(getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES, "");
+        Settings.Secure.putString(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, VALUE_DISABLED);
+    }*/
+
     @Override
     public void initCheckAudioUrl() {
         if (ChapterUrl.isEmpty()) {
@@ -223,7 +243,8 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             case R.id.btn_pause:
                 presenterPlayer.PauseMedia();
 //                presenterReview.ReviewBookDialog(playControlActivity);
-                presenterReview.ReviewDialog(playControlActivity);
+//                presenterReview.ReviewBookDialog2(playControlActivity);
+                presenterReview.ReviewBookDialog3(playControlActivity);
                 break;
             case R.id.btn_replay:
                 presenterPlayer.ReplayMedia();
@@ -247,7 +268,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     }
 
     @Override
-    public void ReviewBook() {
+    public void AddReviewBookToServer() {
         int userId = session.getUserIdLoggedIn();
         int bookId = BookId;
         int rateNumber = getRateNumber();
@@ -319,7 +340,14 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
 
     @Override
     protected void onDestroy() {
+        //<editor-fold desc="Remove event handler from seek bar">
         presenterPlayer.RemoveCallBacksUpdateHandler();
+        //</editor-fold>
+        UpdateHistoryData();
+        super.onDestroy();
+    }
+
+    private void UpdateHistoryData() {
         if (!ChapterUrl.isEmpty()) {
             int lastPlayDuration = presenterPlayer.GetLastMediaData();
             String jsonAction = "addHistory";
@@ -336,10 +364,10 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 String INSERT_PLAY_HISTORY =
                         "INSERT INTO playHistory VALUES" +
                                 "(" +
-                                        "'"+ChapterId+"', " +
-                                        "'"+IdBookHolder+"', " +
-                                        "'"+ lastPlayDuration +"', " +
-                                        "'"+InsertTimeHolder+"'"+
+                                "'"+ChapterId+"', " +
+                                "'"+IdBookHolder+"', " +
+                                "'"+lastPlayDuration +"', " +
+                                "'"+InsertTimeHolder+"'"+
                                 ");";
                 dbHelper.QueryData(INSERT_PLAY_HISTORY);
             } catch (Exception ignored) {
@@ -347,13 +375,15 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                         "UPDATE playHistory SET " +
                                 "PauseTime = '"+ lastPlayDuration +"', " +
                                 "LastDate ='"+InsertTimeHolder+"' " +
-                                        "WHERE " +
-                                            "ChapterId = '"+ChapterId+"' " +
-                                            "AND " +
-                                            "BookId = '"+BookId+"'" +
-                        ";";
+                                "WHERE " +
+                                "ChapterId = '"+ChapterId+"' " +
+                                "AND " +
+                                "BookId = '"+BookId+"'" +
+                                ";";
                 dbHelper.QueryData(UPDATE_PLAY_HISTORY);
             }
+            //endregion
+            //region INSERT BOOK VALUE TO HISTORY (SQLite)
             String SELECT_BOOK_BY_BOOK_ID =
                     "SELECT " +
                             "BookId, " +
@@ -361,12 +391,10 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                             "BookImage, " +
                             "BookLength, " +
                             "BookAuthor " +
-                                    "FROM " +
-                                            "book " +
-                                                    "WHERE BookId = '"+BookId+"'" +
-                    ";";
-            //endregion
-            //region INSERT BOOK VALUE TO HISTORY (SQLite)
+                            "FROM " +
+                            "book " +
+                            "WHERE BookId = '"+BookId+"'" +
+                            ";";
             Cursor cursor = dbHelper.GetData(SELECT_BOOK_BY_BOOK_ID);
             Book bookModel = new Book();
             while (cursor.moveToNext()) {
@@ -381,23 +409,23 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 String INSERT_BOOK_INTO_TABLE_HISTORY =
                         "INSERT INTO history VALUES" +
                                 "(" +
-                                        "'"+bookModel.getId()+"', " +
-                                        "'"+bookModel.getTitle()+"', " +
-                                        "'"+bookModel.getUrlImage()+"', " +
-                                        "'"+bookModel.getLength()+"', " +
-                                        "'"+bookModel.getAuthor()+"'" +
+                                "'"+bookModel.getId()+"', " +
+                                "'"+bookModel.getTitle()+"', " +
+                                "'"+bookModel.getUrlImage()+"', " +
+                                "'"+bookModel.getLength()+"', " +
+                                "'"+bookModel.getAuthor()+"'" +
                                 ");";
                 dbHelper.QueryData(INSERT_BOOK_INTO_TABLE_HISTORY);
             } catch (Exception ignored) {
                 String UPDATE_BOOK_IN_TABLE_HISTORY =
                         "UPDATE history SET " +
                                 "BookTitle = '"+bookModel.getId()+"', " +
-                                "BookImage = '"+bookModel.getId()+"', " +
-                                "BookLength = '"+bookModel.getId()+"', " +
-                                "BookAuthor = '"+bookModel.getId()+"' " +
+                                "BookImage = '"+bookModel.getUrlImage()+"', " +
+                                "BookLength = '"+bookModel.getLength()+"', " +
+                                "BookAuthor = '"+bookModel.getAuthor()+"' " +
                                 "WHERE " +
-                                        "BookId = '"+bookModel.getId()+"'" +
-                        ";";
+                                "BookId = '"+bookModel.getId()+"'" +
+                                ";";
                 dbHelper.QueryData(UPDATE_BOOK_IN_TABLE_HISTORY);
             }
             //endregion
@@ -407,9 +435,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             presenterUpdateHistory.RequestUpdateToServer(jsonAction,IdUserHolder,IdBookHolder,InsertTimeHolder);
             //todo Rating Book
         }
-        super.onDestroy();
     }
-
 
     @Override
     public void UpdateHistorySuccess(String message) {
