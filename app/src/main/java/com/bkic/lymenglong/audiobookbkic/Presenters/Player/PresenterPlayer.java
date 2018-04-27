@@ -27,6 +27,7 @@ public class PresenterPlayer
     private static String TAG = "PresenterPlayer";
     private MediaPlayer mediaPlayer;
     private int intSoundMax;
+    private Boolean mediaIsPrepared;
 
     public PresenterPlayer(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
@@ -44,14 +45,13 @@ public class PresenterPlayer
             }
             @Override
             protected Boolean doInBackground(String... strings) {
-                Boolean prepared;
                 try {
                     mediaPlayer = new MediaPlayer();
                     mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     mediaPlayer.reset();
                     mediaPlayer.setDataSource(playControlActivity, Uri.parse(strings[0]));
                     mediaPlayer.prepare();
-                    prepared = true;
+                    mediaIsPrepared = true;
                     /*final String path = strings[0];
                     new AudioStreamWorkerTask(playControlActivity, new OnCacheCallBack() {
 
@@ -83,11 +83,11 @@ public class PresenterPlayer
                     }).execute(path);*/
 
                 } catch (Exception e) {
-                    prepared = false;
+                    mediaIsPrepared = false;
                     progressDialog.dismiss();
                 }
 
-                return prepared;
+                return mediaIsPrepared;
             }
 
             @Override
@@ -104,6 +104,9 @@ public class PresenterPlayer
                         progressDialog.dismiss();
                     }
                     PlayMedia();
+                } else{
+                    String message = "Vui lòng kiểm tra lại mạng";
+                    Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
                 }
 //                initialStage = false;
             }
@@ -113,44 +116,50 @@ public class PresenterPlayer
     }
     @Override
     public void ReplayMedia() { // nghe lại từ đầu
-        mediaPlayer.pause();
-        mediaPlayer.seekTo(0);
-        mediaPlayer.start();
-        //Update SeekBar
-        mUpdateHandler.postDelayed(mUpdate,100);
+        if (mediaIsPrepared) {
+            mediaPlayer.pause();
+            mediaPlayer.seekTo(0);
+            mediaPlayer.start();
+            //Update SeekBar
+            mUpdateHandler.postDelayed(mUpdate,100);
+        }
     }
     @Override
     public void RewindMedia() {
-        int intCurrentPosition = mediaPlayer.getCurrentPosition();
-        // check if seekBackward time is greater than 0 sec
-        int seekBackwardTime = 10000; //10sec
-        int targetPosition = intCurrentPosition - seekBackwardTime;
-        if(targetPosition >= 0){
-            // forward song
-            mediaPlayer.seekTo(targetPosition);
-            Log.d(TAG, "RewindMedia: "+targetPosition);
-        }else{
-            // backward to starting position
-            mediaPlayer.seekTo(0);
+        if (mediaIsPrepared) {
+            int intCurrentPosition = mediaPlayer.getCurrentPosition();
+            // check if seekBackward time is greater than 0 sec
+            int seekBackwardTime = 10000; //10sec
+            int targetPosition = intCurrentPosition - seekBackwardTime;
+            if(targetPosition >= 0){
+                // forward song
+                mediaPlayer.seekTo(targetPosition);
+                Log.d(TAG, "RewindMedia: "+targetPosition);
+            }else{
+                // backward to starting position
+                mediaPlayer.seekTo(0);
+            }
+            //Update SeekBar
+            mUpdateHandler.postDelayed(mUpdate,100);
         }
-        //Update SeekBar
-        mUpdateHandler.postDelayed(mUpdate,100);
     }
     @Override
     public void ForwardMedia() {
-        int intCurrentPosition = mediaPlayer.getCurrentPosition();
-        int seekForwardTime = 10000;//10sec
-        int targetPosition = intCurrentPosition + seekForwardTime;
-        if(targetPosition < intSoundMax){
-            // forward song
-            mediaPlayer.seekTo(targetPosition);
-            Log.d(TAG, "forwardMedia: "+ targetPosition);
-        }else{
-            // forward to end position
-            mediaPlayer.seekTo(mediaPlayer.getDuration());
+        if (mediaIsPrepared) {
+            int intCurrentPosition = mediaPlayer.getCurrentPosition();
+            int seekForwardTime = 10000;//10sec
+            int targetPosition = intCurrentPosition + seekForwardTime;
+            if(targetPosition < intSoundMax){
+                // forward song
+                mediaPlayer.seekTo(targetPosition);
+                Log.d(TAG, "forwardMedia: "+ targetPosition);
+            }else{
+                // forward to end position
+                mediaPlayer.seekTo(mediaPlayer.getDuration());
+            }
+            //Update SeekBar
+            mUpdateHandler.postDelayed(mUpdate,100);
         }
-        //Update SeekBar
-        mUpdateHandler.postDelayed(mUpdate,100);
     }
     @Override
     public void PreviousMedia() {
@@ -170,46 +179,55 @@ public class PresenterPlayer
 
     @Override
     public void PauseMedia() {
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
+        if (mediaIsPrepared) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.pause();
+            }
         }
     }
     @Override
     public void PlayMedia() {
-        if (!mediaPlayer.isPlaying()) {
-            intSoundMax = mediaPlayer.getDuration();
-            playControlActivity.getSeekBar().setMax(intSoundMax);
-            //Update SeekBar
-            mUpdateHandler.postDelayed(mUpdate,100);
-            mediaPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener() {
-                @Override
-                public void onBufferingUpdate(MediaPlayer mp, int percent) {
-                    int AudioBuffered = mediaPlayer.getDuration() * percent/100;
-                    playControlActivity.getSeekBar().setSecondaryProgress(AudioBuffered);
-                    Log.d(TAG, "onBufferingUpdate: percent = "+percent);
+        if (mediaPlayer != null) {
+            if (mediaIsPrepared && !mediaPlayer.isPlaying()) {
+                intSoundMax = mediaPlayer.getDuration();
+                playControlActivity.getSeekBar().setMax(intSoundMax);
+                //Update SeekBar
+                mUpdateHandler.postDelayed(mUpdate, 100);
+                mediaPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener() {
+                    @Override
+                    public void onBufferingUpdate(MediaPlayer mp, int percent) {
+                        int AudioBuffered = mediaPlayer.getDuration() * percent / 100;
+                        playControlActivity.getSeekBar().setSecondaryProgress(AudioBuffered);
+                        Log.d(TAG, "onBufferingUpdate: percent = " + percent);
 
+                    }
+                });
+                if (mediaPlayer.getCurrentPosition() < playControlActivity.getResumeTime()) {
+                    mediaPlayer.seekTo(playControlActivity.getResumeTime());
+                    Log.d(TAG, "PlayMedia: playControlActivity.getResumeTime()= " + playControlActivity.getResumeTime());
+                    mediaPlayer.start();
+                } else if (playControlActivity.getResumeTime() <= mediaPlayer.getCurrentPosition()
+                        && mediaPlayer.getCurrentPosition() < mediaPlayer.getDuration()) {
+                    mediaPlayer.start();
+                } else {
+                    ReplayMedia();
                 }
-            });
-            if(mediaPlayer.getCurrentPosition()< playControlActivity.getResumeTime()){
-                mediaPlayer.seekTo(playControlActivity.getResumeTime());
-                Log.d(TAG, "PlayMedia: playControlActivity.getResumeTime()= " +playControlActivity.getResumeTime());
-                mediaPlayer.start();
-            } else {
-                mediaPlayer.start();
-            }
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mp) {
-                    String message = "Đã chạy xong chương này";
-                    Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
-                    PresenterReview presenterReview = new PresenterReview(playControlActivity);
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        String message = "Chương này đã chạy xong";
+                        Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
+                        PresenterReview presenterReview = new PresenterReview(playControlActivity);
 //                        presenterReview.ReviewBookDialog2(playControlActivity);
-//                        presenterReview.ReviewBookDialog(playControlActivity);
-                    presenterReview.ReviewBookDialog3(playControlActivity);
-                }
-            });
-        } else {
-            Toast.makeText(playControlActivity, "Sách nói đang chạy", Toast.LENGTH_SHORT).show();
+                        presenterReview.ReviewBookDialog(playControlActivity);
+//                    presenterReview.ReviewBookDialog3(playControlActivity);
+                    }
+                });
+            } else {
+                Toast.makeText(playControlActivity, "Sách nói đang chạy", Toast.LENGTH_SHORT).show();
+            }
+        } else { //media player = null;
+            playControlActivity.PrepareChapter();
         }
     }
 
@@ -235,10 +253,14 @@ public class PresenterPlayer
     @Override
     public int GetLastMediaData(){
         int lastPlayDuration;
-        if(mediaPlayer.getCurrentPosition()==mediaPlayer.getDuration()){
-            lastPlayDuration = 0;
-        }else {
-            lastPlayDuration = mediaPlayer.getCurrentPosition();
+        if (mediaIsPrepared) {
+            if(mediaPlayer.getCurrentPosition()==mediaPlayer.getDuration()){
+                lastPlayDuration = 0;
+            }else {
+                lastPlayDuration = mediaPlayer.getCurrentPosition();
+            }
+        } else {
+            lastPlayDuration = playControlActivity.getResumeTime();
         }
         return lastPlayDuration;
     }

@@ -25,6 +25,14 @@ public class Book {
         this.author = author;
     }
 
+    public Book(int id, String title, String urlImage, int length, int categoryId) {
+        this.id = id;
+        this.title = title;
+        this.urlImage = urlImage;
+        this.length = length;
+        CategoryId = categoryId;
+    }
+
     public int getId() {
         return id;
     }

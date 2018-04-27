@@ -45,6 +45,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="12dp"
             android:text="@string/text_1"
+            android:contentDescription="@string/text_1_star"
             app:layout_constraintEnd_toStartOf="@+id/rb2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textViewDialogTitle" />
@@ -59,6 +60,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="12dp"
             android:text="@string/text_2"
+            android:contentDescription="@string/text_2_star"
             app:layout_constraintEnd_toStartOf="@+id/textViewDialogTitle"
             app:layout_constraintStart_toEndOf="@+id/rb1"
             app:layout_constraintTop_toBottomOf="@+id/textViewDialogTitle" />
@@ -73,6 +75,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="12dp"
             android:text="@string/text_3"
+            android:contentDescription="@string/text_3_star"
             app:layout_constraintEnd_toStartOf="@+id/rb4"
             app:layout_constraintStart_toEndOf="@+id/rb2"
             app:layout_constraintTop_toBottomOf="@+id/textViewDialogTitle" />
@@ -85,6 +88,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="12dp"
             android:text="@string/text_4"
+            android:contentDescription="@string/text_4_star"
             app:layout_constraintStart_toEndOf="@+id/textViewDialogTitle"
             app:layout_constraintTop_toBottomOf="@+id/textViewDialogTitle" />
 
@@ -98,6 +102,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="12dp"
             android:text="@string/text_5"
+            android:contentDescription="@string/text_5_star"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/rb4"
             app:layout_constraintTop_toBottomOf="@+id/textViewDialogTitle" />

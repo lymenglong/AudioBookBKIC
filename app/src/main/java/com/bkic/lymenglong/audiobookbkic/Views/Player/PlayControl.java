@@ -2,6 +2,7 @@ package com.bkic.lymenglong.audiobookbkic.Views.Player;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -13,6 +14,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
@@ -28,11 +31,13 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_Audio;
 
-public class PlayControl extends AppCompatActivity implements PlayerImp, View.OnClickListener{
+public class PlayControl extends AppCompatActivity
+        implements PlayerImp, View.OnClickListener, ConnectivityReceiver.ConnectivityReceiverListener{
     private PresenterPlayer presenterPlayer = new PresenterPlayer(this);
     private PresenterUpdateHistory presenterUpdateHistory = new PresenterUpdateHistory(this);
     private PresenterUpdateFavorite presenterUpdateFavorite = new PresenterUpdateFavorite(this);
@@ -93,10 +98,15 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
     private Boolean InitialState = true;
     private HashMap<String, PlaybackHistory> historyHashMap = new HashMap<>();
 
+    private IntentFilter intentFilter;
+    private ConnectivityReceiver receiver;
+    private Boolean isInternetConnected = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_play_control);
+        initIntentFilter();
         initDataFromIntent();
         initToolbar(chapterFromIntent.getTitle());
         initView();
@@ -106,6 +116,12 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
         initCheckAudioUrl();
         intListener();
 
+    }
+
+    private void initIntentFilter() {
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        receiver = new ConnectivityReceiver();
     }
 
     private void initHistoryState() {
@@ -174,8 +190,7 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
         Settings.Secure.putString(getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED, VALUE_DISABLED);
     }*/
 
-    @Override
-    public void initCheckAudioUrl() {
+    private void initCheckAudioUrl() {
         if (chapterFromIntent.getFileUrl().isEmpty()) {
             Toast.makeText(playControlActivity, getString(R.string.no_data), Toast.LENGTH_SHORT).show();
             playControlActivity.finish();
@@ -184,7 +199,8 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
         }
     }
 
-    private void PrepareChapter() {
+    @Override
+    public void PrepareChapter() {
         if (0 <= indexChapterAudio && indexChapterAudio < hashMapChapter.size()) {
             if (!InitialState) presenterPlayer.StopMedia();
             initToolbar(hashMapChapter.get(String.valueOf(indexChapterAudio)).getTitle());
@@ -278,9 +294,9 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 break;
             case R.id.btn_pause:
                 presenterPlayer.PauseMedia();
-//                presenterReview.ReviewBookDialog(playControlActivity);
+                presenterReview.ReviewBookDialog(playControlActivity);
 //                presenterReview.ReviewBookDialog2(playControlActivity);
-                presenterReview.ReviewBookDialog3(playControlActivity);
+//                presenterReview.ReviewBookDialog3(playControlActivity);
                 break;
             case R.id.btn_replay:
                 presenterPlayer.ReplayMedia();
@@ -301,6 +317,38 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
                 break;
         }
         //endregion
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // register receiver
+        registerReceiver(receiver, intentFilter);
+        // register connection status listener
+        MyApplication.getInstance().setConnectivityListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister receiver
+        unregisterReceiver(receiver);
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        isInternetConnected = isConnected;
+        ToastConnectionMessage(isConnected);
+    }
+
+    private void ToastConnectionMessage(boolean isConnected) {
+        String message;
+        if (isConnected) {
+            message = "Good! Connected to Internet";
+        } else {
+            message = "Sorry! Not connected to internet";
+        }
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -468,8 +516,8 @@ public class PlayControl extends AppCompatActivity implements PlayerImp, View.On
             //endregion
             dbHelper.close();
             //endregion
-            //todo check internet connection
-            presenterUpdateHistory.RequestUpdateToServer(jsonAction,IdUserHolder,IdBookHolder,InsertTimeHolder);
+            if(ConnectivityReceiver.isConnected())presenterUpdateHistory.RequestUpdateToServer
+                    (jsonAction,IdUserHolder,IdBookHolder,InsertTimeHolder);
             //todo Rating Book
         }
     }

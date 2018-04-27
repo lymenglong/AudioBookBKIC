@@ -41,11 +41,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     private static ArrayList<Chapter> list;
     private ProgressBar progressBar;
     private View imRefresh;
-    private int bookId;
-    private String bookTitle;
-    private int categoryId;
-    private String bookUrlImage;
-    private int bookLength;
+    private Book bookIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +49,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         setContentView(R.layout.activity_show_list);
         initDataFromIntent();
         initView();
-        setTitle(bookTitle);
+        setTitle(bookIntent.getTitle());
         initDatabase();
         initObject();
     }
@@ -63,11 +59,14 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
      * Lấy dữ liệu thông qua intent
      */
     private void initDataFromIntent() {
-        bookId = getIntent().getIntExtra("BookId", -1);
-        bookTitle = getIntent().getStringExtra("BookTitle");
-        bookUrlImage = getIntent().getStringExtra("BookImage");
-        bookLength = getIntent().getIntExtra("BookLength", 0);
-        categoryId = getIntent().getIntExtra("CategoryId", -1);
+        bookIntent = new Book
+                (
+                        getIntent().getIntExtra("BookId", -1),
+                        getIntent().getStringExtra("BookTitle"),
+                        getIntent().getStringExtra("BookImage"),
+                        getIntent().getIntExtra("BookLength", 0),
+                        getIntent().getIntExtra("CategoryId", -1)
+                );
     }
 
     /**
@@ -75,7 +74,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
      */
     private void initView() {
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, bookTitle, true);
+        actionBar.eventToolbar(this, bookIntent.getTitle(), true);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
         imRefresh = findViewById(R.id.imRefresh);
@@ -117,7 +116,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         String valuePost =
                 "{" +
                         "\"Action\":\"getBookDetail\", " +
-                        "\"BookId\":"+ bookId +"" +
+                        "\"BookId\":"+ bookIntent.getId() +"" +
                 "}";
         ResultHash.put(keyPost,valuePost);
         presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
@@ -126,7 +125,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     private void RequestLoadList() {
         // todo: check internet connection before be abel to press Button Refresh
         HashMap<String, String> ResultHash = new HashMap<>();
-        int BookId = bookId;
+        int BookId = bookIntent.getId();
         int Page = 1;
         String keyPost = "json";
         String postValue =
@@ -152,7 +151,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     private void GetCursorData() {
         //todo: for new api
         list.clear();
-        Cursor cursor = dbHelper.GetData("SELECT * FROM chapter WHERE BookId = '"+ bookId +"'");
+        Cursor cursor = dbHelper.GetData("SELECT * FROM chapter WHERE BookId = '"+ bookIntent.getId() +"'");
         while (cursor.moveToNext()){
             Chapter chapterModel = new Chapter();
             chapterModel.setId(cursor.getInt(0));
@@ -216,7 +215,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         chapterModel.setTitle(jsonObject.getString("ChapterTitle"));
         chapterModel.setFileUrl(jsonObject.getString("ChapterURL"));
         chapterModel.setLength(Integer.parseInt(jsonObject.getString("ChapterLength")));
-        int BookId = bookId;
+        int BookId = bookIntent.getId();
         String INSERT_DATA;
         try {
             INSERT_DATA =
@@ -245,7 +244,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d(TAG, "onPostExecute: "+ bookTitle);
+        Log.d(TAG, "onPostExecute: "+ bookIntent.getTitle());
     }
 
     @Override

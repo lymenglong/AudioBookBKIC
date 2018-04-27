@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.InputValidation;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Account.Login.PresenterLogin;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Register.ViewRegisterActivity;
@@ -115,8 +116,12 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                 } else {
                     textPassword = textInputEditTextPassword.getText().toString();
                 }
-
-                presenter.Login(textEmail, textPassword);
+                //check internet connection before request to server
+                if (ConnectivityReceiver.isConnected()) {
+                    presenter.Login(textEmail, textPassword);
+                } else {
+                    Toast.makeText(activity, "Please check internet connection", Toast.LENGTH_SHORT).show();
+                }
 
                 break;
             case R.id.textViewLinkRegister:
@@ -132,9 +137,9 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
         Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
         Intent accountsIntent = new Intent(activity, MainActivity.class);
         accountsIntent.putExtra("EMAIL", textInputEditTextEmail.getText().toString().trim());
+        presenter.UserDetail(textEmail);
         startActivity(accountsIntent);
         activity.finish();
-        presenter.UserDetail(textEmail);
     }
 
     @Override

@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.InputValidation;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Account.Register.PresenterRegisterLogic;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Account.Login.ViewLoginActivity;
@@ -172,23 +173,28 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
                     return;
                 } else userModel.setConfirmPassword(textInputEditTextConfirmPassword.getText().toString());
 
-                HashMap<String, String> ResultHash = new HashMap<>();
-                // GetUserDetail
-                String keyPost = "json";
-                String valuePost =
-                        "{" +
-                                "\"Action\":\"register\", " +
-                                "\"UserName\":\""+ userModel.getUsername()+"\"," +
-                                "\"UserMail\":\""+ userModel.getEmail()+"\", " +
-                                "\"UserFirstName\":\""+ userModel.getFirstName() +"\", " +
-                                "\"UserLastName\":\""+ userModel.getLastName() +"\"," +
-                                "\"UserPassword\":\""+ userModel.getPassword()+"\"," +
-                                "\"UserAddress\":\""+ userModel.getAddress()+"\", " +
-                                "\"UserPhone\":\""+ userModel.getPhonenumber()+"\" " +
-                        "}";
-                ResultHash.put(keyPost,valuePost);
+                if (ConnectivityReceiver.isConnected()) {
+                    HashMap<String, String> ResultHash = new HashMap<>();
+                    // GetUserDetail
+                    String keyPost = "json";
+                    String valuePost =
+                            "{" +
+                                    "\"Action\":\"register\", " +
+                                    "\"UserName\":\""+ userModel.getUsername()+"\"," +
+                                    "\"UserMail\":\""+ userModel.getEmail()+"\", " +
+                                    "\"UserFirstName\":\""+ userModel.getFirstName() +"\", " +
+                                    "\"UserLastName\":\""+ userModel.getLastName() +"\"," +
+                                    "\"UserPassword\":\""+ userModel.getPassword()+"\"," +
+                                    "\"UserAddress\":\""+ userModel.getAddress()+"\", " +
+                                    "\"UserPhone\":\""+ userModel.getPhonenumber()+"\" " +
+                            "}";
+                    ResultHash.put(keyPost,valuePost);
 
-                presenterRegisterLogic.Register(registerActivity, ResultHash, HttpURL_API);
+                    presenterRegisterLogic.Register(registerActivity, ResultHash, HttpURL_API);
+                } else {
+                    String message = "Please check internet connection";
+                    Toast.makeText(registerActivity, message, Toast.LENGTH_SHORT).show();
+                }
 
                 break;
         }

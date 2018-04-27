@@ -70,6 +70,11 @@ public class PresenterLogin implements PresenterLoginImp {
         @SuppressLint("StaticFieldLeak")
         class HttpWebCallFunction extends AsyncTask<Void,Void,String> {
             @Override
+            protected void onPreExecute() {
+                super.onPreExecute();
+            }
+
+            @Override
             protected String doInBackground(Void... voids) {
                 ParseResult = httpParse.postRequest(ResultHash, httpHolder);
                 return ParseResult;

@@ -68,13 +68,10 @@ public class PresenterShowList implements PresenterShowListImp{
 
             @Override
             protected void onPostExecute(String httpResponseMsg) {
-
                 super.onPostExecute(httpResponseMsg);
-
                 //Storing Complete JSon Object into String Variable.
                 FinalJSonObject = httpResponseMsg ;
                 //Parsing the Stored JSOn String to GetHttpResponse Method.
-//                pDialog.dismiss();
                 new GetHttpResponseFromHttpWebCall(activity).execute();
             }
 
@@ -90,8 +87,6 @@ public class PresenterShowList implements PresenterShowListImp{
     private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
     {
         public Activity activity;
-
-
         private String jsonAction;
         private String jsonResult;
         private String jsonMessage;
@@ -129,6 +124,7 @@ public class PresenterShowList implements PresenterShowListImp{
             {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
+//                pDialog.dismiss();
             }
             return null;
         }

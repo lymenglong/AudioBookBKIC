@@ -10,7 +10,10 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.Main.Adapters.MainAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Main.Utils.Menu;
@@ -25,7 +28,8 @@ import java.util.ArrayList;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 
-public class MainActivity extends AppCompatActivity implements MainImp{
+public class MainActivity extends AppCompatActivity
+        implements MainImp, ConnectivityReceiver.ConnectivityReceiverListener{
 //    PresenterMain presenterMain = new PresenterMain(this);
     private static final String TAG = "MainActivity";
     private RecyclerView homeList;
@@ -114,5 +118,28 @@ public class MainActivity extends AppCompatActivity implements MainImp{
             dbHelper.QueryData(UPDATE_DATA);
         }
         Log.d(TAG, "SetMenuData");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // register connection status listener
+        MyApplication.getInstance().setConnectivityListener(this);
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        ToastConnectionMessage(isConnected);
+    }
+
+    private void ToastConnectionMessage(boolean isConnected) {
+        String message;
+        if (isConnected) {
+            message = "Good! Connected to Internet";
+        } else {
+            message = "Sorry! Not connected to internet";
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

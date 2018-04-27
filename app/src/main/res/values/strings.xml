@@ -138,4 +138,14 @@
     <string name="btn_submit">Cập nhật</string>
     <string name="btn_dismiss">Thoát</string>
 
+
+    <!--Test-->
+    <string name="title_activity_second">Another Screen</string>
+    <string name="hint_home_screen_test">Giao diện test</string>
+    <string name="text_1_star">một sao</string>
+    <string name="text_2_star">hai sao</string>
+    <string name="text_3_star">ba sao</string>
+    <string name="text_4_star">buốn sao</string>
+    <string name="text_5_star">năm sao</string>
+
 </resources>

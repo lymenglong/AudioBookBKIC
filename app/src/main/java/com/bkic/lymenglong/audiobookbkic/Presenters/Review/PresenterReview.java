@@ -187,8 +187,8 @@ public class PresenterReview
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.button_submit:
-//                SubmitFromDialog();
-                SubmitFromDialog3();
+                SubmitFromDialog();
+//                SubmitFromDialog3();
                 break;
             case R.id.button_dismiss:
                 dialog.dismiss();
