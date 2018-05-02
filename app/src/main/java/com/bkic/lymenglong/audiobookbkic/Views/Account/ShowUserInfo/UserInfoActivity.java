@@ -32,6 +32,8 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
     private AppCompatActivity activity = UserInfoActivity.this;
     private AppCompatTextView textViewName;
     private AppCompatButton btnLogout;
+    private AppCompatButton btnEdit;
+    private AppCompatButton btnChangePassword;
     private RecyclerView recyclerViewUsers;
     private List<User> listUsers;
     private UserInfoRecyclerAdapter userInfoRecyclerAdapter;
@@ -49,6 +51,11 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         initObjects();
         initListener();
 
+        DisplayUserDetail();
+    }
+
+    @Override
+    public void DisplayUserDetail(){
         new getDataFromPrefs(this).execute();
     }
 
@@ -63,6 +70,8 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         textViewName = findViewById(R.id.textViewName);
         recyclerViewUsers = findViewById(R.id.recyclerViewUsers);
         btnLogout = findViewById(R.id.btn_logout);
+        btnEdit = findViewById(R.id.btn_edit);
+        btnChangePassword = findViewById(R.id.btn_change_password);
         //make talk don't move to toolbar
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar),
                 ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -90,6 +99,8 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
 
     private void initListener() {
         btnLogout.setOnClickListener(this);
+        btnEdit.setOnClickListener(this);
+        btnChangePassword.setOnClickListener(this);
     }
 
     /**
@@ -117,7 +128,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
      * This method is to fetch all user records from Server
      */
     @SuppressLint("StaticFieldLeak")
-    private class getDataFromPrefs extends AsyncTask<Void, Void, Void>
+    public class getDataFromPrefs extends AsyncTask<Void, Void, Void>
     {
         // AsyncTask is used that SQLite operation not blocks the UI Thread.
         Context context;
@@ -144,9 +155,41 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.btn_logout :
-                presenterUserInfo.ShowAlertLogoutDialog();
+                presenterUserInfo.ShowAlertLogoutDialog(activity);
                 break;
+            case R.id.btn_edit:
+                presenterUserInfo.ShowDialogConfirmPassword(activity);
+                break;
+            case R.id.btn_change_password:
+                presenterUserInfo.ShowDialogUpdatePassword(activity);
         }
+    }
+
+    @Override
+    public List<User> GetCurrentUserDetail() {
+        listUsers.clear();
+        listUsers.addAll(session.getListUserInfo());
+        return listUsers;
+    }
+
+    @Override
+    public void UpdatePasswordSuccess(String message) {
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void UpdatePasswordFailed(String message) {
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void UpdateDetailSuccess(String message) {
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void UpdateDetailFailed(String message) {
+        Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override

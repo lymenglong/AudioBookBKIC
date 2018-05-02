@@ -15,6 +15,15 @@ public class User {
     private String lastName;
     private String getCity;
 
+    public User( String firstName, String lastName, String username, String email,  String phonenumber, String address) {
+        this.email = email;
+        this.username = username;
+        this.phonenumber = phonenumber;
+        this.address = address;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
     public String getConfirmPassword() {
         return confirmPassword;
     }

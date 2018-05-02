@@ -11,4 +11,6 @@ public interface PresenterReviewImp {
     void ReviewBookDialog3(Context context);
 
     void RequestReviewBook(Activity activity, int userId, int bookId, int rateNumber, String review);
+
+    void RequestGetReviewData(Activity activity, int bookId);
 }

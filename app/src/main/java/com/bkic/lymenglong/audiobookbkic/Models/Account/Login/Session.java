@@ -35,6 +35,16 @@ public class Session {
         editor.commit();
     }
 
+    public void setUpdateUserDetail(User user){
+        editor.putString("FIRST_NAME",user.getFirstName());
+        editor.putString("LAST_NAME",user.getLastName());
+        editor.putString("USERNAME",user.getUsername());
+        editor.putString("EMAIL",user.getEmail());
+        editor.putString("PHONE_NUMBER",user.getPhonenumber());
+        editor.putString("ADDRESS",user.getAddress());
+        editor.commit();
+    }
+
     public List<User> getListUserInfo(){
         List<User> userList = new ArrayList<>();
         User user = new User();

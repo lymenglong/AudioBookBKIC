@@ -83,6 +83,8 @@
     <string name="register">REGISTER</string>
     <string name="username">Tên đăng nhập</string>
     <string name="confirm_password">Xác nhận mật khẩu</string>
+    <string name="old_password">Mật khẩu cũ</string>
+    <string name="new_password">Mật Khẩu mới</string>
     <string name="logout">Đăng Xuất</string>
     <string name="already_a_member_login">Đã có tài khoản, Đăng nhập</string>
     <string name="Hello">Chào bạn,</string>
@@ -147,5 +149,11 @@
     <string name="text_3_star">ba sao</string>
     <string name="text_4_star">buốn sao</string>
     <string name="text_5_star">năm sao</string>
+    <string name="update">Cập Nhật</string>
+    <string name="text_cancel">Hủy</string>
+    <string name="edit">Chỉnh sử</string>
+    <string name="change_password">Đổi Mật Khẩu</string>
+    <string name="text_confirm_password">Xác Nhận Mật Khẩu</string>
+    <string name="text_update_password">Cập Nhật Mật Khẩu Mới</string>
 
 </resources>

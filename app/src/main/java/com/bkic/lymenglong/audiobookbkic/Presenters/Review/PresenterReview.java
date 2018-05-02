@@ -13,7 +13,6 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RatingBar;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
@@ -40,7 +39,6 @@ public class PresenterReview
     private RadioButton radioButton3;
     private RadioButton radioButton4;
     private RadioButton radioButton5;
-    private RatingBar ratingBar;
     private int rateNumber;
     private int clickCount = 0;
     private Boolean SubmitBntIsClicked = false;
@@ -144,7 +142,7 @@ public class PresenterReview
         dialog.setContentView(R.layout.dialog_review3);
         Button buttonDismiss = dialog.findViewById(R.id.button_dismiss);
         Button buttonSubmit = dialog.findViewById(R.id.button_submit);
-        ratingBar = dialog.findViewById(R.id.ratingBar);
+//        RatingBar ratingBar = dialog.findViewById(R.id.ratingBar);
         buttonSubmit.setOnClickListener(this);
         buttonDismiss.setOnClickListener(this);
         dialog.setOnShowListener(this);
@@ -168,6 +166,18 @@ public class PresenterReview
         HttpWebCall(activity,ResultHash, Const.HttpURL_API);
     }
 
+    @Override
+    public void RequestGetReviewData(Activity activity, int bookId) {
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        " \"Action\":\"getReview\", " +
+                        "\"BookId\":\""+bookId+"\"" +
+                "}";
+        HashMap<String,String> ResultHash = new HashMap<>();
+        ResultHash.put(keyPost,valuePost);
+        HttpWebCall(activity, ResultHash, Const.HttpURL_API);
+    }
 
     @Override
     public void onShow(DialogInterface dialog) {
@@ -195,7 +205,7 @@ public class PresenterReview
         }
     }
 
-    private void SubmitFromDialog3() {
+/*    private void SubmitFromDialog3() {
         SubmitBntIsClicked = true;
         ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
             @Override
@@ -205,7 +215,7 @@ public class PresenterReview
         });
         playControlActivity.setRateNumber((int) ratingBar.getRating());
         dialog.dismiss();
-    }
+    }*/
 
     private void SubmitFromDialog() {
         SubmitBntIsClicked = true;
@@ -319,12 +329,18 @@ public class PresenterReview
         @Override
         protected void onPostExecute(Void aVoid)
         {
-            if (LogSuccess) {
-                playControlActivity.UpdateReviewSuccess(message);
-            } else {
-                playControlActivity.UpdateReviewFailed(message);
+            switch (jsonAction) {
+                case "addReview":
+                    if (LogSuccess) {
+                        playControlActivity.UpdateReviewSuccess(message);
+                    } else {
+                        playControlActivity.UpdateReviewFailed(message);
+                    }
+                    break;
+                case "getReview":
+                    //todo get review data
+                    break;
             }
-
         }
     }
     //endregion
