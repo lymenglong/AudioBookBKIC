@@ -27,6 +27,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_DRAGGING;
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_SETTLING;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
@@ -38,10 +41,11 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     private ChapterAdapter chapterAdapter;
     private Activity activity = ListChapter.this;
     private DBHelper dbHelper;
-    private static ArrayList<Chapter> list;
+    private ArrayList<Chapter> list;
     private ProgressBar progressBar;
     private View imRefresh;
     private Book bookIntent;
+    private int mPAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +57,6 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         initDatabase();
         initObject();
     }
-
 
     /**
      * Lấy dữ liệu thông qua intent
@@ -126,13 +129,12 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         // todo: check internet connection before be abel to press Button Refresh
         HashMap<String, String> ResultHash = new HashMap<>();
         int BookId = bookIntent.getId();
-        int Page = 1;
         String keyPost = "json";
         String postValue =
                 "{" +
                         "\"Action\":\"getChapterList\", " +
                         "\"BookId\":\""+BookId+"\", " +
-                        "\"Page\":\""+Page+"\"" +
+                        "\"Page\":\""+ mPAGE +"\"" +
                         "}";
         ResultHash.put(keyPost,postValue);
         presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
@@ -145,6 +147,29 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         listChapter.setLayoutManager(mLinearLayoutManager);
         listChapter.setAdapter(chapterAdapter);
+        listChapter.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                Log.d(TAG, "onScrollStateChanged: " +
+                        "\nnewState = "+newState+"" +
+                        "\nSCROLL_STATE_IDLE = "+SCROLL_STATE_IDLE+" " +
+                        "\nSCROLL_STATE_DRAGGING ="+SCROLL_STATE_DRAGGING+" " +
+                        "\nSCROLL_STATE_SETTLING = "+SCROLL_STATE_SETTLING+""
+                );
+                if(newState == SCROLL_STATE_DRAGGING){
+                    mPAGE++;
+                    RequestLoadList();
+                }
+
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                Log.d(TAG, "onScrolled: \ndx ="+dx+" \ndy = "+dy+"");
+            }
+        });
     }
 
     //region Method to get data for database
@@ -249,6 +274,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
 
     @Override
     public void LoadListDataFailed(String jsonMessage) {
+        mPAGE--;
         Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT).show();
     }
 }

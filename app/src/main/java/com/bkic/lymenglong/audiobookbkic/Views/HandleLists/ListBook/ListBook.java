@@ -16,6 +16,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
 import com.bkic.lymenglong.audiobookbkic.R;
 
@@ -26,6 +27,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static android.support.v7.widget.RecyclerView.SCROLL_STATE_DRAGGING;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
@@ -38,14 +40,16 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     private BookAdapter bookAdapter;
     private Activity activity = ListBook.this;
     private DBHelper dbHelper;
-    private static ArrayList<Book> list;
+    private ArrayList<Book> list;
     private ProgressBar progressBar;
     private View imRefresh;
-    private String categoryTitle;
+    private Category categoryIntent;
+/*    private String categoryTitle;
     private int categoryId;
     private String categoryDescription;
     private int categoryParent;
-    private int numOfChild;
+    private int numOfChild;*/
+    private int mPAGE = 1; //page from server
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +57,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         setContentView(R.layout.activity_show_list);
         getDataFromIntent();
         initView();
-        setTitle(categoryTitle);
+        setTitle(categoryIntent.getTitle());
         initDatabase();
         initObject();
     }
@@ -63,11 +67,19 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
      * Lấy dữ liệu thông qua intent
      */
     private void getDataFromIntent() {
-        categoryTitle = getIntent().getStringExtra("CategoryTitle");
+        categoryIntent = new Category
+                (
+                        getIntent().getIntExtra("CategoryId", -1),
+                        getIntent().getStringExtra("CategoryTitle"),
+                        getIntent().getStringExtra("CategoryDescription"),
+                        getIntent().getIntExtra("CategoryParent",0),
+                        getIntent().getIntExtra("NumOfChild",0)
+                );
+        /*categoryTitle = getIntent().getStringExtra("CategoryTitle");
         categoryId = getIntent().getIntExtra("CategoryId", -1);
         categoryDescription = getIntent().getStringExtra("CategoryDescription");
         categoryParent = getIntent().getIntExtra("CategoryParent",0);
-        numOfChild = getIntent().getIntExtra("NumOfChild",0);
+        numOfChild = getIntent().getIntExtra("NumOfChild",0);*/
     }
 
     /**
@@ -75,7 +87,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
      */
     private void initView() {
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, categoryTitle, true);
+        actionBar.eventToolbar(this, categoryIntent.getTitle(), true);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
         imRefresh = findViewById(R.id.imRefresh);
@@ -94,7 +106,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
 
         //region get data from json parsing
         if(list.isEmpty()){
-            RefreshDataLoading();
+            RequestLoadingData();
         } else {
             progressBar.setVisibility(View.GONE);
         }
@@ -105,21 +117,21 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
             @Override
             public void onClick(View v) {
                 // todo: check internet connection before be abel to press Button Refresh
-            RefreshDataLoading();
+            RequestLoadingData();
             }
         });
     }
 
-    private void RefreshDataLoading() {
+    private void RequestLoadingData() {
         HashMap<String, String> ResultHash = new HashMap<>();
-        int Page = 1;
-        int CategoryId = categoryId;
+
+        int CategoryId = categoryIntent.getId();
         String keyPost = "json";
         String postValue =
                 "{" +
                         "\"Action\":\"getBooksByCategory\", " +
                         "\"CategoryId\":\""+CategoryId+"\", " +
-                        "\"Page\":\""+Page+"\"" +
+                        "\"Page\":\""+mPAGE+"\"" +
                         "}";
         ResultHash.put(keyPost,postValue);
         presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
@@ -131,12 +143,27 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         listChapter.setLayoutManager(mLinearLayoutManager);
         listChapter.setAdapter(bookAdapter);
+        listChapter.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if(newState == SCROLL_STATE_DRAGGING){
+                        mPAGE++;
+                        RequestLoadingData();
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
     }
 
     //region Method to get data for database
     private void GetCursorData() {
         list.clear();
-        String SELECT_DATA = SELECT_ALL_BOOK_BY_CATEGORY_ID(categoryId);
+        String SELECT_DATA = SELECT_ALL_BOOK_BY_CATEGORY_ID(categoryIntent.getId());
         Cursor cursor = dbHelper.GetData(SELECT_DATA);
         while (cursor.moveToNext()){
             Book bookModel = new Book();
@@ -166,7 +193,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         bookModel.setTitle(jsonObject.getString("BookTitle"));
         bookModel.setUrlImage(jsonObject.getString("BookImage"));
         bookModel.setLength(Integer.parseInt(jsonObject.getString("BookLength")));
-        bookModel.setCategoryId(categoryId);
+        bookModel.setCategoryId(categoryIntent.getId());
         String INSERT_DATA;
         try {
             INSERT_DATA =
@@ -199,11 +226,12 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
         GetCursorData();
-        Log.d(TAG, "onPostExecute: "+ categoryTitle);
+        Log.d(TAG, "onPostExecute: "+ categoryIntent.getTitle());
     }
 
     @Override
     public void LoadListDataFailed(String jsonMessage) {
+        mPAGE--;
         Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT).show();
     }
 }
