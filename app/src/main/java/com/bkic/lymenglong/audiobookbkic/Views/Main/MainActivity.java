@@ -142,4 +142,22 @@ public class MainActivity extends AppCompatActivity
         }
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
+
+    private static final int TIME_INTERVAL = 2000; // # milliseconds, desired time passed between two back presses.
+    private long mBackPressed;
+    private Toast backToast;
+    @Override
+    public void onBackPressed()
+    {
+        if (mBackPressed + TIME_INTERVAL > System.currentTimeMillis())
+        {
+            backToast.cancel();
+            super.onBackPressed();
+            return;
+        } else {
+            backToast = Toast.makeText(getBaseContext(), "Tap back button in order to exit", Toast.LENGTH_SHORT);
+            backToast.show();
+        }
+        mBackPressed = System.currentTimeMillis();
+    }
 }

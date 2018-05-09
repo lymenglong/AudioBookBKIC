@@ -1,15 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 package="com.bkic.lymenglong.audiobookbkic">
 
+    <!--  Permission required for Downloading Files  -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+
+    <!--  Permission required for Checking Internet Connection  -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!--  Permission required for Reading Writing SD Card/Memory  -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <permission android:name="android.permission.MEDIA_CONTENT_CONTROL" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
 
 <application
     android:name=".Models.CheckInternet.MyApplication"
@@ -89,7 +96,7 @@ package="com.bkic.lymenglong.audiobookbkic">
     </intent-filter>
     </activity>
     <activity
-        android:name=".Views.History.ListHistory"
+        android:name=".Views.HandleLists.History.ListHistory"
         android:windowSoftInputMode="adjustResize|stateHidden" />
     <activity
         android:name=".Views.HandleLists.ListCategory.ListCategory"
@@ -126,8 +133,16 @@ package="com.bkic.lymenglong.audiobookbkic">
         android:name=".Views.Reading.ViewReading"
         android:screenOrientation="portrait">
     </activity>
-    <activity android:name=".Views.Favorite.ListFavorite" />
+    <activity android:name=".Views.HandleLists.Favorite.ListFavorite" />
     <activity android:name=".Views.HandleLists.ListChapter.ListChapter" />
+    <activity android:name=".Models.Download.MainActivityDownload">
+        <intent-filter>
+            <action android:name="android.intent.action.RUN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
+    <activity android:name=".Views.HandleLists.ListOffline.ListOfflineBook" />
+    <activity android:name=".Views.HandleLists.ListOffline.ListOfflineChapter" />
 
 </application>
 </manifest>

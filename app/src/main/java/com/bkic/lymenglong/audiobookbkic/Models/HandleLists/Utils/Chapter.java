@@ -7,6 +7,7 @@ public class Chapter {
     private String fileUrl;
     private int length;
     private int bookId;
+    private int status;
 
     public Chapter(int id, String title, String fileUrl, int length, int bookId) {
         this.id = id;
@@ -57,5 +58,13 @@ public class Chapter {
 
     public void setBookId(int bookId) {
         this.bookId = bookId;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
     }
 }

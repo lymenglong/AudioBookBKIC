@@ -6,6 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
+
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_BOOK;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_CATEGORY;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_CHAPTER;
@@ -34,6 +36,11 @@ public class DBHelper extends SQLiteOpenHelper {
         return sqLiteDatabase.rawQuery(sql,null);
     }
 
+    public void DropDB(){
+        String DROP_DB = "DROP DATABASE "+ Const.DB_NAME+"";
+        QueryData(DROP_DB);
+    }
+
     @Override
     public void onCreate(SQLiteDatabase dbHelper) {
         Log.d(TAG,"OnCreate Database");
@@ -49,7 +56,7 @@ public class DBHelper extends SQLiteOpenHelper {
         //insert menu value
         dbHelper.execSQL(INSERT_MENU_VALUES);
 
-        String s = "SELECT * FROM book ORDER BY book-title ASC"; //DESC
+//        String s = "SELECT * FROM book ORDER BY book-title ASC"; //DESC
     }
 
     @Override

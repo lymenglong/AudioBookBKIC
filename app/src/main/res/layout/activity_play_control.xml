@@ -7,19 +7,23 @@
     <include layout="@layout/action_bar"/>
 
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
         <LinearLayout
+            android:id="@+id/linearLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="60dp"
             android:orientation="vertical"
-            android:padding="5dp"
-            android:id="@+id/linearLayout">
+            android:padding="5dp">
 
             <Button
                 android:id="@+id/btn_add_favorite_book"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="5dp"
                 android:background="#dbfffa"
                 android:text="@string/add_book_to_favorite" />
 
@@ -28,7 +32,7 @@
                 android:id="@+id/btn_play"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="5dp"
                 android:background="#dbfffa"
                 android:text="@string/play" />
 
@@ -37,7 +41,7 @@
                 android:id="@+id/btn_pause"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:background="#dbfffa"
                 android:text="@string/pause" />
 
@@ -45,7 +49,7 @@
                 android:id="@+id/btn_replay"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:background="#dbfffa"
                 android:text="@string/stop" />
 
@@ -53,15 +57,15 @@
                 android:id="@+id/btn_backward"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:background="#dbfffa"
-                android:layout_marginTop="10dp"
                 android:text="@string/backward" />
 
             <Button
                 android:id="@+id/btn_ffw"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="5dp"
                 android:background="#dbfffa"
                 android:text="@string/forward" />
 
@@ -69,59 +73,67 @@
                 android:id="@+id/btn_previous"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:background="#dbfffa"
-                android:layout_marginTop="10dp"
                 android:text="@string/previousChapter"
-                android:visibility="visible"/>
+                android:visibility="visible" />
 
             <Button
                 android:id="@+id/btn_next"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
                 android:background="#dbfffa"
-                android:layout_marginTop="10dp"
                 android:text="@string/nextChapter"
-                android:visibility="visible"/>
+                android:visibility="visible" />
 
-
-
+            <Button
+                android:id="@+id/btn_download"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="#dbfffa"
+                android:text="@string/download"
+                android:visibility="visible" />
 
             <SeekBar
                 android:id="@+id/seekBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
-                android:visibility="visible"/>
+                android:layout_marginTop="10dp"
+                android:visibility="visible" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:weightSum="2"
-                android:visibility="visible">
+                android:visibility="visible"
+                android:weightSum="2">
+
                 <TextView
                     android:id="@+id/text_current_duration_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="18sp"
                     android:gravity="start"
-                    android:text="@string/time" />
+                    android:text="@string/time"
+                    android:textSize="18sp" />
 
                 <TextView
                     android:id="@+id/text_total_duration_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:textSize="18sp"
                     android:gravity="end"
-                    android:text="@string/time" />
+                    android:text="@string/time"
+                    android:textSize="18sp" />
             </LinearLayout>
-<!--            <include layout="@layout/custom_list"
+            <!--            <include layout="@layout/custom_list"
                 android:layout_marginTop="5dp"
                 android:layout_height="wrap_content"
                 android:layout_width="wrap_content"/>-->
         </LinearLayout>
+    </ScrollView>
 
 
 </RelativeLayout>

@@ -37,11 +37,9 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     private InputValidation inputValidation;
 
     private AppCompatTextView textViewLinkRegister;
-    private String textEmail;
 
     // variable to track event time
     private long mLastClickTime = 0;
-
 
 
     @Override
@@ -97,6 +95,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
         switch (v.getId()){
             case R.id.appCompatButtonLogin:
 
+                String textEmail;
                 if (!inputValidation.isInputEditTextFilled(
                         textInputEditTextEmail,
                         textInputLayoutEmail,
@@ -118,11 +117,11 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                 }
                 //check internet connection before request to server
                 if (ConnectivityReceiver.isConnected()) {
+                    findViewById(R.id.appCompatButtonLogin).setEnabled(false);
                     presenter.Login(textEmail, textPassword);
                 } else {
                     Toast.makeText(activity, "Please check internet connection", Toast.LENGTH_SHORT).show();
                 }
-
                 break;
             case R.id.textViewLinkRegister:
                 Intent intentRegister = new Intent(getApplicationContext(), ViewRegisterActivity.class);
@@ -137,13 +136,13 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
         Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
         Intent accountsIntent = new Intent(activity, MainActivity.class);
         accountsIntent.putExtra("EMAIL", textInputEditTextEmail.getText().toString().trim());
-        presenter.UserDetail(textEmail);
         startActivity(accountsIntent);
         activity.finish();
     }
 
     @Override
     public void LoginFailed(String message) {
+        findViewById(R.id.appCompatButtonLogin).setEnabled(true);
         Toast.makeText(ViewLoginActivity.this, message, Toast.LENGTH_SHORT).show();
     }
 }

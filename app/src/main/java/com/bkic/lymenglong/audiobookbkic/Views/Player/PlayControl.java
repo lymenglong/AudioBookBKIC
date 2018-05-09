@@ -1,10 +1,17 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Player;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -18,11 +25,14 @@ import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiv
 import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadTask;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.Utils;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.History.Utils.PlaybackHistory;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
-import com.bkic.lymenglong.audiobookbkic.Models.History.Utils.PlaybackHistory;
-import com.bkic.lymenglong.audiobookbkic.Presenters.Favorite.UpdateFavorite.PresenterUpdateFavorite;
-import com.bkic.lymenglong.audiobookbkic.Presenters.History.UpdateHistory.PresenterUpdateHistory;
+import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
+import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.Favorite.UpdateFavorite.PresenterUpdateFavorite;
+import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.History.UpdateHistory.PresenterUpdateHistory;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Player.PresenterPlayer;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Review.PresenterReview;
 import com.bkic.lymenglong.audiobookbkic.R;
@@ -37,7 +47,7 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_Audio;
 
 public class PlayControl extends AppCompatActivity
-        implements PlayerImp, View.OnClickListener, ConnectivityReceiver.ConnectivityReceiverListener{
+        implements PlayerImp, ConnectivityReceiver.ConnectivityReceiverListener{
     private PresenterPlayer presenterPlayer = new PresenterPlayer(this);
     private PresenterUpdateHistory presenterUpdateHistory = new PresenterUpdateHistory(this);
     private PresenterUpdateFavorite presenterUpdateFavorite = new PresenterUpdateFavorite(this);
@@ -47,13 +57,14 @@ public class PlayControl extends AppCompatActivity
     private Session session;
     private int ResumeTime;
     private DBHelper dbHelper;
-    private Button btnPlay, btnStop, btnPause, btnForward, btnBackward, btnNext, btnPrev, btnFavorite;
+    private Button btnPlay, btnStop, btnPause, btnForward, btnBackward, btnNext, btnPrev, btnFavorite, btnDownload;
     private SeekBar seekBar;
     private TextView txtSongTotal;
     private TextView txtCurrentDuration;
     private int RateNumber;
     private String Review;
     private Chapter chapterFromIntent;
+    private String AudioUrl;
 
     public int getResumeTime() {
         return ResumeTime;
@@ -93,14 +104,13 @@ public class PlayControl extends AppCompatActivity
     public SeekBar getSeekBar() {
         return seekBar;
     }
-    private int indexChapterAudio = -1;
+    private int indexChapterMap = -1;
     private HashMap<String, Chapter> hashMapChapter = new HashMap<>();
     private Boolean InitialState = true;
     private HashMap<String, PlaybackHistory> historyHashMap = new HashMap<>();
 
     private IntentFilter intentFilter;
     private ConnectivityReceiver receiver;
-    private Boolean isInternetConnected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,14 +118,78 @@ public class PlayControl extends AppCompatActivity
         setContentView(R.layout.activity_play_control);
         initIntentFilter();
         initDataFromIntent();
-        initToolbar(chapterFromIntent.getTitle());
         initView();
+        initToolbar(chapterFromIntent.getTitle());
         initObject();
-        initCollectChapterUrl();
+        initCollectChapterData();
+        initCheckChapterStatus();
         initHistoryState();
         initCheckAudioUrl();
         intListener();
 
+    }
+
+    //Module checkIfAlreadyhavePermission() is implemented as :
+    private boolean checkIfAlreadyhavePermission() {
+        int result = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
+        return result == PackageManager.PERMISSION_GRANTED;
+    }
+    //Module requestForSpecificPermission() is implemented as :
+    private void requestForSpecificPermission() {
+        ActivityCompat.requestPermissions
+                (
+                        this,
+                        new String[]
+                                {
+//                                        Manifest.permission.GET_ACCOUNTS,
+//                                        Manifest.permission.RECEIVE_SMS,
+//                                        Manifest.permission.READ_SMS,
+                                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                },
+                        101
+                );
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 101:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //granted
+                    new DownloadTask
+                            (
+                                    playControlActivity.getBaseContext(),
+                                    btnDownload,
+                                    AudioUrl,
+                                    String.valueOf(chapterFromIntent.getBookId()),
+                                    String.valueOf(chapterFromIntent.getId()),
+                                    chapterFromIntent.getBookId(),
+                                    chapterFromIntent.getId()
+                            );
+                } else {
+                    //not granted
+                    Toast.makeText(playControlActivity, "Check", Toast.LENGTH_SHORT).show();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
+    private Boolean initCheckChapterStatus() {
+        if(!InitialState){
+            initReloadChapterData();
+        }
+        Boolean isDownloaded = hashMapChapter.get(String.valueOf(indexChapterMap)).getStatus() != 0;
+        if(isDownloaded){
+            btnDownload.setEnabled(false);
+            btnDownload.setText(R.string.downloadCompleted);//If Download completed then change button text
+        } else {
+            btnDownload.setEnabled(true);
+            btnDownload.setText(R.string.download);//If Download completed then change button text
+        }
+        return isDownloaded;
     }
 
     private void initIntentFilter() {
@@ -145,28 +219,36 @@ public class PlayControl extends AppCompatActivity
         }
     }
 
-    private void initCollectChapterUrl(){
-        /*JSONArray jsonArray = new JSONArray();*/
+    private void initCollectChapterData(){
         String SELECT_FROM_CHAPTER = "SELECT * FROM CHAPTER WHERE BookId = '"+chapterFromIntent.getBookId()+"'";
         Cursor cursor = dbHelper.GetData(SELECT_FROM_CHAPTER);
         while(cursor.moveToNext()){
-            /*JSONObject jsonObject = new JSONObject();
-            jsonObject.put("ChapterId",cursor.getInt(0));
-            jsonObject.put("ChapterTitle", cursor.getString(1));
-            jsonObject.put("ChapterUrl", cursor.getString(2));
-            jsonObject.put("ChapterLength", cursor.getString(3));
-            jsonObject.put("BookId", cursor.getString(4));
-            jsonArray.put(cursor.getPosition(),jsonObject);*/
             Chapter chapterModel = new Chapter();
             chapterModel.setId(cursor.getInt(0));
             chapterModel.setTitle(cursor.getString(1));
             chapterModel.setFileUrl(cursor.getString(2));
             chapterModel.setLength(cursor.getInt(3));
             chapterModel.setBookId(cursor.getInt(4));
+            chapterModel.setStatus(cursor.getInt(5));
             hashMapChapter.put(String.valueOf(cursor.getPosition()), chapterModel);
             if(chapterModel.getId() == chapterFromIntent.getId()){
-                indexChapterAudio = cursor.getPosition();
+                indexChapterMap = cursor.getPosition();
             }
+        }
+    }
+
+    private void initReloadChapterData(){
+        String SELECT_FROM_CHAPTER = "SELECT * FROM CHAPTER WHERE BookId = '"+chapterFromIntent.getBookId()+"'";
+        Cursor cursor = dbHelper.GetData(SELECT_FROM_CHAPTER);
+        while(cursor.moveToNext()){
+            Chapter chapterModel = new Chapter();
+            chapterModel.setId(cursor.getInt(0));
+            chapterModel.setTitle(cursor.getString(1));
+            chapterModel.setFileUrl(cursor.getString(2));
+            chapterModel.setLength(cursor.getInt(3));
+            chapterModel.setBookId(cursor.getInt(4));
+            chapterModel.setStatus(cursor.getInt(5));
+            hashMapChapter.put(String.valueOf(cursor.getPosition()), chapterModel);
         }
     }
 
@@ -201,29 +283,37 @@ public class PlayControl extends AppCompatActivity
 
     @Override
     public void PrepareChapter() {
-        if (0 <= indexChapterAudio && indexChapterAudio < hashMapChapter.size()) {
+        if (0 <= indexChapterMap && indexChapterMap < hashMapChapter.size()) {
             if (!InitialState) presenterPlayer.StopMedia();
-            initToolbar(hashMapChapter.get(String.valueOf(indexChapterAudio)).getTitle());
-            //prepareMediaData
-            //todo check internet connection
-
+            String indexChapterTitle = hashMapChapter.get(String.valueOf(indexChapterMap)).getTitle();
+            initToolbar(indexChapterTitle);
+            chapterFromIntent.setId(hashMapChapter.get(String.valueOf(indexChapterMap)).getId());
+            initHistoryState();
             try {
-                int ChapterIdFromIndex = hashMapChapter.get(String.valueOf(indexChapterAudio)).getId();
+                int ChapterIdFromIndex = hashMapChapter.get(String.valueOf(indexChapterMap)).getId();
                 int ResumePosition = historyHashMap.get(String.valueOf(ChapterIdFromIndex)).getPauseTime();
                 setResumeTime(ResumePosition);
             } catch (Exception ignored) {
                 setResumeTime(0);
             }
-            String ChapterUrlFromIndex = hashMapChapter.get(String.valueOf(indexChapterAudio)).getFileUrl();
-            String AudioUrl = HttpURL_Audio + ChapterUrlFromIndex;
-            presenterPlayer.PrepareMediaPlayer(AudioUrl);
+            Boolean isDownloadedAudio = initCheckChapterStatus();
+            if(isDownloadedAudio){
+                AudioUrl =      Environment.getExternalStorageDirectory().getPath()+ "/"
+                        + Utils.downloadDirectory + "/"
+                        + chapterFromIntent.getBookId() + "/"
+                        + chapterFromIntent.getId() + ".mp3";
+            } else{
+                String ChapterUrlFromIndex = hashMapChapter.get(String.valueOf(indexChapterMap)).getFileUrl();
+                AudioUrl = HttpURL_Audio + ChapterUrlFromIndex;
+            }
+            if (ConnectivityReceiver.isConnected()) presenterPlayer.PrepareMediaPlayer(AudioUrl, isDownloadedAudio);
             InitialState = false;
-        } else if(indexChapterAudio < 0 ) {
-            indexChapterAudio = 0;
+        } else if(indexChapterMap < 0 ) {
+            indexChapterMap = 0;
             String message = "Chương bạn đã yêu cầu không tồn tại";
             Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
         } else {
-            indexChapterAudio = hashMapChapter.size()-1;
+            indexChapterMap = hashMapChapter.size()-1;
             String message = "Chương bạn đã yêu cầu không tồn tại";
             Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
         }
@@ -265,59 +355,85 @@ public class PlayControl extends AppCompatActivity
         btnNext = findViewById(R.id.btn_next);
         btnPrev = findViewById(R.id.btn_previous);
         btnStop = findViewById(R.id.btn_replay);
+        btnDownload = findViewById(R.id.btn_download);
         seekBar = findViewById(R.id.seekBar);
         txtSongTotal = findViewById(R.id.text_total_duration_label);
         txtCurrentDuration = findViewById(R.id.text_current_duration_label);
     }
 
     private void intListener() {
-        btnFavorite.setOnClickListener(this);
-        btnPlay.setOnClickListener(this);
-        btnPause.setOnClickListener(this);
-        btnForward.setOnClickListener(this);
-        btnBackward.setOnClickListener(this);
-        btnNext.setOnClickListener(this);
-        btnPrev.setOnClickListener(this);
-        btnStop.setOnClickListener(this);
+        btnFavorite.setOnClickListener(onClickListener);
+        btnPlay.setOnClickListener(onClickListener);
+        btnPause.setOnClickListener(onClickListener);
+        btnForward.setOnClickListener(onClickListener);
+        btnBackward.setOnClickListener(onClickListener);
+        btnNext.setOnClickListener(onClickListener);
+        btnPrev.setOnClickListener(onClickListener);
+        btnStop.setOnClickListener(onClickListener);
+        btnDownload.setOnClickListener(onClickListener);
         seekBar.setOnSeekBarChangeListener(presenterPlayer);
     }
 
-    @Override
-    public void onClick(View v) {
-        //region Switch Button
-        switch (v.getId()){
-            case R.id.btn_add_favorite_book:
-                AddFavoriteBook();
-                break;
-            case R.id.btn_play :
-                presenterPlayer.PlayMedia();
-                break;
-            case R.id.btn_pause:
-                presenterPlayer.PauseMedia();
-                presenterReview.ReviewBookDialog(playControlActivity);
+    View.OnClickListener onClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            //region Switch Button
+            switch (v.getId()){
+                case R.id.btn_add_favorite_book:
+                    AddFavoriteBook();
+                    break;
+                case R.id.btn_play :
+                    presenterPlayer.PlayMedia();
+                    break;
+                case R.id.btn_pause:
+                    presenterPlayer.PauseMedia();
+                    presenterReview.ReviewBookDialog(playControlActivity);
 //                presenterReview.ReviewBookDialog2(playControlActivity);
 //                presenterReview.ReviewBookDialog3(playControlActivity);
-                break;
-            case R.id.btn_replay:
-                presenterPlayer.ReplayMedia();
-                break;
-            case R.id.btn_next:
-                indexChapterAudio++;
-                PrepareChapter();
-                break;
-            case R.id.btn_previous:
-                indexChapterAudio--;
-                PrepareChapter();
-                break;
-            case R.id.btn_ffw:
-                presenterPlayer.ForwardMedia();
-                break;
-            case R.id.btn_backward:
-                presenterPlayer.RewindMedia();
-                break;
+                    break;
+                case R.id.btn_replay:
+                    presenterPlayer.ReplayMedia();
+                    break;
+                case R.id.btn_next:
+                    UpdateHistoryData();
+                    indexChapterMap++;
+                    PrepareChapter();
+                    break;
+                case R.id.btn_previous:
+                    UpdateHistoryData();
+                    indexChapterMap--;
+                    PrepareChapter();
+                    break;
+                case R.id.btn_ffw:
+                    presenterPlayer.ForwardMedia();
+                    break;
+                case R.id.btn_backward:
+                    presenterPlayer.RewindMedia();
+                    break;
+                case R.id.btn_download:
+                    //check if my app has permission and than request if it does not have permission
+                    int MyVersion = Build.VERSION.SDK_INT;
+                    if (MyVersion > Build.VERSION_CODES.LOLLIPOP_MR1) {
+                        if (!checkIfAlreadyhavePermission()) {
+                            requestForSpecificPermission();
+                        }
+                    }else {
+                        new DownloadTask
+                                (
+                                        playControlActivity.getBaseContext(),
+                                        btnDownload,
+                                        AudioUrl,
+                                        String.valueOf(chapterFromIntent.getBookId()),
+                                        String.valueOf(chapterFromIntent.getId()),
+                                        chapterFromIntent.getBookId(),
+                                        chapterFromIntent.getId()
+                                );
+                    }
+                    break;
+            }
+            //endregion
         }
-        //endregion
-    }
+    };
 
     @Override
     protected void onResume() {
@@ -337,7 +453,6 @@ public class PlayControl extends AppCompatActivity
 
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
-        isInternetConnected = isConnected;
         ToastConnectionMessage(isConnected);
     }
 
@@ -362,7 +477,6 @@ public class PlayControl extends AppCompatActivity
 
     private void AddFavoriteBook() {
         //region Update to favorite with httpWebCall
-        //todo check internet connection
         String jsonAction = "addFavourite";
         String IdUserHolder = String.valueOf(session.getUserIdLoggedIn());
         String IdBookHolder = String.valueOf(chapterFromIntent.getBookId());
@@ -370,7 +484,9 @@ public class PlayControl extends AppCompatActivity
         @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
                 new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
         String InsertTimeHolder = simpledateformat.format(calendar.getTime());
-        presenterUpdateFavorite.RequestUpdateToServer(jsonAction,IdUserHolder,IdBookHolder,InsertTimeHolder);
+        if (ConnectivityReceiver.isConnected()&&!CheckBookSynced("favorite")) {
+            presenterUpdateFavorite.RequestUpdateToServer(jsonAction,IdUserHolder,IdBookHolder,InsertTimeHolder);
+        }
         //endregion
 
         //region ADD BOOK IN TO TABLE FAVORITE SQLite
@@ -381,10 +497,11 @@ public class PlayControl extends AppCompatActivity
                         "BookImage, " +
                         "BookLength, " +
                         "BookAuthor " +
-                        "FROM " +
+                "FROM " +
                         "book " +
-                        "WHERE BookId = '"+chapterFromIntent.getBookId()+"'" +
-                        ";";
+                "WHERE " +
+                        "BookId = '"+chapterFromIntent.getBookId()+"'" +
+                ";";
         Cursor cursor = dbHelper.GetData(SELECT_BOOK_BY_BOOK_ID);
         Book bookModel = new Book();
         while (cursor.moveToNext()) {
@@ -399,23 +516,26 @@ public class PlayControl extends AppCompatActivity
             String INSERT_BOOK_INTO_TABLE_FAVORITE =
                     "INSERT INTO favorite VALUES" +
                             "(" +
-                            "'"+bookModel.getId()+"', " +
-                            "'"+bookModel.getTitle()+"', " +
-                            "'"+bookModel.getUrlImage()+"', " +
-                            "'"+bookModel.getLength()+"', " +
-                            "'"+bookModel.getAuthor()+"'" +
+                                    "'"+bookModel.getId()+"', " +
+                                    "'"+bookModel.getTitle()+"', " +
+                                    "'"+bookModel.getUrlImage()+"', " +
+                                    "'"+bookModel.getLength()+"', " +
+                                    "'"+bookModel.getAuthor()+"', " +
+                                    "'"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"'" +// BookSync Is Default Equal 0
                             ");";
             dbHelper.QueryData(INSERT_BOOK_INTO_TABLE_FAVORITE);
         } catch (Exception ignored) {
             String UPDATE_BOOK_IN_TABLE_FAVORITE =
-                    "UPDATE favorite SET " +
+                    "UPDATE " +
+                            "favorite " +
+                    "SET " +
                             "BookTitle = '"+bookModel.getTitle()+"', " +
                             "BookImage = '"+bookModel.getUrlImage()+"', " +
                             "BookLength = '"+bookModel.getLength()+"', " +
                             "BookAuthor = '"+bookModel.getAuthor()+"' " +
-                            "WHERE " +
+                    "WHERE " +
                             "BookId = '"+bookModel.getId()+"'" +
-                            ";";
+                    ";";
             dbHelper.QueryData(UPDATE_BOOK_IN_TABLE_FAVORITE);
         }
         dbHelper.close();
@@ -432,7 +552,24 @@ public class PlayControl extends AppCompatActivity
         super.onDestroy();
     }
 
-    private void UpdateHistoryData() {
+    @NonNull
+    private Boolean CheckBookSynced(String tableName){
+        String SELECT_BOOK_SYNC =
+                "SELECT " +
+                        "BookSync " +
+                "FROM " +
+                        ""+tableName+" " +
+                "WHERE BookId = '"+chapterFromIntent.getBookId()+"'";
+        Cursor cursor = dbHelper.GetData(SELECT_BOOK_SYNC);
+        int BookSync = 0;
+        while (cursor.moveToNext()){
+            BookSync = cursor.getInt(0);
+        }
+        return BookSync == 1;
+    }
+
+    @Override
+    public void UpdateHistoryData() {
         if (!chapterFromIntent.getFileUrl().isEmpty()) {
             int lastPlayDuration = presenterPlayer.GetLastMediaData();
             String jsonAction = "addHistory";
@@ -442,6 +579,8 @@ public class PlayControl extends AppCompatActivity
             @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
                     new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             String InsertTimeHolder = simpledateformat.format(calendar.getTime());
+            if(ConnectivityReceiver.isConnected() && !CheckBookSynced("history"))presenterUpdateHistory.RequestUpdateToServer
+                    (jsonAction,IdUserHolder,IdBookHolder,InsertTimeHolder);
 
             //region INSERT VALUE TO SQLite DATABASE
             //region Update Table playHistory
@@ -449,22 +588,24 @@ public class PlayControl extends AppCompatActivity
                 String INSERT_PLAY_HISTORY =
                         "INSERT INTO playHistory VALUES" +
                                 "(" +
-                                "'"+chapterFromIntent.getId()+"', " +
-                                "'"+IdBookHolder+"', " +
-                                "'"+lastPlayDuration +"', " +
-                                "'"+InsertTimeHolder+"'"+
+                                        "'"+chapterFromIntent.getId()+"', " +
+                                        "'"+IdBookHolder+"', " +
+                                        "'"+lastPlayDuration +"', " +
+                                        "'"+InsertTimeHolder+"'"+
                                 ");";
                 dbHelper.QueryData(INSERT_PLAY_HISTORY);
             } catch (Exception ignored) {
                 String UPDATE_PLAY_HISTORY =
-                        "UPDATE playHistory SET " +
+                        "UPDATE " +
+                                "playHistory " +
+                        "SET " +
                                 "PauseTime = '"+ lastPlayDuration +"', " +
                                 "LastDate ='"+InsertTimeHolder+"' " +
-                                "WHERE " +
+                        "WHERE " +
                                 "ChapterId = '"+chapterFromIntent.getId()+"' " +
                                 "AND " +
                                 "BookId = '"+chapterFromIntent.getBookId()+"'" +
-                                ";";
+                        ";";
                 dbHelper.QueryData(UPDATE_PLAY_HISTORY);
             }
             //endregion
@@ -476,10 +617,11 @@ public class PlayControl extends AppCompatActivity
                             "BookImage, " +
                             "BookLength, " +
                             "BookAuthor " +
-                            "FROM " +
+                    "FROM " +
                             "book " +
-                            "WHERE BookId = '"+chapterFromIntent.getBookId()+"'" +
-                            ";";
+                    "WHERE " +
+                            "BookId = '"+chapterFromIntent.getBookId()+"'" +
+                    ";";
             Cursor cursor = dbHelper.GetData(SELECT_BOOK_BY_BOOK_ID);
             Book bookModel = new Book();
             while (cursor.moveToNext()) {
@@ -494,36 +636,52 @@ public class PlayControl extends AppCompatActivity
                 String INSERT_BOOK_INTO_TABLE_HISTORY =
                         "INSERT INTO history VALUES" +
                                 "(" +
-                                "'"+bookModel.getTitle()+"', " +
-                                "'"+bookModel.getTitle()+"', " +
-                                "'"+bookModel.getUrlImage()+"', " +
-                                "'"+bookModel.getLength()+"', " +
-                                "'"+bookModel.getAuthor()+"'" +
+                                        "'"+bookModel.getId()+"', " +
+                                        "'"+bookModel.getTitle()+"', " +
+                                        "'"+bookModel.getUrlImage()+"', " +
+                                        "'"+bookModel.getLength()+"', " +
+                                        "'"+bookModel.getAuthor()+"', " +
+                                        "'"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"'" +
                                 ");";
                 dbHelper.QueryData(INSERT_BOOK_INTO_TABLE_HISTORY);
             } catch (Exception ignored) {
                 String UPDATE_BOOK_IN_TABLE_HISTORY =
-                        "UPDATE history SET " +
+                        "UPDATE " +
+                                "history " +
+                        "SET " +
                                 "BookTitle = '"+bookModel.getTitle()+"', " +
                                 "BookImage = '"+bookModel.getUrlImage()+"', " +
                                 "BookLength = '"+bookModel.getLength()+"', " +
                                 "BookAuthor = '"+bookModel.getAuthor()+"' " +
-                                "WHERE " +
+                        "WHERE " +
                                 "BookId = '"+bookModel.getId()+"'" +
-                                ";";
+                        ";";
                 dbHelper.QueryData(UPDATE_BOOK_IN_TABLE_HISTORY);
             }
             //endregion
             dbHelper.close();
             //endregion
-            if(ConnectivityReceiver.isConnected())presenterUpdateHistory.RequestUpdateToServer
-                    (jsonAction,IdUserHolder,IdBookHolder,InsertTimeHolder);
             //todo Rating Book
         }
     }
 
+    //SyncBook For History & Favorite
+    private void SyncBook(String tableName) {
+        String UPDATE_BOOK_SYNC =
+                "UPDATE " +
+                        "'"+tableName+"' " +
+                "SET " +
+                        "BookSync = '"+ Const.BOOK_SYNCED_WITH_SERVER+"' " +
+                "WHERE " +
+                        "BookId = '"+chapterFromIntent.getBookId()+"'" +
+                ";";
+        dbHelper.QueryData(UPDATE_BOOK_SYNC);
+        dbHelper.close();
+    }
+
     @Override
     public void UpdateHistorySuccess(String message) {
+        SyncBook("history");
         Log.d(TAG, "UpdateHistorySuccess: "+message);
     }
 
@@ -534,6 +692,7 @@ public class PlayControl extends AppCompatActivity
 
     @Override
     public void UpdateFavoriteSuccess(String message) {
+        SyncBook("favorite");
         Log.d(TAG, "UpdateFavoriteSuccess: "+message);
     }
 
@@ -551,4 +710,5 @@ public class PlayControl extends AppCompatActivity
     public void UpdateReviewFailed(String message) {
         Log.d(TAG, "UpdateReviewFailed: "+message);
     }
+
 }

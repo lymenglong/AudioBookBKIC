@@ -3,7 +3,7 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Player;
 
 public interface PresenterPlayerImp {
 
-    void PrepareMediaPlayer(String httpUrlMedia);
+    void PrepareMediaPlayer(String httpUrlMedia, Boolean isDownloadedAudio);
 
     void ReplayMedia();
 
@@ -26,4 +26,5 @@ public interface PresenterPlayerImp {
     int GetLastMediaData();
 
     void ReleaseMediaPlayer();
+
 }

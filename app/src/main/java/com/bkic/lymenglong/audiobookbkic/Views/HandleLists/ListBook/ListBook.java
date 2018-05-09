@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookAdapter;
@@ -35,7 +36,7 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.SELECT_ALL_BO
 
 public class ListBook extends AppCompatActivity implements ListBookImp{
     private static final String TAG = "ListBook";
-    PresenterShowList presenterShowList = new PresenterShowList(this);
+    private PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
     private BookAdapter bookAdapter;
     private Activity activity = ListBook.this;
@@ -103,21 +104,18 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         SetAdapterToListView();
         //update list
         GetCursorData();
-
         //region get data from json parsing
-        if(list.isEmpty()){
-            RequestLoadingData();
-        } else {
-            progressBar.setVisibility(View.GONE);
-        }
+        if(list.isEmpty()) RequestLoadingData();
         //endregion
-
         //To refresh list when click button refresh
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // todo: check internet connection before be abel to press Button Refresh
-            RequestLoadingData();
+                if (ConnectivityReceiver.isConnected()) {
+                    RequestLoadingData();
+                } else {
+                    Toast.makeText(activity, "Please Check Internet Connection", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -177,6 +175,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         cursor.close();
         bookAdapter.notifyDataSetChanged();
         dbHelper.close();
+        progressBar.setVisibility(View.GONE);
     }
     //endregion
 
@@ -187,7 +186,6 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
 
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
-        //todo: for new api
         Book bookModel = new Book();
         bookModel.setId(Integer.parseInt(jsonObject.getString("BookId")));
         bookModel.setTitle(jsonObject.getString("BookTitle"));
@@ -197,7 +195,6 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         String INSERT_DATA;
         try {
             INSERT_DATA =
-                    //todo: create new book table for sqlite
                     "INSERT INTO book VALUES(" +
                             "'"+bookModel.getId()+"', " +
                             "'"+bookModel.getTitle()+"', " +
@@ -208,23 +205,27 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
                             "'"+bookModel.getLength()+"', " +
                             "'"+bookModel.getFileUrl() +"', " +
                             "'"+bookModel.getCategoryId()+"', " + //CategoryID
-                            "'"+bookModel.getNumOfChapter()+"'" +
+                            "'"+bookModel.getNumOfChapter()+"', " +
+                            "'"+0+"'" +
                             ")";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
-            String UPDATE_DATA = "UPDATE book SET " +
-                    "BookTitle = '"+bookModel.getTitle()+"', " +
-                    "BookImage = '"+bookModel.getUrlImage()+"', " +
-                    "BookLength = '"+bookModel.getLength()+"' ," +
-                    "CategoryId = '"+bookModel.getCategoryId()+"' " + //CategoryId
-                    "WHERE BookId = '"+bookModel.getId()+"'";
+            String UPDATE_DATA =
+                    "UPDATE " +
+                            "book " +
+                    "SET " +
+                            "BookTitle = '"+bookModel.getTitle()+"', " +
+                            "BookImage = '"+bookModel.getUrlImage()+"', " +
+                            "BookLength = '"+bookModel.getLength()+"' ," +
+                            "CategoryId = '"+bookModel.getCategoryId()+"' " + //CategoryId
+                    "WHERE " +
+                            "BookId = '"+bookModel.getId()+"'";
             dbHelper.QueryData(UPDATE_DATA);
         }
     }
 
     @Override
     public void ShowListFromSelected() {
-        progressBar.setVisibility(View.GONE);
         GetCursorData();
         Log.d(TAG, "onPostExecute: "+ categoryIntent.getTitle());
     }

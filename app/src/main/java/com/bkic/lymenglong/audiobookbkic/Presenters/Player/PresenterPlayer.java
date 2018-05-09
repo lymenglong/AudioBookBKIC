@@ -25,16 +25,17 @@ public class PresenterPlayer
     private PlayControl playControlActivity;
     private ProgressDialog progressDialog;
     private static String TAG = "PresenterPlayer";
-    private MediaPlayer mediaPlayer;
+    private MediaPlayer mediaPlayer = new MediaPlayer();
     private int intSoundMax;
     private Boolean mediaIsPrepared;
+    private Boolean isDownloaded;
 
     public PresenterPlayer(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
     }
 
     @Override
-    public void PrepareMediaPlayer(final String httpUrlMedia) {
+    public void PrepareMediaPlayer(final String httpUrlMedia, final Boolean isDownloadedAudio) {
         @SuppressLint("StaticFieldLeak")
         class PrepareMediaPlayerClass extends AsyncTask<String, Void, Boolean> {
             @Override
@@ -46,10 +47,10 @@ public class PresenterPlayer
             @Override
             protected Boolean doInBackground(String... strings) {
                 try {
-                    mediaPlayer = new MediaPlayer();
-                    mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    isDownloaded = isDownloadedAudio;
                     mediaPlayer.reset();
-                    mediaPlayer.setDataSource(playControlActivity, Uri.parse(strings[0]));
+                    mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                    mediaPlayer.setDataSource(playControlActivity.getApplicationContext(), Uri.parse(strings[0]));
                     mediaPlayer.prepare();
                     mediaIsPrepared = true;
                     /*final String path = strings[0];
@@ -175,6 +176,8 @@ public class PresenterPlayer
         mUpdateHandler.removeCallbacks(mUpdate);
         mediaPlayer.stop();
         mediaPlayer.reset();
+        mediaPlayer.release();
+        mediaPlayer = new MediaPlayer();
     }
 
     @Override
@@ -187,12 +190,13 @@ public class PresenterPlayer
     }
     @Override
     public void PlayMedia() {
-        if (mediaPlayer != null) {
-            if (mediaIsPrepared && !mediaPlayer.isPlaying()) {
+        if (mediaIsPrepared) {
+            if (!mediaPlayer.isPlaying()) {
                 intSoundMax = mediaPlayer.getDuration();
                 playControlActivity.getSeekBar().setMax(intSoundMax);
                 //Update SeekBar
                 mUpdateHandler.postDelayed(mUpdate, 100);
+                if(isDownloaded) playControlActivity.getSeekBar().setSecondaryProgress(intSoundMax);
                 mediaPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener() {
                     @Override
                     public void onBufferingUpdate(MediaPlayer mp, int percent) {
@@ -226,7 +230,7 @@ public class PresenterPlayer
             } else {
                 Toast.makeText(playControlActivity, "Sách nói đang chạy", Toast.LENGTH_SHORT).show();
             }
-        } else { //media player = null;
+        } else { //mediaIsPrepared = fale;
             playControlActivity.PrepareChapter();
         }
     }
@@ -240,7 +244,7 @@ public class PresenterPlayer
             playControlActivity.getTxtCurrentDuration().setText(simpleDateFormat.format(mediaPlayer.getCurrentPosition()));
             playControlActivity.getTxtSongTotal().setText(simpleDateFormat.format(mediaPlayer.getDuration()));
             playControlActivity.getSeekBar().setProgress(mediaPlayer.getCurrentPosition());
-            mUpdateHandler.postDelayed(this, 100);
+            mUpdateHandler.postDelayed(this, 1000);
         }
     };
     //endregion
@@ -268,7 +272,9 @@ public class PresenterPlayer
     @Override
     public void ReleaseMediaPlayer() {
         mediaPlayer.stop();
+        mediaPlayer.reset();
         mediaPlayer.release();
+//        mediaPlayer = null;
     }
 
     @Override

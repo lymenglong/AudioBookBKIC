@@ -99,6 +99,7 @@ public class PresenterLogin implements PresenterLoginImp {
     @SuppressLint("StaticFieldLeak")
     private class GetHttpResponseFromHttpWebCall extends AsyncTask<Void, Void, Void>
     {
+
         public Activity activity;
 
         String jsonAction = null;
@@ -117,40 +118,33 @@ public class PresenterLogin implements PresenterLoginImp {
         @Override
         protected void onPreExecute()
         {
+//            progressDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
             super.onPreExecute();
         }
 
         @Override
         protected Void doInBackground(Void... arg0)
         {
-            try
+            if(FinalJSonObject != null )
             {
-                if(FinalJSonObject != null )
-                {
-                    JSONObject jsonObject;
+                JSONObject jsonObject;
 
-                    try {
-                        jsonObject = new JSONObject(FinalJSonObject);
+                try {
+                    jsonObject = new JSONObject(FinalJSonObject);
 
-                        jsonAction = jsonObject.getString("Action");
+                    jsonAction = jsonObject.getString("Action");
 
-                        ResultJsonObject = jsonObject.getString("Result");
+                    ResultJsonObject = jsonObject.getString("Result");
 
-                        LogSuccess = jsonObject.getString("Log").equals("Success");
+                    LogSuccess = jsonObject.getString("Log").equals("Success");
 
-                        message = jsonObject.getString("Message");
+                    message = jsonObject.getString("Message");
 
-                    }
-                    catch (JSONException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
                 }
-            }
-            catch (Exception e)
-            {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                catch (JSONException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
             return null;
         }
@@ -164,6 +158,7 @@ public class PresenterLogin implements PresenterLoginImp {
                         Session session = new Session(loginActivity);
                         session.setLoggedin(true);
                         session.setNameLoggedIn(Email);
+                        UserDetail(Email);
                         loginActivity.LoginSuccess(message);
                     } else {
                         loginActivity.LoginFailed(message);

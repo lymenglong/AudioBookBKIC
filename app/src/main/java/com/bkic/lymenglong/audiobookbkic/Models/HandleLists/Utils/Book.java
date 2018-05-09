@@ -30,7 +30,7 @@ public class Book {
         this.title = title;
         this.urlImage = urlImage;
         this.length = length;
-        CategoryId = categoryId;
+        this.CategoryId = categoryId;
     }
 
     public int getId() {

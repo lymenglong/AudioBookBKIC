@@ -17,6 +17,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.ShowUserInfo.Adapter.UserInfoRecyclerAdapter;
@@ -28,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, View.OnClickListener{
-    PresenterUserInfo presenterUserInfo = new PresenterUserInfo(this);
+    private PresenterUserInfo presenterUserInfo = new PresenterUserInfo(this);
     private AppCompatActivity activity = UserInfoActivity.this;
     private AppCompatTextView textViewName;
     private AppCompatButton btnLogout;
@@ -40,6 +42,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
     private Session session;
     private String message;
     private String menuTitle;
+    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -82,6 +85,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
      */
     @SuppressLint("SetTextI18n")
     private void initObjects() {
+        dbHelper = new DBHelper(this, Const.DB_NAME,null,Const.DB_VERSION);
         session = new Session(this);
         listUsers = new ArrayList<>();
         userInfoRecyclerAdapter = new UserInfoRecyclerAdapter(listUsers);
@@ -212,6 +216,6 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         Log.d(TAG, "LogoutSuccess");
         activity.startActivity(intent);
         activity.finish();
-        //todo: Drop Database on phone when logout
+        dbHelper.DropDB();
     }
 }

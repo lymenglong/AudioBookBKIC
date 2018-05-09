@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.ChapterAdapter;
@@ -45,7 +46,8 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     private ProgressBar progressBar;
     private View imRefresh;
     private Book bookIntent;
-    private int mPAGE = 1;
+    private int mPAGE = 1; // Default page load page 1 at the first time
+    private Boolean isFinalPage = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +99,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         //region get data from json parsing
         if(list.isEmpty()){
             SetRequestUpdateBookDetail();
-            RequestLoadList();
+            if (ConnectivityReceiver.isConnected()) RequestLoadList();
         } else {
             progressBar.setVisibility(View.GONE);
         }
@@ -126,7 +128,6 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     }
 
     private void RequestLoadList() {
-        // todo: check internet connection before be abel to press Button Refresh
         HashMap<String, String> ResultHash = new HashMap<>();
         int BookId = bookIntent.getId();
         String keyPost = "json";
@@ -157,7 +158,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
                         "\nSCROLL_STATE_DRAGGING ="+SCROLL_STATE_DRAGGING+" " +
                         "\nSCROLL_STATE_SETTLING = "+SCROLL_STATE_SETTLING+""
                 );
-                if(newState == SCROLL_STATE_DRAGGING){
+                if(newState == SCROLL_STATE_DRAGGING && !isFinalPage){
                     mPAGE++;
                     RequestLoadList();
                 }
@@ -174,7 +175,6 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
 
     //region Method to get data for database
     private void GetCursorData() {
-        //todo: for new api
         list.clear();
         Cursor cursor = dbHelper.GetData("SELECT * FROM chapter WHERE BookId = '"+ bookIntent.getId() +"'");
         while (cursor.moveToNext()){
@@ -234,7 +234,6 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
 
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
-        //todo: for new api
         Chapter chapterModel = new Chapter();
         chapterModel.setId(Integer.parseInt(jsonObject.getString("ChapterId")));
         chapterModel.setTitle(jsonObject.getString("ChapterTitle"));
@@ -244,14 +243,14 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         String INSERT_DATA;
         try {
             INSERT_DATA =
-                    //todo: create new book table for sqlite
                     "INSERT INTO chapter VALUES" +
                             "(" +
                             "'"+chapterModel.getId()+"', " +
                             "'"+chapterModel.getTitle()+"', " +
                             "'"+chapterModel.getFileUrl() +"', " +
                             "'"+chapterModel.getLength() +"', " +
-                            "'"+BookId+"'" + //BookId
+                            "'"+BookId+"', " + //BookId
+                            "'"+0+"'" + // Status Chapter is equal 0 which mean chapter have not downloaded yet
                             ")";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
@@ -275,6 +274,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     @Override
     public void LoadListDataFailed(String jsonMessage) {
         mPAGE--;
+        isFinalPage = true;
         Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT).show();
     }
 }

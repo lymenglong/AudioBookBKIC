@@ -114,6 +114,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
 
     @Override
     public void RegisterFailed(String message) {
+        findViewById(R.id.appCompatButtonLogin).setEnabled(true);
         Toast.makeText(registerActivity, message, Toast.LENGTH_SHORT).show();
     }
 
@@ -174,6 +175,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
                 } else userModel.setConfirmPassword(textInputEditTextConfirmPassword.getText().toString());
 
                 if (ConnectivityReceiver.isConnected()) {
+                    findViewById(R.id.appCompatButtonRegister).setEnabled(false);
                     HashMap<String, String> ResultHash = new HashMap<>();
                     // GetUserDetail
                     String keyPost = "json";

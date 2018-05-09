@@ -6,6 +6,8 @@ public interface PlayerImp {
 
     void AddReviewBookToServer();
 
+    void UpdateHistoryData();
+
     void UpdateHistorySuccess(String message);
 
     void UpdateHistoryFailed(String message);

@@ -46,6 +46,7 @@ public final class Const {
                     "('3', 'Yêu Thích'), " +
                     "('4', 'Tài Khoản'), " +
                     "('5', 'Hướng Dẫn'), " +
+                    "('6', 'Sách Đã Tải Xuống'), " +
                     "('100', 'Thoát')" +
                     ";";
 
@@ -71,7 +72,8 @@ public final class Const {
                             "BookLength INTEGER, " +
                             "BookURL VARCHAR(255), " +
                             "CategoryId INTEGER, " +
-                            "NumOfChapter INTEGER " +
+                            "NumOfChapter INTEGER, " +
+                            "BookStatus INTEGER" +
                     ");";
     public static final String CREATE_TABLE_CHAPTER =
             "CREATE TABLE IF NOT EXISTS chapter " +
@@ -80,7 +82,8 @@ public final class Const {
                             "ChapterTitle VARCHAR(255), " +
                             "ChapterUrl VARCHAR(255), " +
                             "ChapterLength INTEGER, " +
-                            "BookId INTEGER " +
+                            "BookId INTEGER, " +
+                            "ChapterStatus INTEGER" +
                     ");";
 
     public static final String CREATE_TABLE_HISTORY =
@@ -90,7 +93,8 @@ public final class Const {
                             "BookTitle VARCHAR(255), " +
                             "BookImage VARCHAR(255), " +
                             "BookLength INTEGER, " +
-                            "BookAuthor VARCHAR(255)" +
+                            "BookAuthor VARCHAR(255), " +
+                            "BookSync INTEGER" +
                     ");";
     public static final String CREATE_TABLE_PLAYBACK_HISTORY =
             "CREATE TABLE IF NOT EXISTS playHistory" +
@@ -108,7 +112,8 @@ public final class Const {
                             "BookTitle VARCHAR(255), " +
                             "BookImage VARCHAR(255), " +
                             "BookLength INTEGER, " +
-                            "BookAuthor VARCHAR(255)" +
+                            "BookAuthor VARCHAR(255), " +
+                            "BookSync INTEGER" +
                     ");";
 
     public static final String CREATE_TABLE_REVIEW =
@@ -145,5 +150,9 @@ public final class Const {
     }
 
     //endregion
+
+    //1 means data is synced and 0 means data is not synced
+    public static final int BOOK_SYNCED_WITH_SERVER = 1;
+    public static final int BOOK_NOT_SYNCED_WITH_SERVER = 0;
 
 }

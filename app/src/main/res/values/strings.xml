@@ -97,6 +97,7 @@
     <string name="stop">Nghe lại từ đầu</string>
     <string name="nextChapter">Chương tiếp theo</string>
     <string name="previousChapter">Chương trước đây</string>
+    <string name="download">Tải xuống</string>
     <string name="backward">Lùi lại 10 giây</string>
     <string name="forward">Lùi đi 10 giây</string>
     <string name="add_book_to_favorite">Ghim sách vào yêu thích</string>
@@ -119,6 +120,7 @@
     <string name="prompt_favorite">Yêu Thích</string>
     <string name="prompt_book_type">Thể Loại Sách</string>
     <string name="prompt_account">Tài Khoản</string>
+    <string name="prompt_offline_book">Sách Đã Tải Xuống</string>
     <string name="prompt_help">Hướng Dẫn</string>
     <string name="welcome">Welcome</string>
     <string name="text">text</string>
@@ -155,5 +157,18 @@
     <string name="change_password">Đổi Mật Khẩu</string>
     <string name="text_confirm_password">Xác Nhận Mật Khẩu</string>
     <string name="text_update_password">Cập Nhật Mật Khẩu Mới</string>
+
+    <!--DownloadDemo-->
+    <string name="download_Pdf">Download pdf</string>
+    <string name="download_Doc">Download Doc</string>
+    <string name="download_zip">Download Zip</string>
+    <string name="download_video">Download Video</string>
+    <string name="download_mp3">Download MP3</string>
+    <string name="openFolder">Open Downloaded Folder</string>
+    <string name="downloadStarted">Download Started…</string>
+    <string name="downloadCompleted">Download Completed…</string>
+    <string name="downloadFailed">Download Failed…</string>
+    <string name="downloadAgain">Download Again</string>
+    <!--EndDownloadDemo-->
 
 </resources>

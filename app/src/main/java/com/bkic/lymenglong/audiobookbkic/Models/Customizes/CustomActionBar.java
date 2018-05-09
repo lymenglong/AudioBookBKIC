@@ -14,17 +14,17 @@ public class CustomActionBar implements CustomActionBarImp, View.OnClickListener
      * Custom actionbar cho các activity với title và right btn
      * @param activity activity cần dùng bar
      * @param text title header
-     * @param hasSearch true nếu muốn có thêm btn search
+     * @param hasRefresh true nếu muốn có thêm btn refresh
      */
     @Override
-    public void eventToolbar(Activity activity, String text, boolean hasSearch) {
+    public void eventToolbar(Activity activity, String text, boolean hasRefresh) {
         this.activity = activity;
         imBack = activity.findViewById(R.id.imBack);
         View imRefresh = activity.findViewById(R.id.imRefresh);
         TextView tvToolbar = activity.findViewById(R.id.tvToolbar);
 
         tvToolbar.setText(text);
-        if(hasSearch) {
+        if(hasRefresh) {
             imRefresh.setVisibility(View.VISIBLE);
         }else {
             imRefresh.setVisibility(View.GONE);
