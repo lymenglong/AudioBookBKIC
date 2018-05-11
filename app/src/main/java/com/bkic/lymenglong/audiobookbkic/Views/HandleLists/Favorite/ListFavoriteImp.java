@@ -13,4 +13,12 @@ public interface ListFavoriteImp {
     void ShowListFromSelected();
 
     void LoadListDataFailed(String jsonMessage);
+
+    void RemoveFavoriteSuccess(String message);
+
+    void RemoveFavoriteFailed(String message);
+
+    void RemoveAllFavoriteSuccess(String message);
+
+    void RemoveAllFavoriteFailed(String message);
 }

@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -81,7 +82,7 @@ public class MainActivityDownload extends AppCompatActivity implements View.OnCl
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case 101:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -165,7 +166,7 @@ public class MainActivityDownload extends AppCompatActivity implements View.OnCl
 
                 //If directory is present Open Folder
 
-                /** Note: Directory will open only if there is a app to open directory like File Manager, etc.  **/
+                /*Note: Directory will open only if there is a app to open directory like File Manager, etc.  **/
 
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
                 Uri uri = Uri.parse(Environment.getExternalStorageDirectory().getPath()
@@ -182,6 +183,7 @@ public class MainActivityDownload extends AppCompatActivity implements View.OnCl
     //Check if internet is present or not
     private boolean isConnectingToInternet() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert connectivityManager != null;
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }

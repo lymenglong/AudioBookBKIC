@@ -216,6 +216,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         Log.d(TAG, "LogoutSuccess");
         activity.startActivity(intent);
         activity.finish();
-        dbHelper.DropDB();
+        //todo drop database
+//        dbHelper.QueryData("DROP DATABASE "+Const.DB_NAME+"");
     }
 }

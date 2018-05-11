@@ -1,4 +1,4 @@
-package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListBook;
+package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.Search;
 
 import android.app.Activity;
 import android.database.Cursor;
@@ -18,7 +18,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
-import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
+import com.bkic.lymenglong.audiobookbkic.Presenters.Search.PresenterSearchBook;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 import org.json.JSONArray;
@@ -26,20 +26,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static android.support.v7.widget.RecyclerView.SCROLL_STATE_DRAGGING;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
-import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
-import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.SELECT_ALL_BOOK_BY_CATEGORY_ID;
 
-public class ListBook extends AppCompatActivity implements ListBookImp{
-    private static final String TAG = "ListBook";
-    private PresenterShowList presenterShowList = new PresenterShowList(this);
+public class ListBookSearch extends AppCompatActivity implements ListBookSearchImp{
+    private static final String TAG = "ListBookSearch";
+    private PresenterSearchBook presenterSearchBook = new PresenterSearchBook(this);
     private RecyclerView listChapter;
     private BookAdapter bookAdapter;
-    private Activity activity = ListBook.this;
+    private Activity activity = ListBookSearch.this;
     private DBHelper dbHelper;
     private ArrayList<Book> list;
     private ProgressBar progressBar;
@@ -50,8 +47,10 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     private String categoryDescription;
     private int categoryParent;
     private int numOfChild;*/
-    private int mPAGE = 1; //page from server
+//    private int mPAGE = 1; //page from server
     private Boolean isFinalPage = false;
+    private String keyWord = "Hạ Đỏ";
+    private String menuTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +58,6 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         setContentView(R.layout.activity_show_list);
         getDataFromIntent();
         initView();
-        setTitle(categoryIntent.getTitle());
         initDatabase();
         initObject();
     }
@@ -77,6 +75,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
                         getIntent().getIntExtra("CategoryParent",0),
                         getIntent().getIntExtra("NumOfChild",0)
                 );
+        menuTitle = getIntent().getStringExtra("MenuTitle");
         /*categoryTitle = getIntent().getStringExtra("CategoryTitle");
         categoryId = getIntent().getIntExtra("CategoryId", -1);
         categoryDescription = getIntent().getStringExtra("CategoryDescription");
@@ -88,8 +87,10 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
      * Khai báo các view và khởi tạo giá trị
      */
     private void initView() {
+        String titleToolbar = categoryIntent.getTitle()==null? menuTitle :categoryIntent.getTitle();
+        setTitle(titleToolbar);
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, categoryIntent.getTitle(), true);
+        actionBar.eventToolbar(this, titleToolbar, true);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
         imRefresh = findViewById(R.id.imRefresh);
@@ -103,18 +104,13 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     private void initObject() {
         //set bookAdapter to list view
         SetAdapterToListView();
-        //update list
         GetCursorData();
-        //region get data from json parsing
-        if(list.isEmpty()) RequestLoadingData();
-        //endregion
-        //To refresh list when click button refresh
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (ConnectivityReceiver.isConnected()) {
 //                    RefreshBookTable();
-                    mPAGE = 1;
+//                    mPAGE = 1;
                     RequestLoadingData();
                 } else {
                     Toast.makeText(activity, "Please Check Internet Connection", Toast.LENGTH_SHORT).show();
@@ -142,23 +138,12 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     }*/
 
     private void RequestLoadingData() {
-        HashMap<String, String> ResultHash = new HashMap<>();
-
-        int CategoryId = categoryIntent.getId();
-        String keyPost = "json";
-        String postValue =
-                "{" +
-                        "\"Action\":\"getBooksByCategory\", " +
-                        "\"CategoryId\":\""+CategoryId+"\", " +
-                        "\"Page\":\""+mPAGE+"\"" +
-                        "}";
-        ResultHash.put(keyPost,postValue);
-        presenterShowList.GetSelectedResponse(activity, ResultHash, HttpURL_API);
+        presenterSearchBook.SearchBook(keyWord);
     }
 
     private void SetAdapterToListView() {
         list = new ArrayList<>();
-        bookAdapter = new BookAdapter(ListBook.this, list);
+        bookAdapter = new BookAdapter(ListBookSearch.this, list);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         listChapter.setLayoutManager(mLinearLayoutManager);
         listChapter.setAdapter(bookAdapter);
@@ -167,7 +152,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
                 if(newState == SCROLL_STATE_DRAGGING && !isFinalPage){
-                        mPAGE++;
+//                        mPAGE++;
                         RequestLoadingData();
                 }
             }
@@ -182,15 +167,18 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
     //region Method to get data for database
     private void GetCursorData() {
         list.clear();
-        String SELECT_DATA = SELECT_ALL_BOOK_BY_CATEGORY_ID(categoryIntent.getId());
+        String SELECT_DATA = "SELECT * FROM bookSearch WHERE KeyWord = '"+keyWord+"'";
         Cursor cursor = dbHelper.GetData(SELECT_DATA);
         while (cursor.moveToNext()){
-            Book bookModel = new Book();
-            bookModel.setId(cursor.getInt(0));
-            bookModel.setTitle(cursor.getString(1));
-            bookModel.setUrlImage(cursor.getString(2));
-            bookModel.setLength(cursor.getInt(3));
-            bookModel.setCategoryId(cursor.getInt(4));
+            Book bookModel = new Book
+                    (
+                            cursor.getInt(0),
+                            cursor.getString(1),
+                            cursor.getString(2),
+                            cursor.getString(3),
+                            cursor.getInt(4),
+                            cursor.getInt(5)
+                    );
             list.add(bookModel);
         }
         cursor.close();
@@ -212,33 +200,31 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
         bookModel.setTitle(jsonObject.getString("BookTitle"));
         bookModel.setUrlImage(jsonObject.getString("BookImage"));
         bookModel.setLength(Integer.parseInt(jsonObject.getString("BookLength")));
-        bookModel.setCategoryId(categoryIntent.getId());
+        bookModel.setCategoryId(Integer.parseInt(jsonObject.getString("Category")));
+        bookModel.setAuthor(jsonObject.getString("Author"));
         String INSERT_DATA;
         try {
             INSERT_DATA =
-                    "INSERT INTO book VALUES(" +
+                    "INSERT INTO bookSearch VALUES(" +
                             "'"+bookModel.getId()+"', " +
                             "'"+bookModel.getTitle()+"', " +
                             "'"+bookModel.getAuthor()+"', " +
-                            "'"+bookModel.getPublishDate()+"', " +
                             "'"+bookModel.getUrlImage() +"', " +
-                            "'"+bookModel.getContent() +"', " +
                             "'"+bookModel.getLength()+"', " +
-                            "'"+bookModel.getFileUrl() +"', " +
                             "'"+bookModel.getCategoryId()+"', " + //CategoryID
-                            "'"+bookModel.getNumOfChapter()+"', " +
-                            "'"+0+"'" +
+                            "'"+keyWord+"'"+
                             ")";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
             String UPDATE_DATA =
                     "UPDATE " +
-                            "book " +
+                            "bookSearch " +
                     "SET " +
                             "BookTitle = '"+bookModel.getTitle()+"', " +
                             "BookImage = '"+bookModel.getUrlImage()+"', " +
                             "BookLength = '"+bookModel.getLength()+"' ," +
-                            "CategoryId = '"+bookModel.getCategoryId()+"' " + //CategoryId
+                            "CategoryId = '"+bookModel.getCategoryId()+"', " + //CategoryId
+                            "BookAuthor = '"+bookModel.getAuthor()+"'"+
                     "WHERE " +
                             "BookId = '"+bookModel.getId()+"'";
             dbHelper.QueryData(UPDATE_DATA);
@@ -253,7 +239,7 @@ public class ListBook extends AppCompatActivity implements ListBookImp{
 
     @Override
     public void LoadListDataFailed(String jsonMessage) {
-        mPAGE--;
+//        mPAGE--;
         isFinalPage = true;
         Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT).show();
     }

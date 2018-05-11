@@ -195,8 +195,6 @@ public class PresenterShowList implements PresenterShowListImp{
                     //region ListBook : getBooksByCategory
                     case "getBooksByCategory":
                         try {
-                            //compare if data on server is less than phone we del data from phone
-//                            listBookActivity.CompareDataPhoneWithServer(jsonArray);
                             JSONArray jsonArrayResult = new JSONArray(jsonResult);
                             if(jsonArrayResult.length()!=0) {
                                 for (int j = 0; j < jsonArrayResult.length(); j++) {

@@ -5,13 +5,13 @@ public class Book {
     private int id;
     private String title;
     private String content;
-    private String FileUrl;
+    private String fileUrl;
     private String urlImage;
     private int length;
     private String author;
     private String publishDate;
     private int numOfChapter;
-    private int CategoryId;
+    private int categoryId;
     private String categoryList;
 
     public Book() {
@@ -30,7 +30,27 @@ public class Book {
         this.title = title;
         this.urlImage = urlImage;
         this.length = length;
-        this.CategoryId = categoryId;
+        this.categoryId = categoryId;
+    }
+
+    public Book
+            (
+                    int id,
+                    String title,
+                    String author,
+                    String urlImage,
+                    int length,
+                    int categoryId
+
+
+            )
+    {
+        this.id = id;
+        this.title = title;
+        this.urlImage = urlImage;
+        this.length = length;
+        this.author = author;
+        this.categoryId = categoryId;
     }
 
     public int getId() {
@@ -58,11 +78,11 @@ public class Book {
     }
 
     public String getFileUrl() {
-        return FileUrl;
+        return fileUrl;
     }
 
     public void setFileUrl(String fileUrl) {
-        FileUrl = fileUrl;
+        this.fileUrl = fileUrl;
     }
 
     public String getUrlImage() {
@@ -98,11 +118,11 @@ public class Book {
     }
 
     public int getCategoryId() {
-        return CategoryId;
+        return categoryId;
     }
 
     public void setCategoryId(int categoryId) {
-        CategoryId = categoryId;
+        this.categoryId = categoryId;
     }
 
     public int getNumOfChapter() {

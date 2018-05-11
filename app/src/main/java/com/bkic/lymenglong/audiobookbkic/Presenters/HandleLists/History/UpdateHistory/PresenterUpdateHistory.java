@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.os.AsyncTask;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.History.ListHistory;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 
 import org.json.JSONException;
@@ -16,9 +17,14 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 
 public class PresenterUpdateHistory implements PresenterUpdateHistoryImp {
     private PlayControl playControlActivity;
+    private ListHistory listHistoryActivity;
 
     public PresenterUpdateHistory(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
+    }
+
+    public PresenterUpdateHistory(ListHistory listHistoryActivity) {
+        this.listHistoryActivity = listHistoryActivity;
     }
 
     //region Method to Update Record
@@ -110,10 +116,19 @@ public class PresenterUpdateHistory implements PresenterUpdateHistoryImp {
         @Override
         protected void onPostExecute(Void aVoid)
         {
-            if (LogSuccess) {
-                playControlActivity.UpdateHistorySuccess(message);
-            } else {
-                playControlActivity.UpdateHistoryFailed(message);
+            switch (jsonAction){
+                case "addHistory":
+                    if (LogSuccess) playControlActivity.UpdateHistorySuccess(message);
+                    else playControlActivity.UpdateHistoryFailed(message);
+                    break;
+                case "removeHistory":
+                    if (LogSuccess) listHistoryActivity.RemoveHistorySuccess(message);
+                    else listHistoryActivity.RemoveHistoryFailed(message);
+                    break;
+                case "removeAllHistory":
+                    if (LogSuccess) listHistoryActivity.RemoveAllHistorySuccess(message);
+                    else listHistoryActivity.RemoveAllHistoryFailed(message);
+
             }
 
         }
@@ -136,4 +151,32 @@ public class PresenterUpdateHistory implements PresenterUpdateHistoryImp {
         UpdateRecordData(playControlActivity, ResultHash, HttpURL_API);
     }
     //endregion
+
+
+    @Override
+    public void RequestToRemoveBookById(String userId, String bookId) {
+        HashMap<String, String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"removeHistory\", " +
+                        "\"UserId\":\""+userId+"\", " +
+                        "\"BookId\":\""+bookId+"\"" +
+                "}";
+        ResultHash.put(keyPost, valuePost);
+        UpdateRecordData(playControlActivity, ResultHash, HttpURL_API);
+    }
+
+    @Override
+    public void RequestToRemoveAllBook(String userId) {
+        HashMap<String, String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"removeAllHistory\", " +
+                        "\"UserId\":\""+userId+"\"" +
+                "}";
+        ResultHash.put(keyPost, valuePost);
+        UpdateRecordData(playControlActivity, ResultHash, HttpURL_API);
+    }
 }

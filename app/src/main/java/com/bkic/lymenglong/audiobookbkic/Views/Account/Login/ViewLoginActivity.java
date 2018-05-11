@@ -115,6 +115,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                 } else {
                     textPassword = textInputEditTextPassword.getText().toString();
                 }
+                Toast.makeText(activity, "Please Wait..", Toast.LENGTH_SHORT).show();
                 //check internet connection before request to server
                 if (ConnectivityReceiver.isConnected()) {
                     findViewById(R.id.appCompatButtonLogin).setEnabled(false);

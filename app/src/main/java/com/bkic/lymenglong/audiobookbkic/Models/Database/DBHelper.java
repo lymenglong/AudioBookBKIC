@@ -6,8 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
-
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_BOOK;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_CATEGORY;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_CHAPTER;
@@ -16,6 +14,7 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_MENU;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_PLAYBACK_HISTORY;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_REVIEW;
+import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.CREATE_TABLE_SEARCH_BOOK;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.INSERT_MENU_VALUES;
 
 public class DBHelper extends SQLiteOpenHelper {
@@ -36,11 +35,6 @@ public class DBHelper extends SQLiteOpenHelper {
         return sqLiteDatabase.rawQuery(sql,null);
     }
 
-    public void DropDB(){
-        String DROP_DB = "DROP DATABASE "+ Const.DB_NAME+"";
-        QueryData(DROP_DB);
-    }
-
     @Override
     public void onCreate(SQLiteDatabase dbHelper) {
         Log.d(TAG,"OnCreate Database");
@@ -53,6 +47,7 @@ public class DBHelper extends SQLiteOpenHelper {
         dbHelper.execSQL(CREATE_TABLE_FAVORITE);
         dbHelper.execSQL(CREATE_TABLE_REVIEW);
         dbHelper.execSQL(CREATE_TABLE_PLAYBACK_HISTORY);
+        dbHelper.execSQL(CREATE_TABLE_SEARCH_BOOK);
         //insert menu value
         dbHelper.execSQL(INSERT_MENU_VALUES);
 

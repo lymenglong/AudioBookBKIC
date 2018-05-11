@@ -2,6 +2,8 @@ package com.bkic.lymenglong.audiobookbkic.Views.Player;
 
 public interface PlayerImp {
 
+    Boolean initCheckChapterStatus();
+
     void PrepareChapter();
 
     void AddReviewBookToServer();

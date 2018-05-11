@@ -110,10 +110,25 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
             @Override
             public void onClick(View v) {
                 SetRequestUpdateBookDetail();
+//                RefreshChapterTable();
+                mPAGE = 1;
                 RequestLoadList();
             }
         });
     }
+
+/*    private void RefreshChapterTable() {
+        String DELETE_DATA =
+                "UPDATE chapter " +
+                "SET " +
+//                        "ChapterId = NULL, " +
+                        "ChapterTitle = NULL, " +
+                        "ChapterUrl = NULL, " +
+                        "ChapterLength = NULL " +
+                "WHERE BookId = '"+bookIntent.getId()+"'";
+        dbHelper.QueryData(DELETE_DATA);
+        dbHelper.close();
+    }*/
 
     private void SetRequestUpdateBookDetail() {
         HashMap<String, String> ResultHash = new HashMap<>();
@@ -189,6 +204,7 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         cursor.close();
         chapterAdapter.notifyDataSetChanged();
         dbHelper.close();
+        progressBar.setVisibility(View.GONE);
     }
     //endregion
 
@@ -266,7 +282,6 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
 
     @Override
     public void ShowListFromSelected() {
-        progressBar.setVisibility(View.GONE);
         GetCursorData();
         Log.d(TAG, "onPostExecute: "+ bookIntent.getTitle());
     }

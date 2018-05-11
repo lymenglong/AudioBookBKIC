@@ -151,7 +151,8 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
                         "'"+arrayModel.getUrlImage()+"'," +
                         "'"+arrayModel.getLength()+"'," +
                         "'"+arrayModel.getAuthor()+"', " +
-                        "'"+ Const.BOOK_SYNCED_WITH_SERVER+"'" + //BookSync is equal 1, It means that book is already store in server
+                        "'"+Const.BOOK_SYNCED_WITH_SERVER+"', " + //BookSync is equal 1, It means that book is already store in server
+                        "'"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"'"+
                 ");";
         dbHelper.QueryData(INSERT_DATA);
     }
@@ -203,7 +204,36 @@ public class ListFavorite extends AppCompatActivity implements ListFavoriteImp {
     }
 
     @Override
-    public void LoadListDataFailed(String jsonMessage) {
+    public void LoadListDataFailed(String jsonMessage){
+        RemoveFavoriteDataInSQLite();
+        GetCursorData();
         Log.d(TAG, "LoadListDataFailed: "+ jsonMessage);
     }
+
+    private void RemoveFavoriteDataInSQLite() {
+        String DELETE_DATA = "DELETE FROM favorite";
+        dbHelper.QueryData(DELETE_DATA);
+        dbHelper.close();
+    }
+
+    @Override
+    public void RemoveFavoriteSuccess(String message) {
+        Log.d(TAG, "RemoveFavoriteSuccess: "+message);
+    }
+
+    @Override
+    public void RemoveFavoriteFailed(String message) {
+        Log.e(TAG, "RemoveFavoriteFailed: "+message);
+    }
+
+    @Override
+    public void RemoveAllFavoriteSuccess(String message) {
+        Log.d(TAG, "RemoveAllFavoriteSuccess: "+message);
+    }
+
+    @Override
+    public void RemoveAllFavoriteFailed(String message) {
+        Log.e(TAG, "RemoveAllFavoriteFailed: "+message);
+    }
+
 }

@@ -121,6 +121,7 @@
     <string name="prompt_book_type">Thể Loại Sách</string>
     <string name="prompt_account">Tài Khoản</string>
     <string name="prompt_offline_book">Sách Đã Tải Xuống</string>
+    <string name="prompt_search">Tìm Kiếm</string>
     <string name="prompt_help">Hướng Dẫn</string>
     <string name="welcome">Welcome</string>
     <string name="text">text</string>

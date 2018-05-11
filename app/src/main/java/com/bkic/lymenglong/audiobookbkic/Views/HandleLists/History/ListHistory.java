@@ -153,7 +153,8 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
                                 "'"+arrayModel.getUrlImage()+"', " +
                                 "'"+arrayModel.getLength()+"', " +
                                 "'"+arrayModel.getAuthor()+"', " +
-                                "'"+ Const.BOOK_SYNCED_WITH_SERVER+"'" +//BookSync has already store in server
+                                "'"+Const.BOOK_SYNCED_WITH_SERVER+"', " +//BookSync has already store in server
+                                "'"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"'"+
                         ");";
         dbHelper.QueryData(INSERT_DATA);
     }
@@ -189,6 +190,34 @@ public class ListHistory extends AppCompatActivity implements ListHistoryImp {
 
     @Override
     public void LoadListDataFailed(String jsonMessage) {
+        RemoveHistoryDataInSQLite();
+        GetCursorData();
         Log.d(TAG, "LoadListDataFailed: "+ jsonMessage);
+    }
+
+    private void RemoveHistoryDataInSQLite() {
+        String DELETE_DATA = "DELETE FROM history";
+        dbHelper.QueryData(DELETE_DATA);
+        dbHelper.close();
+    }
+
+    @Override
+    public void RemoveHistorySuccess(String message) {
+        Log.d(TAG, "RemoveHistorySuccess: "+message);
+    }
+
+    @Override
+    public void RemoveHistoryFailed(String message) {
+        Log.e(TAG, "RemoveHistoryFailed: "+message);
+    }
+
+    @Override
+    public void RemoveAllHistorySuccess(String message) {
+        Log.d(TAG, "RemoveAllHistorySuccess: "+message);
+    }
+
+    @Override
+    public void RemoveAllHistoryFailed(String message) {
+        Log.e(TAG, "RemoveAllHistoryFailed: "+message);
     }
 }

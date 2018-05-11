@@ -133,47 +133,47 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
             case R.id.appCompatButtonRegister:
                 User userModel = new User();
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextFirstName, textInputLayoutFirstName, getString(R.string.error_message_first_name))) {
-                    return;
+                    break;
                 } else {
                     userModel.setFirstName(textInputEditTextFirstName.getText().toString());
                 }
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextLastName, textInputLayoutLastName, getString(R.string.error_message_last_name))) {
-                    return;
+                    break;
                 } else {
                     userModel.setLastName(textInputEditTextFirstName.getText().toString());
                 }
 
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextUserName, textInputLayoutUserName, getString(R.string.error_message_username))) {
-                    return;
+                    break;
                 } else {
                     userModel.setUsername(textInputEditTextUserName.getText().toString());
                 }
 
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextEmail, textInputLayoutEmail, getString(R.string.error_message_email))) {
-                    return;
+                    break;
                 } else{
                     userModel.setEmail(textInputEditTextEmail.getText().toString());
                 }
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextPhoneNumber, textInputLayoutPhoneNumber, getString(R.string.error_message_phone_number))) {
-                    return;
+                    break;
                 } else{
                     userModel.setPhonenumber(textInputEditTextPhoneNumber.getText().toString());
                 }
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextAddress, textInputLayoutAddress, getString(R.string.error_message_address))) {
-                    return;
+                    break;
                 } else {
                     userModel.setAddress(textInputEditTextAddress.getText().toString());
                 }
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextPassword, textInputLayoutPassword, getString(R.string.error_message_password))) {
-                    return;
+                    break;
                 } else{
                   userModel.setPassword(textInputEditTextPassword.getText().toString());
                 }
                 if (!inputValidation.isInputEditTextMatches(textInputEditTextPassword, textInputEditTextConfirmPassword,
                         textInputLayoutConfirmPassword, getString(R.string.error_password_match))) {
-                    return;
+                    break;
                 } else userModel.setConfirmPassword(textInputEditTextConfirmPassword.getText().toString());
-
+                Toast.makeText(registerActivity, "Please Wait..", Toast.LENGTH_SHORT).show();
                 if (ConnectivityReceiver.isConnected()) {
                     findViewById(R.id.appCompatButtonRegister).setEnabled(false);
                     HashMap<String, String> ResultHash = new HashMap<>();

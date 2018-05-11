@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.os.AsyncTask;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.Favorite.ListFavorite;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 
 import org.json.JSONException;
@@ -16,9 +17,14 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 
 public class PresenterUpdateFavorite implements PresenterUpdateFavoriteImp {
     private PlayControl playControlActivity;
+    private ListFavorite listFavoriteActivity;
 
     public PresenterUpdateFavorite(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
+    }
+
+    public PresenterUpdateFavorite(ListFavorite listFavoriteActivity) {
+        this.listFavoriteActivity = listFavoriteActivity;
     }
 
     //region Method to Update Record
@@ -110,10 +116,19 @@ public class PresenterUpdateFavorite implements PresenterUpdateFavoriteImp {
         @Override
         protected void onPostExecute(Void aVoid)
         {
-            if (LogSuccess) {
-                playControlActivity.UpdateFavoriteSuccess(message);
-            } else {
-                playControlActivity.UpdateFavoriteFailed(message);
+            switch (jsonAction){
+                case "addFavorite":
+                    if (LogSuccess) playControlActivity.UpdateFavoriteSuccess(message);
+                    else playControlActivity.UpdateFavoriteFailed(message);
+                    break;
+                case "removeFavorite":
+                    if (LogSuccess) listFavoriteActivity.RemoveFavoriteSuccess(message);
+                    else listFavoriteActivity.RemoveFavoriteFailed(message);
+                    break;
+                case "removeAllFavorite":
+                    if (LogSuccess) listFavoriteActivity.RemoveAllFavoriteSuccess(message);
+                    else listFavoriteActivity.RemoveAllFavoriteFailed(message);
+
             }
 
         }
@@ -136,4 +151,30 @@ public class PresenterUpdateFavorite implements PresenterUpdateFavoriteImp {
         UpdateRecordData(playControlActivity, ResultHash, HttpURL_API);
     }
     //endregion
+    @Override
+    public void RequestToRemoveBookById(String userId, String bookId) {
+        HashMap<String, String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"removeFavorite\", " +
+                        "\"UserId\":\""+userId+"\", " +
+                        "\"BookId\":\""+bookId+"\"" +
+                        "}";
+        ResultHash.put(keyPost, valuePost);
+        UpdateRecordData(playControlActivity, ResultHash, HttpURL_API);
+    }
+
+    @Override
+    public void RequestToRemoveAllBook(String userId) {
+        HashMap<String, String> ResultHash = new HashMap<>();
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"removeAllFavorite\", " +
+                        "\"UserId\":\""+userId+"\"" +
+                        "}";
+        ResultHash.put(keyPost, valuePost);
+        UpdateRecordData(playControlActivity, ResultHash, HttpURL_API);
+    }
 }

@@ -22,6 +22,6 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_second" />
+    <include layout="@layout/content_second_check_internet" />
 
 </android.support.design.widget.CoordinatorLayout>

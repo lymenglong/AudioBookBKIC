@@ -123,7 +123,7 @@ public class PlayControl extends AppCompatActivity
         initObject();
         initCollectChapterData();
         initCheckChapterStatus();
-        initHistoryState();
+        initPlayHistoryState();
         initCheckAudioUrl();
         intListener();
 
@@ -152,14 +152,14 @@ public class PlayControl extends AppCompatActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case 101:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //granted
                     new DownloadTask
                             (
-                                    playControlActivity.getBaseContext(),
+                                    playControlActivity,
                                     btnDownload,
                                     AudioUrl,
                                     String.valueOf(chapterFromIntent.getBookId()),
@@ -177,7 +177,8 @@ public class PlayControl extends AppCompatActivity
         }
     }
 
-    private Boolean initCheckChapterStatus() {
+    @Override
+    public Boolean initCheckChapterStatus() { //downloaded yet?
         if(!InitialState){
             initReloadChapterData();
         }
@@ -198,7 +199,7 @@ public class PlayControl extends AppCompatActivity
         receiver = new ConnectivityReceiver();
     }
 
-    private void initHistoryState() {
+    private void initPlayHistoryState() {
         String SELECT_PLAY_BACK_HISTORY =
                 "SELECT * FROM playHistory " +
                     "WHERE " +
@@ -207,7 +208,7 @@ public class PlayControl extends AppCompatActivity
                         "ChapterId = '"+chapterFromIntent.getId()+"'" +
                 ";";
         Cursor cursor = dbHelper.GetData(SELECT_PLAY_BACK_HISTORY);
-        while (cursor.moveToNext()){
+        if(cursor.moveToFirst()){
             PlaybackHistory history = new PlaybackHistory
                     (
                             cursor.getInt(0),
@@ -288,7 +289,7 @@ public class PlayControl extends AppCompatActivity
             String indexChapterTitle = hashMapChapter.get(String.valueOf(indexChapterMap)).getTitle();
             initToolbar(indexChapterTitle);
             chapterFromIntent.setId(hashMapChapter.get(String.valueOf(indexChapterMap)).getId());
-            initHistoryState();
+            initPlayHistoryState();
             try {
                 int ChapterIdFromIndex = hashMapChapter.get(String.valueOf(indexChapterMap)).getId();
                 int ResumePosition = historyHashMap.get(String.valueOf(ChapterIdFromIndex)).getPauseTime();
@@ -420,7 +421,7 @@ public class PlayControl extends AppCompatActivity
                     }else {
                         new DownloadTask
                                 (
-                                        playControlActivity.getBaseContext(),
+                                        playControlActivity,
                                         btnDownload,
                                         AudioUrl,
                                         String.valueOf(chapterFromIntent.getBookId()),
@@ -521,7 +522,8 @@ public class PlayControl extends AppCompatActivity
                                     "'"+bookModel.getUrlImage()+"', " +
                                     "'"+bookModel.getLength()+"', " +
                                     "'"+bookModel.getAuthor()+"', " +
-                                    "'"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"'" +// BookSync Is Default Equal 0
+                                    "'"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"', " +// BookSync Is Default Equal 0
+                                    "'"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"'" +// BookRemoved Is Default Equal 0
                             ");";
             dbHelper.QueryData(INSERT_BOOK_INTO_TABLE_FAVORITE);
         } catch (Exception ignored) {
@@ -579,7 +581,8 @@ public class PlayControl extends AppCompatActivity
             @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
                     new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
             String InsertTimeHolder = simpledateformat.format(calendar.getTime());
-            if(ConnectivityReceiver.isConnected() && !CheckBookSynced("history"))presenterUpdateHistory.RequestUpdateToServer
+            if(ConnectivityReceiver.isConnected() && !CheckBookSynced("history"))
+                presenterUpdateHistory.RequestUpdateToServer
                     (jsonAction,IdUserHolder,IdBookHolder,InsertTimeHolder);
 
             //region INSERT VALUE TO SQLite DATABASE
@@ -641,7 +644,8 @@ public class PlayControl extends AppCompatActivity
                                         "'"+bookModel.getUrlImage()+"', " +
                                         "'"+bookModel.getLength()+"', " +
                                         "'"+bookModel.getAuthor()+"', " +
-                                        "'"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"'" +
+                                        "'"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"', " +
+                                        "'"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"'" +
                                 ");";
                 dbHelper.QueryData(INSERT_BOOK_INTO_TABLE_HISTORY);
             } catch (Exception ignored) {
@@ -694,6 +698,8 @@ public class PlayControl extends AppCompatActivity
     public void UpdateFavoriteSuccess(String message) {
         SyncBook("favorite");
         Log.d(TAG, "UpdateFavoriteSuccess: "+message);
+        if(!message.isEmpty())
+        Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
     }
 
     @Override

@@ -47,6 +47,7 @@ public final class Const {
                     "('4', 'Tài Khoản'), " +
                     "('5', 'Hướng Dẫn'), " +
                     "('6', 'Sách Đã Tải Xuống'), " +
+                    "('7', 'Tìm Kiếm'), " +
                     "('100', 'Thoát')" +
                     ";";
 
@@ -94,7 +95,8 @@ public final class Const {
                             "BookImage VARCHAR(255), " +
                             "BookLength INTEGER, " +
                             "BookAuthor VARCHAR(255), " +
-                            "BookSync INTEGER" +
+                            "BookSync INTEGER, " +
+                            "BookRemoved INTEGER" +
                     ");";
     public static final String CREATE_TABLE_PLAYBACK_HISTORY =
             "CREATE TABLE IF NOT EXISTS playHistory" +
@@ -113,16 +115,28 @@ public final class Const {
                             "BookImage VARCHAR(255), " +
                             "BookLength INTEGER, " +
                             "BookAuthor VARCHAR(255), " +
-                            "BookSync INTEGER" +
+                            "BookSync INTEGER, " +
+                            "BookRemoved INTEGER" +
                     ");";
 
     public static final String CREATE_TABLE_REVIEW =
             "CREATE TABLE IF NOT EXISTS review" +
                     "(" +
-                        "ReviewId INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                        "BookId INTEGER, " +
-                        "InsertTime INTEGER, " +
-                        "Review VARCHAR(255)" +
+                            "ReviewId INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            "BookId INTEGER, " +
+                            "InsertTime INTEGER, " +
+                            "Review VARCHAR(255)" +
+                    ");";
+    public static final String CREATE_TABLE_SEARCH_BOOK =
+            "CREATE TABLE IF NOT EXISTS bookSearch " +
+                    "(" +
+                            "BookId INTEGER PRIMARY KEY, " +
+                            "BookTitle VARCHAR(255), " +
+                            "BookAuthor VARCHAR(255), " +
+                            "BookImage VARCHAR(255), " +
+                            "BookLength INTEGER, " +
+                            "CategoryId INTEGER, " +
+                            "KeyWord VARCHAR(255)" +
                     ");";
 
     public static String SELECT_CATEGORY_BY_PARENT_ID (int parentId){
@@ -154,5 +168,8 @@ public final class Const {
     //1 means data is synced and 0 means data is not synced
     public static final int BOOK_SYNCED_WITH_SERVER = 1;
     public static final int BOOK_NOT_SYNCED_WITH_SERVER = 0;
+    //1 means data is request to remove and 0 means data is not request to remove
+    public static final int BOOK_REQUEST_REMOVE_WITH_SERVER = 1;
+    public static final int BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER = 0;
 
 }

@@ -19,6 +19,7 @@ import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.Favorite.ListFavorite
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.History.ListHistory;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory.ListCategory;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListOffline.ListOfflineBook;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.Search.ListBookSearch;
 import com.bkic.lymenglong.audiobookbkic.Views.Help.HelpActivity;
 
 import java.util.ArrayList;
@@ -109,6 +110,12 @@ public class MainAdapter extends RecyclerView.Adapter {
                 }
                 if (title.equals(activity.getString(R.string.prompt_offline_book))){
                     Intent intent = new Intent(activity, ListOfflineBook.class);
+                    intent.putExtra("MenuId", menus.get(getAdapterPosition()).getId());
+                    intent.putExtra("MenuTitle", menus.get(getAdapterPosition()).getTitle());
+                    activity.startActivity(intent);
+                }
+                if (title.equals(activity.getString(R.string.prompt_search))){
+                    Intent intent = new Intent(activity, ListBookSearch.class);
                     intent.putExtra("MenuId", menus.get(getAdapterPosition()).getId());
                     intent.putExtra("MenuTitle", menus.get(getAdapterPosition()).getTitle());
                     activity.startActivity(intent);

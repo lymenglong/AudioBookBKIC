@@ -143,6 +143,13 @@ package="com.bkic.lymenglong.audiobookbkic">
     </activity>
     <activity android:name=".Views.HandleLists.ListOffline.ListOfflineBook" />
     <activity android:name=".Views.HandleLists.ListOffline.ListOfflineChapter" />
+    <activity android:name=".Models.Download.MainActivityDownloadManager">
+        <intent-filter>
+            <action android:name="android.intent.action.RUN"/>
+            <category android:name="android.intent.category.LAUNCHER"/>
+        </intent-filter>
+    </activity>
+    <activity android:name=".Views.HandleLists.Search.ListBookSearch" />
 
 </application>
 </manifest>

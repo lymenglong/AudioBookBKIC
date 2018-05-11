@@ -69,47 +69,6 @@ public class DownloadTask{
         }
 
         @Override
-        protected void onPostExecute(Void result) {
-            try {
-                if (outputFile != null) {
-                    buttonText.setEnabled(false);
-                    buttonText.setText(R.string.downloadCompleted);//If Download completed then change button text
-                    UpdateChapterTable(BookId, ChapterId);
-                    UpdateBookTable(BookId);
-                } else {
-                    buttonText.setText(R.string.downloadFailed);//If download failed change button text
-                    new Handler().postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            buttonText.setEnabled(true);
-                            buttonText.setText(R.string.downloadAgain);//Change button text again after 3sec
-                        }
-                    }, 3000);
-
-                    Log.e(TAG, "Download Failed");
-
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-
-                //Change button text if exception occurs
-                buttonText.setText(R.string.downloadFailed);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        buttonText.setEnabled(true);
-                        buttonText.setText(R.string.downloadAgain);
-                    }
-                }, 3000);
-                Log.e(TAG, "Download Failed with Exception - " + e.getLocalizedMessage());
-
-            }
-
-
-            super.onPostExecute(result);
-        }
-
-        @Override
         protected Void doInBackground(Void... arg0) {
             try {
 //                URL url = new URL(downloadUrl);//Create Download URl
@@ -186,6 +145,46 @@ public class DownloadTask{
             }
 
             return null;
+        }
+        @Override
+        protected void onPostExecute(Void result) {
+            try {
+                if (outputFile != null) {
+                    UpdateChapterTable(BookId, ChapterId);
+                    UpdateBookTable(BookId);
+                    buttonText.setEnabled(false);
+                    buttonText.setText(R.string.downloadCompleted);//If Download completed then change button text
+                } else {
+                    buttonText.setText(R.string.downloadFailed);//If download failed change button text
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            buttonText.setEnabled(true);
+                            buttonText.setText(R.string.downloadAgain);//Change button text again after 3sec
+                        }
+                    }, 3000);
+
+                    Log.e(TAG, "Download Failed");
+
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+
+                //Change button text if exception occurs
+                buttonText.setText(R.string.downloadFailed);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        buttonText.setEnabled(true);
+                        buttonText.setText(R.string.downloadAgain);
+                    }
+                }, 3000);
+                Log.e(TAG, "Download Failed with Exception - " + e.getLocalizedMessage());
+
+            }
+
+
+            super.onPostExecute(result);
         }
     }
 
