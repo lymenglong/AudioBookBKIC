@@ -206,7 +206,7 @@ public class ListCategory extends AppCompatActivity
         int parentId = categoryFromIntent.getId(); //getIntent
         GetCursorData(parentId);
         //get data from json parsing
-        if(list.isEmpty()){
+        if(list.isEmpty()&& ConnectivityReceiver.isConnected()){
             RefreshLoadingData();
         } else {
             progressBar.setVisibility(View.GONE);
@@ -238,11 +238,10 @@ public class ListCategory extends AppCompatActivity
     public void CompareDataPhoneWithServer(JSONArray jsonArray) {
     }
 
-
     @Override
     public void ShowListFromSelected() {
         progressBar.setVisibility(View.GONE);
-        int parentId = categoryFromIntent.getParentId(); //getIntent
+        int parentId = categoryFromIntent.getId(); //getIntent
         GetCursorData(parentId);
         Log.d(TAG, "onPostExecute: "+ title);
     }

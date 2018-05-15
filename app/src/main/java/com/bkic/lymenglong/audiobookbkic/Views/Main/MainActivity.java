@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
-        ToastConnectionMessage(isConnected);
+//        ToastConnectionMessage(isConnected);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity
     }
     //endregion
 
-    private void ToastConnectionMessage(boolean isConnected) {
+/*    private void ToastConnectionMessage(boolean isConnected) {
         String message;
         if (isConnected) {
             message = getString(R.string.message_internet_connected);
@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity
             message = getString(R.string.message_internet_not_connected);
         }
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
+    }*/
 
     // to make application remember pass LoginActivity in to MainActivity
     private void getDataFromIntent() {

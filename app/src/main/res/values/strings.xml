@@ -173,6 +173,7 @@
     <string name="message_exit">Nhấn lần nữa để thoát ứng dụng</string>
     <string name="message_internet_connected">\"Đã kết nối mạng\"</string>
     <string name="message_internet_not_connected">Chưa kết nối mạng</string>
+    <string name="message_download_complete">đã tải xuống thành công</string>
     <!--EndDownloadDemo-->
 
 </resources>

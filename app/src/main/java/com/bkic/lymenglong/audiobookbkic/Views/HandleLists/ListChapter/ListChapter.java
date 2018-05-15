@@ -151,9 +151,9 @@ public class ListChapter extends AppCompatActivity
         //update list
         GetCursorData();
         //region get data from json parsing
-        if(list.isEmpty()){
+        if(list.isEmpty()&&ConnectivityReceiver.isConnected()){
             SetRequestUpdateBookDetail();
-            if (ConnectivityReceiver.isConnected()) RequestLoadList();
+            RequestLoadList();
         } else {
             progressBar.setVisibility(View.GONE);
         }
