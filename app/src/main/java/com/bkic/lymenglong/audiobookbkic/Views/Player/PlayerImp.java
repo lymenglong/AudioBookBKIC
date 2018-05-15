@@ -2,7 +2,7 @@ package com.bkic.lymenglong.audiobookbkic.Views.Player;
 
 public interface PlayerImp {
 
-    Boolean initCheckChapterStatus();
+    Boolean initCheckChapterDownloadStatus();
 
     void PrepareChapter();
 

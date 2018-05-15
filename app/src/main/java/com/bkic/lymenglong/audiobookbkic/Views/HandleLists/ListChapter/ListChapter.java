@@ -1,6 +1,8 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
@@ -13,8 +15,10 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.ChapterAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
@@ -28,6 +32,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static android.support.v7.widget.RecyclerView.SCROLL_STATE_DRAGGING;
 import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
 import static android.support.v7.widget.RecyclerView.SCROLL_STATE_SETTLING;
@@ -35,7 +40,8 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 
-public class ListChapter extends AppCompatActivity implements ListChapterImp{
+public class ListChapter extends AppCompatActivity
+        implements ListChapterImp, ConnectivityReceiver.ConnectivityReceiverListener, DownloadReceiver.DownloadReceiverListener{
     private static final String TAG = "ListChapter";
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
@@ -53,12 +59,60 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
+        initIntentFilter();
         initDataFromIntent();
         initView();
         setTitle(bookIntent.getTitle());
         initDatabase();
         initObject();
     }
+
+    //region BroadCasting
+    //connectionReceiver
+    private IntentFilter intentFilter;
+    private ConnectivityReceiver receiver;
+    //downloadReceiver
+    private IntentFilter filter;
+    private DownloadReceiver downloadReceiver;
+
+    private void initIntentFilter() {
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        receiver = new ConnectivityReceiver();
+        //set filter to only when download is complete and register broadcast receiver
+        filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        downloadReceiver = new DownloadReceiver();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // register receiver
+        registerReceiver(receiver, intentFilter);
+        registerReceiver(downloadReceiver, filter);
+        // register status listener
+        MyApplication.getInstance().setConnectivityListener(this);
+        MyApplication.getInstance().setDownloadListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister receiver
+        unregisterReceiver(receiver);
+        unregisterReceiver(downloadReceiver);
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+
+    }
+
+    @Override
+    public void onDownloadCompleted(long downloadId) {
+
+    }
+    //endregion
 
     /**
      * Lấy dữ liệu thông qua intent
@@ -109,10 +163,13 @@ public class ListChapter extends AppCompatActivity implements ListChapterImp{
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SetRequestUpdateBookDetail();
+                if(ConnectivityReceiver.isConnected()) {
+                    SetRequestUpdateBookDetail();
 //                RefreshChapterTable();
-                mPAGE = 1;
-                RequestLoadList();
+                    mPAGE = 1;
+                    RequestLoadList();
+                } else
+                    Toast.makeText(activity, "Please Check Internet Connection", Toast.LENGTH_SHORT).show();
             }
         });
     }

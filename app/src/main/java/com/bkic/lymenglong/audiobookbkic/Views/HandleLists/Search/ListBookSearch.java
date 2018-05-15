@@ -1,8 +1,13 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.Search;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.speech.RecognizerIntent;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,8 +18,10 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.BookAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
@@ -27,12 +34,17 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import static android.support.v7.widget.RecyclerView.SCROLL_STATE_DRAGGING;
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 
-public class ListBookSearch extends AppCompatActivity implements ListBookSearchImp{
+public class ListBookSearch
+        extends AppCompatActivity
+        implements  ListBookSearchImp,
+                    ConnectivityReceiver.ConnectivityReceiverListener,
+                    DownloadReceiver.DownloadReceiverListener{
     private static final String TAG = "ListBookSearch";
+    private static final int REQ_CODE_SPEECH_INPUT = 101;
     private PresenterSearchBook presenterSearchBook = new PresenterSearchBook(this);
     private RecyclerView listChapter;
     private BookAdapter bookAdapter;
@@ -40,7 +52,7 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
     private DBHelper dbHelper;
     private ArrayList<Book> list;
     private ProgressBar progressBar;
-    private View imRefresh;
+    private View imSearch;
     private Category categoryIntent;
 /*    private String categoryTitle;
     private int categoryId;
@@ -48,20 +60,68 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
     private int categoryParent;
     private int numOfChild;*/
 //    private int mPAGE = 1; //page from server
-    private Boolean isFinalPage = false;
-    private String keyWord = "Hạ Đỏ";
+//    private Boolean isFinalPage = false;
+    private String keyWord = "";
     private String menuTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
+        initIntentFilter();
         getDataFromIntent();
         initView();
         initDatabase();
         initObject();
+        promptSpeechInput();
     }
 
+    //region BroadCasting
+    //connectionReceiver
+    private IntentFilter intentFilter;
+    private ConnectivityReceiver receiver;
+    //downloadReceiver
+    private IntentFilter filter;
+    private DownloadReceiver downloadReceiver;
+
+    private void initIntentFilter() {
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        receiver = new ConnectivityReceiver();
+        //set filter to only when download is complete and register broadcast receiver
+        filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        downloadReceiver = new DownloadReceiver();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // register receiver
+        registerReceiver(receiver, intentFilter);
+        registerReceiver(downloadReceiver, filter);
+        // register status listener
+        MyApplication.getInstance().setConnectivityListener(this);
+        MyApplication.getInstance().setDownloadListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister receiver
+        unregisterReceiver(receiver);
+        unregisterReceiver(downloadReceiver);
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+
+    }
+
+    @Override
+    public void onDownloadCompleted(long downloadId) {
+
+    }
+    //endregion
 
     /**
      * Lấy dữ liệu thông qua intent
@@ -90,10 +150,11 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
         String titleToolbar = categoryIntent.getTitle()==null? menuTitle :categoryIntent.getTitle();
         setTitle(titleToolbar);
         CustomActionBar actionBar = new CustomActionBar();
-        actionBar.eventToolbar(this, titleToolbar, true);
+        actionBar.eventToolbar(this, titleToolbar, false);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
-        imRefresh = findViewById(R.id.imRefresh);
+        imSearch = findViewById(R.id.imSearch);
+        imSearch.setVisibility(View.VISIBLE);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
@@ -105,13 +166,13 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
         //set bookAdapter to list view
         SetAdapterToListView();
         GetCursorData();
-        imRefresh.setOnClickListener(new View.OnClickListener() {
+        imSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (ConnectivityReceiver.isConnected()) {
 //                    RefreshBookTable();
 //                    mPAGE = 1;
-                    RequestLoadingData();
+                    promptSpeechInput();
                 } else {
                     Toast.makeText(activity, "Please Check Internet Connection", Toast.LENGTH_SHORT).show();
                 }
@@ -137,7 +198,7 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
         dbHelper.close();
     }*/
 
-    private void RequestLoadingData() {
+    private void RequestLoadingData(String keyWord) {
         presenterSearchBook.SearchBook(keyWord);
     }
 
@@ -147,7 +208,7 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         listChapter.setLayoutManager(mLinearLayoutManager);
         listChapter.setAdapter(bookAdapter);
-        listChapter.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        /*listChapter.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
@@ -161,12 +222,16 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
             }
-        });
+        });*/
     }
 
     //region Method to get data for database
     private void GetCursorData() {
         list.clear();
+        if(keyWord.isEmpty()){
+            progressBar.setVisibility(View.GONE);
+            return;
+        }
         String SELECT_DATA = "SELECT * FROM bookSearch WHERE KeyWord = '"+keyWord+"'";
         Cursor cursor = dbHelper.GetData(SELECT_DATA);
         while (cursor.moveToNext()){
@@ -206,6 +271,7 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
         try {
             INSERT_DATA =
                     "INSERT INTO bookSearch VALUES(" +
+                            "'', "+ // ID auto increment
                             "'"+bookModel.getId()+"', " +
                             "'"+bookModel.getTitle()+"', " +
                             "'"+bookModel.getAuthor()+"', " +
@@ -240,7 +306,47 @@ public class ListBookSearch extends AppCompatActivity implements ListBookSearchI
     @Override
     public void LoadListDataFailed(String jsonMessage) {
 //        mPAGE--;
-        isFinalPage = true;
+//        isFinalPage = true;
         Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT).show();
     }
+
+    private void promptSpeechInput() {
+        if(ConnectivityReceiver.isConnected()) {
+            Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                    RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi");//Locale.getDefault()
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
+                    getString(R.string.speech_prompt));
+            try {
+                startActivityForResult(intent, REQ_CODE_SPEECH_INPUT);
+            } catch (ActivityNotFoundException a) {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.speech_not_supported),
+                        Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(activity, "Check Internet Connection", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+            case REQ_CODE_SPEECH_INPUT: {
+                if (resultCode == RESULT_OK && null != data) {
+                    ArrayList<String> result = data
+                            .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    keyWord=result.get(0);
+                    Log.d(TAG, "onActivityResult: KeyWord: " +keyWord );
+                    RequestLoadingData(keyWord);
+                }
+                break;
+            }
+
+        }
+    }
+
 }

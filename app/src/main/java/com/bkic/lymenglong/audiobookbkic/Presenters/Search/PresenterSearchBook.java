@@ -2,6 +2,7 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Search;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -18,6 +19,8 @@ import java.util.HashMap;
 public class PresenterSearchBook implements PresenterSearchImp {
     private ListBookSearch listBookSearchActivity;
     private static final String TAG = "PresenterSearchBook";
+    private ProgressDialog pDialog;
+    private String keyWord;
 
     public PresenterSearchBook(ListBookSearch listBookSearchActivity) {
         this.listBookSearchActivity = listBookSearchActivity;
@@ -25,6 +28,7 @@ public class PresenterSearchBook implements PresenterSearchImp {
 
     @Override
     public void SearchBook(String keyWord) {
+        this.keyWord = keyWord;
         HashMap<String,String> hashMap = new HashMap<>();
         String keyPost = "json";
         String valuePost =
@@ -48,7 +52,7 @@ public class PresenterSearchBook implements PresenterSearchImp {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-//                pDialog = ProgressDialog.show(activity,"Loading Data","Please wait",true,true);
+                pDialog = ProgressDialog.show(activity,"Search..",keyWord,true,true);
             }
 
             @Override
@@ -62,6 +66,7 @@ public class PresenterSearchBook implements PresenterSearchImp {
             @Override
             protected void onPostExecute(String httpResponseMsg) {
                 super.onPostExecute(httpResponseMsg);
+                pDialog.dismiss();
                 //Storing Complete JSon Object into String Variable.
                 FinalJSonObject = httpResponseMsg ;
                 //Parsing the Stored JSOn String to GetHttpResponse Method.

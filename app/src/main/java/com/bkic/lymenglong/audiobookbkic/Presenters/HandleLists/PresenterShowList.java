@@ -207,15 +207,15 @@ public class PresenterShowList implements PresenterShowListImp{
                             } else{
                                 listBookActivity.LoadListDataFailed(jsonMessage);
                             }
-                        } catch (JSONException ignored) {
-                            Log.d(TAG, "onPostExecute: "+ jsonResult);
+                        } catch (JSONException e) {
+                            Log.e(TAG, "onPostExecute: "+ jsonResult+ "e: "+ e.getMessage());
                         }
                         listBookActivity.ShowListFromSelected();
                         break;
                     //endregion
                 }
             } else {
-                Log.d(TAG, "onPostExecute: jsonMessage: " + jsonMessage);
+                Log.e(TAG, "onPostExecute: jsonMessage: " + jsonMessage);
             }
 //            pDialog.dismiss(); // khong thuc hien duoc dialog dismiss
         }

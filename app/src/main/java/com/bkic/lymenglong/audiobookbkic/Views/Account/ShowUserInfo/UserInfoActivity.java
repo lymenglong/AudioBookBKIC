@@ -1,8 +1,10 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Account.ShowUserInfo;
 
 import android.annotation.SuppressLint;
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -17,19 +19,29 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
-import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
-import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.ShowUserInfo.Adapter.UserInfoRecyclerAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
+import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Account.ShowUserInfo.PresenterUserInfo;
 import com.bkic.lymenglong.audiobookbkic.R;
+import com.bkic.lymenglong.audiobookbkic.Views.Main.MainActivity;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, View.OnClickListener{
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
+
+public class UserInfoActivity
+        extends AppCompatActivity
+        implements  UserInfoImp,
+                    View.OnClickListener,
+                    ConnectivityReceiver.ConnectivityReceiverListener,
+                    DownloadReceiver.DownloadReceiverListener{
     private PresenterUserInfo presenterUserInfo = new PresenterUserInfo(this);
     private AppCompatActivity activity = UserInfoActivity.this;
     private AppCompatTextView textViewName;
@@ -42,12 +54,13 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
     private Session session;
     private String message;
     private String menuTitle;
-    private DBHelper dbHelper;
+//    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_info);
+        initIntentFilter();
         initDataFromIntent();
         initToolbar();
         initViews();
@@ -56,6 +69,52 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
 
         DisplayUserDetail();
     }
+
+    //region BroadCasting
+    //connectionReceiver
+    private IntentFilter intentFilter;
+    private ConnectivityReceiver receiver;
+    //downloadReceiver
+    private IntentFilter filter;
+    private DownloadReceiver downloadReceiver;
+
+    private void initIntentFilter() {
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        receiver = new ConnectivityReceiver();
+        //set filter to only when download is complete and register broadcast receiver
+        filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        downloadReceiver = new DownloadReceiver();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // register receiver
+        registerReceiver(receiver, intentFilter);
+        registerReceiver(downloadReceiver, filter);
+        // register status listener
+        MyApplication.getInstance().setConnectivityListener(this);
+        MyApplication.getInstance().setDownloadListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister receiver
+        unregisterReceiver(receiver);
+        unregisterReceiver(downloadReceiver);
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+    }
+
+    @Override
+    public void onDownloadCompleted(long downloadId) {
+
+    }
+    //endregion
 
     @Override
     public void DisplayUserDetail(){
@@ -85,7 +144,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
      */
     @SuppressLint("SetTextI18n")
     private void initObjects() {
-        dbHelper = new DBHelper(this, Const.DB_NAME,null,Const.DB_VERSION);
+//        dbHelper = new DBHelper(this, Const.DB_NAME,null,Const.DB_VERSION);
         session = new Session(this);
         listUsers = new ArrayList<>();
         userInfoRecyclerAdapter = new UserInfoRecyclerAdapter(listUsers);
@@ -216,7 +275,7 @@ public class UserInfoActivity extends AppCompatActivity implements UserInfoImp, 
         Log.d(TAG, "LogoutSuccess");
         activity.startActivity(intent);
         activity.finish();
-        //todo drop database
-//        dbHelper.QueryData("DROP DATABASE "+Const.DB_NAME+"");
+        //drop database
+        deleteDatabase(Const.DB_NAME);
     }
 }

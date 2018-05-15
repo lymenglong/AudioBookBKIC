@@ -130,7 +130,8 @@ public final class Const {
     public static final String CREATE_TABLE_SEARCH_BOOK =
             "CREATE TABLE IF NOT EXISTS bookSearch " +
                     "(" +
-                            "BookId INTEGER PRIMARY KEY, " +
+                            "Id INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                            "BookId INTEGER, " +
                             "BookTitle VARCHAR(255), " +
                             "BookAuthor VARCHAR(255), " +
                             "BookImage VARCHAR(255), " +

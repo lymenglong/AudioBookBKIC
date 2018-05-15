@@ -12,6 +12,7 @@ import android.util.Log;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Review.PresenterReview;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
@@ -27,7 +28,7 @@ public class PresenterPlayer
     private static String TAG = "PresenterPlayer";
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private int intSoundMax;
-    private Boolean mediaIsPrepared;
+    private Boolean mediaIsPrepared = false;
     private Boolean isDownloaded;
 
     public PresenterPlayer(PlayControl playControlActivity) {
@@ -43,11 +44,21 @@ public class PresenterPlayer
                 super.onPreExecute();
                 progressDialog = ProgressDialog.show(playControlActivity,null,playControlActivity.getString(R.string.buffering_data),true,true);
                 progressDialog.show();
+                progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        StopMedia();
+                    }
+                });
+                isDownloaded = isDownloadedAudio;
             }
             @Override
             protected Boolean doInBackground(String... strings) {
                 try {
-                    isDownloaded = isDownloadedAudio;
+                    if(!isDownloadedAudio && !ConnectivityReceiver.isConnected()) {
+                        mediaIsPrepared = false;
+                        return false;
+                    }
                     mediaPlayer.reset();
                     mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     mediaPlayer.setDataSource(playControlActivity.getApplicationContext(), Uri.parse(strings[0]));
@@ -100,10 +111,10 @@ public class PresenterPlayer
                         playControlActivity.finish();
                     }
                 });
+                if (progressDialog.isShowing()) {
+                    progressDialog.dismiss();
+                }
                 if (aBoolean) {
-                    if (progressDialog.isShowing()) {
-                        progressDialog.dismiss();
-                    }
                     PlayMedia();
                 } else{
                     String message = "Vui lòng kiểm tra lại mạng";
@@ -174,7 +185,7 @@ public class PresenterPlayer
     public void StopMedia() {
         playControlActivity.getSeekBar().setProgress(0);
         mUpdateHandler.removeCallbacks(mUpdate);
-        mediaPlayer.stop();
+        if(mediaPlayer.isPlaying()) mediaPlayer.stop();
         mediaPlayer.reset();
         mediaPlayer.release();
         mediaPlayer = new MediaPlayer();

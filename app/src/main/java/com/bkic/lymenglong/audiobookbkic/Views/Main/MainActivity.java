@@ -1,6 +1,8 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Main;
 
+import android.app.DownloadManager;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
@@ -15,6 +17,7 @@ import android.widget.Toast;
 import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.Main.Adapters.MainAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Main.Utils.Menu;
 import com.bkic.lymenglong.audiobookbkic.R;
@@ -25,11 +28,14 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 
 public class MainActivity extends AppCompatActivity
-        implements MainImp, ConnectivityReceiver.ConnectivityReceiverListener{
+        implements  MainImp,
+                    ConnectivityReceiver.ConnectivityReceiverListener,
+                    DownloadReceiver.DownloadReceiverListener{
 //    PresenterMain presenterMain = new PresenterMain(this);
     private static final String TAG = "MainActivity";
     private RecyclerView homeList;
@@ -42,6 +48,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        initIntentFilter();
         getDataFromIntent();
         initView();
         initDatabase();
@@ -49,6 +56,63 @@ public class MainActivity extends AppCompatActivity
         GetCursorData();
         //get data from json parsing
 //        presenterMain.GetHttpResponse(HttpUrl_ALLMenuData);
+    }
+
+    //region BroadCasting
+    //connectionReceiver
+    private IntentFilter intentFilter;
+    private ConnectivityReceiver receiver;
+    //downloadReceiver
+    private IntentFilter filter;
+    private DownloadReceiver downloadReceiver;
+
+    private void initIntentFilter() {
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        receiver = new ConnectivityReceiver();
+        //set filter to only when download is complete and register broadcast receiver
+        filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        downloadReceiver = new DownloadReceiver();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // register receiver
+        registerReceiver(receiver, intentFilter);
+        registerReceiver(downloadReceiver, filter);
+        // register status listener
+        MyApplication.getInstance().setConnectivityListener(this);
+        MyApplication.getInstance().setDownloadListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister receiver
+        unregisterReceiver(receiver);
+        unregisterReceiver(downloadReceiver);
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        ToastConnectionMessage(isConnected);
+    }
+
+    @Override
+    public void onDownloadCompleted(long downloadId) {
+
+    }
+    //endregion
+
+    private void ToastConnectionMessage(boolean isConnected) {
+        String message;
+        if (isConnected) {
+            message = getString(R.string.message_internet_connected);
+        } else {
+            message = getString(R.string.message_internet_not_connected);
+        }
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     // to make application remember pass LoginActivity in to MainActivity
@@ -120,29 +184,6 @@ public class MainActivity extends AppCompatActivity
         Log.d(TAG, "SetMenuData");
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        // register connection status listener
-        MyApplication.getInstance().setConnectivityListener(this);
-    }
-
-    @Override
-    public void onNetworkConnectionChanged(boolean isConnected) {
-        ToastConnectionMessage(isConnected);
-    }
-
-    private void ToastConnectionMessage(boolean isConnected) {
-        String message;
-        if (isConnected) {
-            message = "Good! Connected to Internet";
-        } else {
-            message = "Sorry! Not connected to internet";
-        }
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
-    }
-
     private static final int TIME_INTERVAL = 2000; // # milliseconds, desired time passed between two back presses.
     private long mBackPressed;
     private Toast backToast;
@@ -155,7 +196,7 @@ public class MainActivity extends AppCompatActivity
             super.onBackPressed();
             return;
         } else {
-            backToast = Toast.makeText(getBaseContext(), "Tap back button in order to exit", Toast.LENGTH_SHORT);
+            backToast = Toast.makeText(getBaseContext(), R.string.message_exit, Toast.LENGTH_SHORT);
             backToast.show();
         }
         mBackPressed = System.currentTimeMillis();

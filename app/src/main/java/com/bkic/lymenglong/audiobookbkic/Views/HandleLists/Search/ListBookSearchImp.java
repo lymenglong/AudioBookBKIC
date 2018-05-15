@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public interface ListBookSearchImp {
+
     void CompareDataPhoneWithServer(JSONArray jsonArray);
 
     void SetTableSelectedData(JSONObject jsonObject) throws JSONException;

@@ -19,6 +19,7 @@ public class ConnectivityReceiver
     public void onReceive(Context context, Intent arg1) {
         ConnectivityManager cm = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert cm != null;
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         boolean isConnected = activeNetwork != null
                 && activeNetwork.isConnectedOrConnecting();
@@ -32,6 +33,7 @@ public class ConnectivityReceiver
         ConnectivityManager
                 cm = (ConnectivityManager) MyApplication.getInstance().getApplicationContext()
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert cm != null;
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null
                 && activeNetwork.isConnectedOrConnecting();

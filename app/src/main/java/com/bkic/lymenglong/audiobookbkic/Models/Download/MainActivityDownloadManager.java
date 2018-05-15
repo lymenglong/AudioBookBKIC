@@ -242,7 +242,7 @@ public class MainActivityDownloadManager extends AppCompatActivity implements Vi
         //Set the local destination for the downloaded file to a path within the application's external files directory
         if(v.getId() == R.id.DownloadMusic)
 //          request.setDestinationInExternalFilesDir(MainActivityDownloadManager.this, Environment.DIRECTORY_DOWNLOADS,"AndroidTutorialPoint.mp3");
-          request.setDestinationInExternalPublicDir("AudioBookBKIC","AndroidTutorialPoint.mp3");
+          request.setDestinationInExternalPublicDir(Utils.downloadDirectory,"AndroidTutorialPoint.mp3");
         else if(v.getId() == R.id.DownloadImage)
           request.setDestinationInExternalFilesDir(MainActivityDownloadManager.this, Environment.DIRECTORY_DOWNLOADS,"AndroidTutorialPoint.jpg");
 

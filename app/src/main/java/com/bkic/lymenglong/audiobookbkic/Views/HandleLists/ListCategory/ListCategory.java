@@ -1,6 +1,8 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListCategory;
 
 import android.app.Activity;
+import android.app.DownloadManager;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
@@ -12,8 +14,11 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.CategoryAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Category;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.PresenterShowList;
@@ -26,13 +31,15 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_API;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.SELECT_CATEGORY_BY_PARENT_ID;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.UPDATE_CATEGORY_DATA;
 
-public class ListCategory extends AppCompatActivity implements ListCategoryImp {
+public class ListCategory extends AppCompatActivity
+        implements ListCategoryImp, ConnectivityReceiver.ConnectivityReceiverListener, DownloadReceiver.DownloadReceiverListener {
     private static final String TAG = "ListCategory";
     PresenterShowList presenterShowList = new PresenterShowList(this);
     private RecyclerView listChapter;
@@ -55,6 +62,7 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_list);
+        initIntentFilter();
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
         getDataFromIntent();
         SetToolBarTitle();
@@ -62,6 +70,53 @@ public class ListCategory extends AppCompatActivity implements ListCategoryImp {
         initDatabase();
         initObject();
     }
+
+    //region BroadCasting
+    //connectionReceiver
+    private IntentFilter intentFilter;
+    private ConnectivityReceiver receiver;
+    //downloadReceiver
+    private IntentFilter filter;
+    private DownloadReceiver downloadReceiver;
+
+    private void initIntentFilter() {
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        receiver = new ConnectivityReceiver();
+        //set filter to only when download is complete and register broadcast receiver
+        filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        downloadReceiver = new DownloadReceiver();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // register receiver
+        registerReceiver(receiver, intentFilter);
+        registerReceiver(downloadReceiver, filter);
+        // register status listener
+        MyApplication.getInstance().setConnectivityListener(this);
+        MyApplication.getInstance().setDownloadListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister receiver
+        unregisterReceiver(receiver);
+        unregisterReceiver(downloadReceiver);
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+
+    }
+
+    @Override
+    public void onDownloadCompleted(long downloadId) {
+
+    }
+    //endregion
 
     private void SetToolBarTitle() {
         if(menuTitle == null){

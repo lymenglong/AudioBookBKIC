@@ -3,6 +3,7 @@ package com.bkic.lymenglong.audiobookbkic.Views.Player;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -25,17 +26,20 @@ import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiv
 import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
-import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadTask;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.Download.Utils;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.History.Utils.PlaybackHistory;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
+import com.bkic.lymenglong.audiobookbkic.Presenters.Download.PresenterDownloadTaskManager;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.Favorite.UpdateFavorite.PresenterUpdateFavorite;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.History.UpdateHistory.PresenterUpdateHistory;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Player.PresenterPlayer;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Review.PresenterReview;
 import com.bkic.lymenglong.audiobookbkic.R;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -47,13 +51,14 @@ import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_VERSION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.HttpURL_Audio;
 
 public class PlayControl extends AppCompatActivity
-        implements PlayerImp, ConnectivityReceiver.ConnectivityReceiverListener{
+        implements PlayerImp, ConnectivityReceiver.ConnectivityReceiverListener, DownloadReceiver.DownloadReceiverListener{
+    private Activity playControlActivity = PlayControl.this;
     private PresenterPlayer presenterPlayer = new PresenterPlayer(this);
     private PresenterUpdateHistory presenterUpdateHistory = new PresenterUpdateHistory(this);
     private PresenterUpdateFavorite presenterUpdateFavorite = new PresenterUpdateFavorite(this);
     private PresenterReview presenterReview = new PresenterReview(this);
+    private PresenterDownloadTaskManager presenterDownloadTaskManager = new PresenterDownloadTaskManager();
     private static final String TAG = "PlayControl";
-    private Activity playControlActivity = PlayControl.this;
     private Session session;
     private int ResumeTime;
     private DBHelper dbHelper;
@@ -65,6 +70,7 @@ public class PlayControl extends AppCompatActivity
     private String Review;
     private Chapter chapterFromIntent;
     private String AudioUrl;
+
 
     public int getResumeTime() {
         return ResumeTime;
@@ -109,8 +115,12 @@ public class PlayControl extends AppCompatActivity
     private Boolean InitialState = true;
     private HashMap<String, PlaybackHistory> historyHashMap = new HashMap<>();
 
+    //connectionReceiver
     private IntentFilter intentFilter;
     private ConnectivityReceiver receiver;
+    //downloadReceiver
+    private IntentFilter filter;
+    private DownloadReceiver downloadReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,15 +132,14 @@ public class PlayControl extends AppCompatActivity
         initToolbar(chapterFromIntent.getTitle());
         initObject();
         initCollectChapterData();
-        initCheckChapterStatus();
+        initCheckChapterDownloadStatus();
         initPlayHistoryState();
         initCheckAudioUrl();
         intListener();
-
     }
 
-    //Module checkIfAlreadyhavePermission() is implemented as :
-    private boolean checkIfAlreadyhavePermission() {
+    //Module checkIfAlreadyHavePermission() is implemented as :
+    private boolean checkIfAlreadyHavePermission() {
         int result = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
         return result == PackageManager.PERMISSION_GRANTED;
     }
@@ -157,9 +166,19 @@ public class PlayControl extends AppCompatActivity
             case 101:
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     //granted
-                    new DownloadTask
+                    /*new DownloadTask
                             (
                                     playControlActivity,
+                                    btnDownload,
+                                    AudioUrl,
+                                    String.valueOf(chapterFromIntent.getBookId()),
+                                    String.valueOf(chapterFromIntent.getId()),
+                                    chapterFromIntent.getBookId(),
+                                    chapterFromIntent.getId()
+                            );*/
+                    presenterDownloadTaskManager.DownloadTaskManager
+                            (
+                                    playControlActivity.getApplicationContext(),
                                     btnDownload,
                                     AudioUrl,
                                     String.valueOf(chapterFromIntent.getBookId()),
@@ -178,7 +197,7 @@ public class PlayControl extends AppCompatActivity
     }
 
     @Override
-    public Boolean initCheckChapterStatus() { //downloaded yet?
+    public Boolean initCheckChapterDownloadStatus() { //downloaded yet?
         if(!InitialState){
             initReloadChapterData();
         }
@@ -197,6 +216,11 @@ public class PlayControl extends AppCompatActivity
         intentFilter = new IntentFilter();
         intentFilter.addAction(CONNECTIVITY_ACTION);
         receiver = new ConnectivityReceiver();
+
+        //set filter to only when download is complete and register broadcast receiver
+        filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        downloadReceiver = new DownloadReceiver();
+
     }
 
     private void initPlayHistoryState() {
@@ -297,7 +321,7 @@ public class PlayControl extends AppCompatActivity
             } catch (Exception ignored) {
                 setResumeTime(0);
             }
-            Boolean isDownloadedAudio = initCheckChapterStatus();
+            Boolean isDownloadedAudio = initCheckChapterDownloadStatus();
             if(isDownloadedAudio){
                 AudioUrl =      Environment.getExternalStorageDirectory().getPath()+ "/"
                         + Utils.downloadDirectory + "/"
@@ -307,7 +331,7 @@ public class PlayControl extends AppCompatActivity
                 String ChapterUrlFromIndex = hashMapChapter.get(String.valueOf(indexChapterMap)).getFileUrl();
                 AudioUrl = HttpURL_Audio + ChapterUrlFromIndex;
             }
-            if (ConnectivityReceiver.isConnected()) presenterPlayer.PrepareMediaPlayer(AudioUrl, isDownloadedAudio);
+            presenterPlayer.PrepareMediaPlayer(AudioUrl, isDownloadedAudio);
             InitialState = false;
         } else if(indexChapterMap < 0 ) {
             indexChapterMap = 0;
@@ -345,6 +369,8 @@ public class PlayControl extends AppCompatActivity
         setTitle(ChapterTitle);
         CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, ChapterTitle, false);
+        findViewById(R.id.imBack).setVisibility(View.GONE);
+
     }
 
     private void initView() {
@@ -375,9 +401,9 @@ public class PlayControl extends AppCompatActivity
         seekBar.setOnSeekBarChangeListener(presenterPlayer);
     }
 
-    View.OnClickListener onClickListener = new View.OnClickListener() {
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
-        public void onClick(View v) {
+        public void onClick(@NotNull View v) {
             //region Switch Button
             switch (v.getId()){
                 case R.id.btn_add_favorite_book:
@@ -415,13 +441,23 @@ public class PlayControl extends AppCompatActivity
                     //check if my app has permission and than request if it does not have permission
                     int MyVersion = Build.VERSION.SDK_INT;
                     if (MyVersion > Build.VERSION_CODES.LOLLIPOP_MR1) {
-                        if (!checkIfAlreadyhavePermission()) {
+                        if (!checkIfAlreadyHavePermission()) {
                             requestForSpecificPermission();
                         }
                     }else {
-                        new DownloadTask
+                        /*new DownloadTask
                                 (
                                         playControlActivity,
+                                        btnDownload,
+                                        AudioUrl,
+                                        String.valueOf(chapterFromIntent.getBookId()),
+                                        String.valueOf(chapterFromIntent.getId()),
+                                        chapterFromIntent.getBookId(),
+                                        chapterFromIntent.getId()
+                                );*/
+                        presenterDownloadTaskManager.DownloadTaskManager
+                                (
+                                        playControlActivity.getApplicationContext(),
                                         btnDownload,
                                         AudioUrl,
                                         String.valueOf(chapterFromIntent.getBookId()),
@@ -441,8 +477,10 @@ public class PlayControl extends AppCompatActivity
         super.onResume();
         // register receiver
         registerReceiver(receiver, intentFilter);
-        // register connection status listener
+        registerReceiver(downloadReceiver, filter);
+        // register status listener
         MyApplication.getInstance().setConnectivityListener(this);
+        MyApplication.getInstance().setDownloadListener(this);
     }
 
     @Override
@@ -450,6 +488,7 @@ public class PlayControl extends AppCompatActivity
         super.onPause();
         //unregister receiver
         unregisterReceiver(receiver);
+        unregisterReceiver(downloadReceiver);
     }
 
     @Override
@@ -460,9 +499,9 @@ public class PlayControl extends AppCompatActivity
     private void ToastConnectionMessage(boolean isConnected) {
         String message;
         if (isConnected) {
-            message = "Good! Connected to Internet";
+            message = getString(R.string.message_internet_connected);
         } else {
-            message = "Sorry! Not connected to internet";
+            message = getString(R.string.message_internet_not_connected);
         }
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
@@ -717,4 +756,30 @@ public class PlayControl extends AppCompatActivity
         Log.d(TAG, "UpdateReviewFailed: "+message);
     }
 
+/*    private BroadcastReceiver downloadReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, @NotNull Intent intent) {
+            //check if the broadcast message is for our Enqueued download
+            long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+            presenterDownloadTaskManager.UpdateChapterTable(String.valueOf(referenceId));
+            presenterDownloadTaskManager.UpdateBookTable(String.valueOf(referenceId));
+            if (presenterDownloadTaskManager.isCurrentChapter(referenceId,chapterFromIntent.getId())) {
+                btnDownload.setEnabled(false);
+                btnDownload.setText(R.string.downloadCompleted);//If Download completed then change button text
+            }
+            Toast toast = Toast.makeText(context,
+                    "Download Complete " + referenceId, Toast.LENGTH_LONG);
+            toast.setGravity(Gravity.TOP, 25, 400);
+            toast.show();
+        }
+    };*/
+
+    @Override
+    public void onDownloadCompleted(long downloadId) {
+        if (presenterDownloadTaskManager.isCurrentChapter(downloadId,chapterFromIntent.getId())) {
+            btnDownload.setEnabled(false);
+            btnDownload.setText(R.string.downloadCompleted);//If Download completed then change button text
+        }
+    }
 }

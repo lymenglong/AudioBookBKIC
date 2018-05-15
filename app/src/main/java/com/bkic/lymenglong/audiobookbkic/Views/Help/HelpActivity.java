@@ -1,5 +1,7 @@
 package com.bkic.lymenglong.audiobookbkic.Views.Help;
 
+import android.app.DownloadManager;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -7,14 +9,22 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
+import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
 import com.bkic.lymenglong.audiobookbkic.Presenters.Help.PresenterHelp;
 import com.bkic.lymenglong.audiobookbkic.R;
 
+import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 
 
-public class HelpActivity extends AppCompatActivity implements HelpImp{
-    PresenterHelp presenterHelp = new PresenterHelp(this);
+public class HelpActivity
+        extends AppCompatActivity
+        implements  HelpImp,
+                    ConnectivityReceiver.ConnectivityReceiverListener,
+                    DownloadReceiver.DownloadReceiverListener{
+    private PresenterHelp presenterHelp = new PresenterHelp(this);
     private TextView tvReadFile;
     private String menuTitle;
 
@@ -22,11 +32,59 @@ public class HelpActivity extends AppCompatActivity implements HelpImp{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_help);
+        initIntentFilter();
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
         getDataFromIntent();
         initView();
         initObject();
     }
+
+
+    //region BroadCasting
+    //connectionReceiver
+    private IntentFilter intentFilter;
+    private ConnectivityReceiver receiver;
+    //downloadReceiver
+    private IntentFilter filter;
+    private DownloadReceiver downloadReceiver;
+
+    private void initIntentFilter() {
+        intentFilter = new IntentFilter();
+        intentFilter.addAction(CONNECTIVITY_ACTION);
+        receiver = new ConnectivityReceiver();
+        //set filter to only when download is complete and register broadcast receiver
+        filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+        downloadReceiver = new DownloadReceiver();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // register receiver
+        registerReceiver(receiver, intentFilter);
+        registerReceiver(downloadReceiver, filter);
+        // register status listener
+        MyApplication.getInstance().setConnectivityListener(this);
+        MyApplication.getInstance().setDownloadListener(this);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //unregister receiver
+        unregisterReceiver(receiver);
+        unregisterReceiver(downloadReceiver);
+    }
+
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+    }
+
+    @Override
+    public void onDownloadCompleted(long downloadId) {
+
+    }
+    //endregion
 
 
     /**

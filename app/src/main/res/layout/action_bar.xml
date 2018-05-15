@@ -59,12 +59,12 @@
             android:id="@+id/imSearch"
             android:layout_width="35dp"
             android:layout_height="35dp"
+            android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/imRefresh"
-            android:layout_toStartOf="@+id/imRefresh"
             android:contentDescription="@string/search"
             android:src="@android:drawable/ic_search_category_default"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:layout_alignParentRight="true" />
 
     </RelativeLayout>
 
