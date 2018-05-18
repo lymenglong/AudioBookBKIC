@@ -51,7 +51,21 @@ public class ListOfflineBook
         setTitle(menuTitle);
         initView();
         initDatabase();
+        initUpdateBookDownloadStatus();
         initObject();
+    }
+
+    private void initUpdateBookDownloadStatus(){
+        String SELECT_DATA = "SELECT BookId FROM downloadStatus WHERE DownloadedStatus = '1'";
+        Cursor cursor = dbHelper.GetData(SELECT_DATA);
+        while (cursor.moveToNext()){
+            String UPDATE_DATA =
+                    "UPDATE book " +
+                    "SET BookStatus = '1' " +
+                    "WHERE BookId = '"+cursor.getInt(0)+"'";
+            dbHelper.QueryData(UPDATE_DATA);
+        }
+        dbHelper.close();
     }
 
     //region BroadCasting
@@ -97,7 +111,8 @@ public class ListOfflineBook
 
     @Override
     public void onDownloadCompleted(long downloadId) {
-
+        initUpdateBookDownloadStatus();
+        GetCursorData();
     }
     //endregion
 
@@ -132,6 +147,16 @@ public class ListOfflineBook
                                 "FROM book " +
                                     "WHERE BookStatus = '1';" // It means that some of chapter in this book is downloaded
                 );
+/*        cursor = dbHelper.GetData
+                (
+                        "SELECT book.BookId, book.BookTitle, book.BookImage, book.BookLength, book.CategoryId " +
+                                "FROM book, downloadStatus " +
+                                    "WHERE " +
+                                            "book.BookId = downloadStatus.BookId " +
+                                            "AND " +
+                                            "downloadStatus.DownloadedStatus = '1'" +
+                        ";"
+                );*/
         while (cursor.moveToNext()) {
             int bookId = cursor.getInt(0);
             String bookTitle = cursor.getString(1);

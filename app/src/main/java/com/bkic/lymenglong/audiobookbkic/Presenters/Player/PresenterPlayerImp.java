@@ -21,6 +21,8 @@ public interface PresenterPlayerImp {
 
     void StopMedia();
 
+    void ReleaseTimeLabel();
+
     void RemoveCallBacksUpdateHandler();
 
     int GetLastMediaData();

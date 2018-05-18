@@ -29,7 +29,8 @@ public class PresenterPlayer
     private MediaPlayer mediaPlayer = new MediaPlayer();
     private int intSoundMax;
     private Boolean mediaIsPrepared = false;
-    private Boolean isDownloaded;
+    private Boolean isDownloaded = false;
+    private Boolean isBufferComplete = false;
 
     public PresenterPlayer(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
@@ -42,6 +43,7 @@ public class PresenterPlayer
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
+                mediaIsPrepared = false;
                 progressDialog = ProgressDialog.show(playControlActivity,null,playControlActivity.getString(R.string.buffering_data),true,true);
                 progressDialog.show();
                 progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -103,18 +105,13 @@ public class PresenterPlayer
             }
 
             @Override
-            protected void onPostExecute(Boolean aBoolean) {
-                super.onPostExecute(aBoolean);
-                progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        playControlActivity.finish();
-                    }
-                });
+            protected void onPostExecute(Boolean mediaIsPrepared) {
+                super.onPostExecute(mediaIsPrepared);
+
                 if (progressDialog.isShowing()) {
                     progressDialog.dismiss();
                 }
-                if (aBoolean) {
+                if (mediaIsPrepared) {
                     PlayMedia();
                 } else{
                     String message = "Vui lòng kiểm tra lại mạng";
@@ -129,7 +126,7 @@ public class PresenterPlayer
     @Override
     public void ReplayMedia() { // nghe lại từ đầu
         if (mediaIsPrepared) {
-            mediaPlayer.pause();
+            if(mediaPlayer.isPlaying())mediaPlayer.pause();
             mediaPlayer.seekTo(0);
             mediaPlayer.start();
             //Update SeekBar
@@ -188,6 +185,7 @@ public class PresenterPlayer
         if(mediaPlayer.isPlaying()) mediaPlayer.stop();
         mediaPlayer.reset();
         mediaPlayer.release();
+        mediaPlayer = null;
         mediaPlayer = new MediaPlayer();
     }
 
@@ -207,13 +205,17 @@ public class PresenterPlayer
                 playControlActivity.getSeekBar().setMax(intSoundMax);
                 //Update SeekBar
                 mUpdateHandler.postDelayed(mUpdate, 100);
-                if(isDownloaded) playControlActivity.getSeekBar().setSecondaryProgress(intSoundMax);
+                if(isDownloaded) {
+                    playControlActivity.getSeekBar().setSecondaryProgress(intSoundMax);
+                    isBufferComplete = true;
+                }
                 mediaPlayer.setOnBufferingUpdateListener(new OnBufferingUpdateListener() {
                     @Override
                     public void onBufferingUpdate(MediaPlayer mp, int percent) {
                         int AudioBuffered = mediaPlayer.getDuration() * percent / 100;
                         playControlActivity.getSeekBar().setSecondaryProgress(AudioBuffered);
                         Log.d(TAG, "onBufferingUpdate: percent = " + percent);
+                        if(percent == 100) isBufferComplete = true;
 
                     }
                 });
@@ -230,18 +232,20 @@ public class PresenterPlayer
                 mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
-                        String message = "Chương này đã chạy xong";
-                        Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
-                        PresenterReview presenterReview = new PresenterReview(playControlActivity);
+                        if (isBufferComplete) {
+                            String message = "Chương này đã chạy xong";
+                            Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
+                            PresenterReview presenterReview = new PresenterReview(playControlActivity);
 //                        presenterReview.ReviewBookDialog2(playControlActivity);
-                        presenterReview.ReviewBookDialog(playControlActivity);
-//                    presenterReview.ReviewBookDialog3(playControlActivity);
+                            presenterReview.ReviewBookDialog(playControlActivity);
+//                        presenterReview.ReviewBookDialog3(playControlActivity);
+                        }
                     }
                 });
-            } else {
+            } else { //mediaplayer.isPlaying() == true
                 Toast.makeText(playControlActivity, "Sách nói đang chạy", Toast.LENGTH_SHORT).show();
             }
-        } else { //mediaIsPrepared = fale;
+        } else { //mediaIsPrepared = false;
             playControlActivity.PrepareChapter();
         }
     }
@@ -259,6 +263,15 @@ public class PresenterPlayer
         }
     };
     //endregion
+
+    @Override
+    public void ReleaseTimeLabel(){
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
+        playControlActivity.getTxtCurrentDuration().setText(simpleDateFormat.format(0));
+        playControlActivity.getTxtSongTotal().setText(simpleDateFormat.format(0));
+        playControlActivity.getSeekBar().setProgress(0);
+        playControlActivity.getSeekBar().setSecondaryProgress(0);
+    }
 
     @Override
     public void RemoveCallBacksUpdateHandler (){

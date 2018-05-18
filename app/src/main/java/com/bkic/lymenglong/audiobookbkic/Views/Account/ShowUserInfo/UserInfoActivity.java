@@ -119,6 +119,8 @@ public class UserInfoActivity
     @Override
     public void DisplayUserDetail(){
         new getDataFromPrefs(this).execute();
+        String Name = session.getFullName();
+        textViewName.setText(getString(R.string.text_hello)+" "+ Name.toUpperCase());
     }
 
     private void initDataFromIntent() {
@@ -154,9 +156,6 @@ public class UserInfoActivity
         recyclerViewUsers.setItemAnimator(new DefaultItemAnimator());
         recyclerViewUsers.setHasFixedSize(true);
         recyclerViewUsers.setAdapter(userInfoRecyclerAdapter);
-
-        String Name = session.getFullName();
-        textViewName.setText(getString(R.string.text_hello)+" "+ Name.toUpperCase());
 
     }
 

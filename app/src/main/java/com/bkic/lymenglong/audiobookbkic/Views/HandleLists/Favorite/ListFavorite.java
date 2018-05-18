@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
@@ -173,7 +174,8 @@ public class ListFavorite
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RequestLoadingData();
+                if(ConnectivityReceiver.isConnected())RequestLoadingData();
+                else Toast.makeText(activity, getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);

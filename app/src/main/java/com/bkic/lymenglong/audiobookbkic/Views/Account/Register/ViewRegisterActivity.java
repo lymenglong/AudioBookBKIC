@@ -107,7 +107,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
 
     @Override
     public void RegisterSuccess(String message) {
-        Toast.makeText(registerActivity,message,Toast.LENGTH_SHORT).show();
+        Toast.makeText(registerActivity,message.isEmpty()?"Thành Công":message,Toast.LENGTH_SHORT).show();
         startActivity(new Intent(registerActivity,ViewLoginActivity.class));
         registerActivity.finish();
     }
@@ -140,7 +140,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextLastName, textInputLayoutLastName, getString(R.string.error_message_last_name))) {
                     break;
                 } else {
-                    userModel.setLastName(textInputEditTextFirstName.getText().toString());
+                    userModel.setLastName(textInputEditTextLastName.getText().toString());
                 }
 
                 if (!inputValidation.isInputEditTextFilled(textInputEditTextUserName, textInputLayoutUserName, getString(R.string.error_message_username))) {

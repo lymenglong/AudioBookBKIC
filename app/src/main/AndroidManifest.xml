@@ -50,7 +50,8 @@ package="com.bkic.lymenglong.audiobookbkic">
         android:name=".Models.CheckInternet.SecondActivity"
         android:label="@string/title_activity_second"
         android:parentActivityName=".Models.CheckInternet.MainActivity"
-        android:theme="@style/AppTheme.NoActionBar">
+        android:theme="@style/AppTheme.NoActionBar"
+        android:screenOrientation="portrait">
         <meta-data
             android:name="android.support.PARENT_ACTIVITY"
             android:value=".Models.CheckInternet.MainActivity" />
@@ -97,13 +98,16 @@ package="com.bkic.lymenglong.audiobookbkic">
     </activity>
     <activity
         android:name=".Views.HandleLists.History.ListHistory"
-        android:windowSoftInputMode="adjustResize|stateHidden" />
+        android:windowSoftInputMode="adjustResize|stateHidden"
+        android:screenOrientation="portrait"/>
     <activity
         android:name=".Views.HandleLists.ListCategory.ListCategory"
-        android:windowSoftInputMode="adjustResize|stateHidden" />
+        android:windowSoftInputMode="adjustResize|stateHidden"
+        android:screenOrientation="portrait"/>
     <activity
         android:name=".Views.HandleLists.ListBook.ListBook"
-        android:windowSoftInputMode="adjustResize|stateHidden" />
+        android:windowSoftInputMode="adjustResize|stateHidden"
+        android:screenOrientation="portrait"/>
     <activity
         android:name=".Views.Help.HelpActivity"
         android:label="@string/hint_help"
@@ -133,15 +137,23 @@ package="com.bkic.lymenglong.audiobookbkic">
         android:name=".Views.Reading.ViewReading"
         android:screenOrientation="portrait">
     </activity>
-    <activity android:name=".Views.HandleLists.Favorite.ListFavorite" />
-    <activity android:name=".Views.HandleLists.ListChapter.ListChapter" />
-    <activity android:name=".Models.Download.MainActivityDownload">
+    <activity
+        android:name=".Views.HandleLists.Favorite.ListFavorite"
+        android:screenOrientation="portrait"/>
+    <activity
+        android:name=".Views.HandleLists.ListChapter.ListChapter"
+        android:screenOrientation="portrait"/>
+    <activity
+        android:name=".Models.Download.MainActivityDownload"
+        android:screenOrientation="portrait">
         <intent-filter>
             <action android:name="android.intent.action.RUN" />
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
     </activity>
-    <activity android:name=".Views.HandleLists.ListOffline.ListOfflineBook" />
+    <activity
+        android:name=".Views.HandleLists.ListOffline.ListOfflineBook"
+        android:screenOrientation="portrait"/>
     <activity android:name=".Views.HandleLists.ListOffline.ListOfflineChapter" />
     <activity android:name=".Models.Download.MainActivityDownloadManager">
         <intent-filter>
@@ -149,7 +161,13 @@ package="com.bkic.lymenglong.audiobookbkic">
             <category android:name="android.intent.category.LAUNCHER"/>
         </intent-filter>
     </activity>
-    <activity android:name=".Views.HandleLists.Search.ListBookSearch" />
+    <activity
+        android:name=".Views.HandleLists.Search.ListBookSearch"
+        android:screenOrientation="portrait"/>
+
+    <service
+        android:name=".Models.Services.MyDownloadService"
+        android:enabled="true" />
 
 </application>
 </manifest>

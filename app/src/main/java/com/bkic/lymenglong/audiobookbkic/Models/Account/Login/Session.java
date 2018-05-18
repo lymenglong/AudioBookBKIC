@@ -38,6 +38,7 @@ public class Session {
     public void setUpdateUserDetail(User user){
         editor.putString("FIRST_NAME",user.getFirstName());
         editor.putString("LAST_NAME",user.getLastName());
+        editor.putString("FULL_NAME",user.getLastName() + " " + user.getFirstName());
         editor.putString("USERNAME",user.getUsername());
         editor.putString("EMAIL",user.getEmail());
         editor.putString("PHONE_NUMBER",user.getPhonenumber());

@@ -108,6 +108,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:visibility="visible"
+                android:id="@+id/timeLabel"
                 android:weightSum="2">
 
                 <TextView

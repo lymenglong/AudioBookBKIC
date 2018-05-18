@@ -1,8 +1,10 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.Download;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -13,6 +15,7 @@ import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Download.CheckForSDCard;
 import com.bkic.lymenglong.audiobookbkic.Models.Download.Utils;
+import com.bkic.lymenglong.audiobookbkic.Models.Services.MyDownloadService;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 import java.io.File;
@@ -29,6 +32,8 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
     private int BookId, ChapterId;
     private Button buttonText;
     private static HashMap<String,DownloadingIndex> downloadingIndexHashMap = new HashMap<>();
+    private long downloadId;
+    private DownloadManager downloadManager;
 
     public class DownloadingIndex {
         private int bookId;
@@ -58,7 +63,7 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
         this.subFolderPath = subFolderPath; //subFolderPath we use the name of each book
 
         String downloadFileName = fileName.replace(" ", "_") + ".mp3";
-        Log.e(TAG, downloadFileName);
+        Log.d(TAG, downloadFileName);
 
         //Start Downloading Task
         new DownloadingTask().execute();
@@ -75,6 +80,9 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
             super.onPreExecute();
             buttonText.setEnabled(false);
             buttonText.setText(R.string.downloadStarted);//Set Button Text when download started
+            //Start Background Service
+            if(!isMyServiceRunning(MyDownloadService.class))
+                context.startService(new Intent(context, MyDownloadService.class));
         }
 
         @Override
@@ -99,7 +107,7 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
                     }
                     if(isDirectoryCreated) {
                         //download file using download manager
-                        long downloadId = DownloadData(Uri.parse(downloadUrl), BookId, ChapterId);
+                        downloadId = DownloadData(Uri.parse(downloadUrl), BookId, ChapterId);
                         DownloadingIndex index = new DownloadingIndex
                                 (
                                         BookId,
@@ -111,6 +119,18 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
             return null;
         }
     }
+
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        assert manager != null;
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public HashMap<String,DownloadingIndex> DownloadingIndexHashMap(){
         return downloadingIndexHashMap;
@@ -125,7 +145,7 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
 
         long downloadReference;
 
-        DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+        downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
 
         DownloadManager.Request request = new DownloadManager.Request(uri);
 
@@ -145,5 +165,20 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
 
         return downloadReference;
     }
+
+/*    private void RemoveAllDownloading(){
+        DownloadManager.Query query = new DownloadManager.Query();
+        query.setFilterById (DownloadManager.STATUS_FAILED|DownloadManager.STATUS_PENDING|DownloadManager.STATUS_RUNNING);
+        DownloadManager dm = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+        assert dm != null;
+        Cursor cursor = dm.query(query);
+        while(cursor.moveToNext()) {
+            // Here you have all the downloades list which are running, failed, pending
+            // and for abort your downloads you can call the `dm.remove(downloadsID)` to cancel and delete them from download manager.
+            dm.remove(cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID)));
+            Toast.makeText(context, cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID))+"\n", Toast.LENGTH_SHORT).show();
+        }
+    }*/
+
 }
 

@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.view.Gravity;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
@@ -16,6 +16,7 @@ import com.bkic.lymenglong.audiobookbkic.R;
 public class DownloadReceiver
         extends BroadcastReceiver{
 
+    private static final String TAG = "Download Receiver";
     public static DownloadReceiverListener downloadReceiverListener;
     private Context context;
     private PresenterDownloadTaskManager presenterDownloadTaskManager = new PresenterDownloadTaskManager();
@@ -39,9 +40,8 @@ public class DownloadReceiver
                 BookDownloadedTitle(downloadId)+" "+
                 context.getString(R.string.message_download_complete);
         Toast toast = Toast.makeText(context, message, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.TOP, 25, 400);
+//        toast.setGravity(Gravity.TOP, 25, 400);
         toast.show();
-
         if (downloadReceiverListener != null) {
             downloadReceiverListener.onDownloadCompleted(referenceId);
         }
@@ -68,7 +68,7 @@ public class DownloadReceiver
 
     private void UpdateChapterTable(String downloadId) {
         DBHelper dbHelper = new DBHelper(context, Const.DB_NAME,null, Const.DB_VERSION);
-        String UPDATE_STATUS =
+        /*String UPDATE_STATUS =
                 "UPDATE " +
                         "chapter " +
                 "SET " +
@@ -78,7 +78,21 @@ public class DownloadReceiver
                         "AND " +
                         "ChapterId = '"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getChapterId()+"'"
                 ;
-        dbHelper.QueryData(UPDATE_STATUS);
+                dbHelper.QueryData(UPDATE_STATUS);*/
+        try {
+            String INSERT_STATUS =
+                    "INSERT INTO downloadStatus " +
+                    "VALUES " +
+                            "(" +
+                                "'"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getChapterId()+"', "+
+                                "'"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getBookId()+"', "+
+                                "'"+1+"'"+ //downloaded
+                            ")" +
+                    ";" ;
+            dbHelper.QueryData(INSERT_STATUS);
+        } catch (Exception e) {
+            Log.e(TAG, "UpdateChapterTable: " +e.getMessage());
+        }
         dbHelper.close();
     }
 

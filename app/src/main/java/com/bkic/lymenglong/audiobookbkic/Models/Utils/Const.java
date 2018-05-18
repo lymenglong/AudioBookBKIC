@@ -86,6 +86,13 @@ public final class Const {
                             "BookId INTEGER, " +
                             "ChapterStatus INTEGER" +
                     ");";
+    public static final String CREATE_TABLE_DOWNLOAD_STATUS =
+            "CREATE TABLE IF NOT EXISTS downloadStatus " +
+                    "(" +
+                            "ChapterId INTEGER PRIMARY KEY, " +
+                            "BookId INTEGER, " +
+                            "DownloadedStatus INTEGER" +
+                    ");";
 
     public static final String CREATE_TABLE_HISTORY =
             "CREATE TABLE IF NOT EXISTS history" +
@@ -130,7 +137,7 @@ public final class Const {
     public static final String CREATE_TABLE_SEARCH_BOOK =
             "CREATE TABLE IF NOT EXISTS bookSearch " +
                     "(" +
-                            "Id INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                            "Id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, "+
                             "BookId INTEGER, " +
                             "BookTitle VARCHAR(255), " +
                             "BookAuthor VARCHAR(255), " +
@@ -170,7 +177,7 @@ public final class Const {
     public static final int BOOK_SYNCED_WITH_SERVER = 1;
     public static final int BOOK_NOT_SYNCED_WITH_SERVER = 0;
     //1 means data is request to remove and 0 means data is not request to remove
-    public static final int BOOK_REQUEST_REMOVE_WITH_SERVER = 1;
+//    public static final int BOOK_REQUEST_REMOVE_WITH_SERVER = 1;
     public static final int BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER = 0;
 
 }

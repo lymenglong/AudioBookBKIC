@@ -33,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Locale;
 
 import static android.net.ConnectivityManager.CONNECTIVITY_ACTION;
 import static com.bkic.lymenglong.audiobookbkic.Models.Utils.Const.DB_NAME;
@@ -237,12 +238,12 @@ public class ListBookSearch
         while (cursor.moveToNext()){
             Book bookModel = new Book
                     (
-                            cursor.getInt(0),
-                            cursor.getString(1),
+                            cursor.getInt(1),
                             cursor.getString(2),
                             cursor.getString(3),
-                            cursor.getInt(4),
-                            cursor.getInt(5)
+                            cursor.getString(4),
+                            cursor.getInt(5),
+                            cursor.getInt(6)
                     );
             list.add(bookModel);
         }
@@ -267,11 +268,21 @@ public class ListBookSearch
         bookModel.setLength(Integer.parseInt(jsonObject.getString("BookLength")));
         bookModel.setCategoryId(Integer.parseInt(jsonObject.getString("Category")));
         bookModel.setAuthor(jsonObject.getString("Author"));
+        Cursor cursor = dbHelper.GetData
+                (
+                        "SELECT BookId, KeyWord " +
+                            "FROM BookSearch " +
+                            "WHERE BookId = '"+bookModel.getId()+"' AND KeyWord = '"+keyWord+"'");
+        int mCount = 0 ;
+        if(cursor.moveToFirst()){
+            mCount = cursor.getCount();
+        }
+        if(mCount!=0)return;
         String INSERT_DATA;
         try {
             INSERT_DATA =
                     "INSERT INTO bookSearch VALUES(" +
-                            "'', "+ // ID auto increment
+                            "null, "+ // ID auto increment
                             "'"+bookModel.getId()+"', " +
                             "'"+bookModel.getTitle()+"', " +
                             "'"+bookModel.getAuthor()+"', " +
@@ -315,7 +326,7 @@ public class ListBookSearch
             Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                     RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi");//Locale.getDefault()
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());// "vi" for Vietnamese
             intent.putExtra(RecognizerIntent.EXTRA_PROMPT,
                     getString(R.string.speech_prompt));
             try {
