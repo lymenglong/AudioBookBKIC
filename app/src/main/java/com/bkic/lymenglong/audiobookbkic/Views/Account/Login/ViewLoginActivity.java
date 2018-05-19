@@ -40,6 +40,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
 
     // variable to track event time
     private long mLastClickTime = 0;
+    private Toast mToast;
 
 
     @Override
@@ -85,6 +86,12 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+        mToast.cancel();
+    }
+
+    @Override
     public void onClick(View v) {
         /////tranh viec bấm nút liên tuc trong 1s/////
         if (SystemClock.elapsedRealtime() - mLastClickTime < 1000) {
@@ -115,7 +122,8 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                 } else {
                     textPassword = textInputEditTextPassword.getText().toString();
                 }
-                Toast.makeText(activity, "Please Wait..", Toast.LENGTH_SHORT).show();
+                mToast = Toast.makeText(activity, "Please Wait..", Toast.LENGTH_LONG);
+                mToast.show();
                 //check internet connection before request to server
                 if (ConnectivityReceiver.isConnected()) {
                     findViewById(R.id.appCompatButtonLogin).setEnabled(false);
@@ -143,8 +151,28 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
 
     @Override
     public void LoginFailed(String message) {
+        mToast.cancel();
         findViewById(R.id.appCompatButtonLogin).setEnabled(true);
         Toast.makeText(ViewLoginActivity.this, message, Toast.LENGTH_SHORT).show();
+    }
+
+
+    private static final int TIME_INTERVAL = 2000; // # milliseconds, desired time passed between two back presses.
+    private long mBackPressed;
+    private Toast backToast;
+    @Override
+    public void onBackPressed()
+    {
+        if (mBackPressed + TIME_INTERVAL > System.currentTimeMillis())
+        {
+            backToast.cancel();
+            super.onBackPressed();
+            return;
+        } else {
+            backToast = Toast.makeText(getBaseContext(), R.string.message_exit, Toast.LENGTH_SHORT);
+            backToast.show();
+        }
+        mBackPressed = System.currentTimeMillis();
     }
 }
 

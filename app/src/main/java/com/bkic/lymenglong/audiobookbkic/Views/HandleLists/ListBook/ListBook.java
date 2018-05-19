@@ -63,6 +63,11 @@ public class ListBook
     private int numOfChild;*/
     private int mPAGE = 1; //page from server
     private Boolean isFinalPage = false;
+    private boolean isLoadingData = false;
+    private Toast mToast;
+    private boolean isShowingToast = false;
+    private ProgressBar pBarBottom;
+    private int mLastPAGE;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +115,8 @@ public class ListBook
         //unregister receiver
         unregisterReceiver(receiver);
         unregisterReceiver(downloadReceiver);
+        //Cancel Toast Notification
+        if(isShowingToast) mToast.cancel();
     }
 
     @Override
@@ -150,6 +157,7 @@ public class ListBook
         actionBar.eventToolbar(this, categoryIntent.getTitle(), true);
         listChapter = findViewById(R.id.listView);
         progressBar = findViewById(R.id.progressBar);
+        pBarBottom = findViewById(R.id.pb_bottom);
         imRefresh = findViewById(R.id.imRefresh);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
@@ -173,7 +181,8 @@ public class ListBook
             @Override
             public void onClick(View v) {
                 if (ConnectivityReceiver.isConnected()) {
-//                    RefreshBookTable();
+                    RefreshBookTable();
+                    isFinalPage = false;
                     mPAGE = 1;
                     RequestLoadingData();
                 } else {
@@ -183,27 +192,18 @@ public class ListBook
         });
     }
 
-    /*private void RefreshBookTable() {
+    private void RefreshBookTable() {
         String DELETE_DATA =
-                "UPDATE book " +
-                "SET " +
-//                        "BookId = NULL, "+
-                        "BookTitle = NULL, " +
-                        "BookAuthor = NULL, " +
-                        "BookPublishDate= NULL, " +
-                        "BookImage = NULL, " +
-                        "BookContent = NULL, " +
-                        "BookLength = NULL, " +
-                        "BookURL = NULL, " +
-                        "NumOfChapter = NULL " +
+                "DELETE FROM book "+
                 "WHERE CategoryId = '"+categoryIntent.getId()+"'";
         dbHelper.QueryData(DELETE_DATA);
         dbHelper.close();
-    }*/
+    }
 
     private void RequestLoadingData() {
+        isLoadingData = true;
+        pBarBottom.setVisibility(View.VISIBLE);
         HashMap<String, String> ResultHash = new HashMap<>();
-
         int CategoryId = categoryIntent.getId();
         String keyPost = "json";
         String postValue =
@@ -226,10 +226,19 @@ public class ListBook
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if(newState == SCROLL_STATE_DRAGGING && !isFinalPage){
+                if(!isLoadingData)
+                    if(newState == SCROLL_STATE_DRAGGING && !isFinalPage){
                         mPAGE++;
+                        Cursor cursor = dbHelper.GetData
+                                (
+                                        "SELECT MAX(Page) AS LastPage " +
+                                                "FROM book " +
+                                                "WHERE CategoryId = '"+categoryIntent.getId()+"';"
+                                );
+                        if(cursor.moveToFirst()) mLastPAGE = cursor.getInt(0);
+                        if(mPAGE < mLastPAGE) mPAGE = mLastPAGE;
                         RequestLoadingData();
-                }
+                    }
             }
 
             @Override
@@ -257,6 +266,8 @@ public class ListBook
         bookAdapter.notifyDataSetChanged();
         dbHelper.close();
         progressBar.setVisibility(View.GONE);
+        isLoadingData = false;
+        pBarBottom.setVisibility(View.GONE);
     }
     //endregion
 
@@ -287,7 +298,8 @@ public class ListBook
                             "'"+bookModel.getFileUrl() +"', " +
                             "'"+bookModel.getCategoryId()+"', " + //CategoryID
                             "'"+bookModel.getNumOfChapter()+"', " +
-                            "'"+0+"'" +
+                            "'"+0+"', " +
+                            "'"+mPAGE+"'" +
                             ")";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
@@ -298,7 +310,8 @@ public class ListBook
                             "BookTitle = '"+bookModel.getTitle()+"', " +
                             "BookImage = '"+bookModel.getUrlImage()+"', " +
                             "BookLength = '"+bookModel.getLength()+"' ," +
-                            "CategoryId = '"+bookModel.getCategoryId()+"' " + //CategoryId
+                            "CategoryId = '"+bookModel.getCategoryId()+"', " + //CategoryId
+                            "Page = '"+mPAGE+"'"+
                     "WHERE " +
                             "BookId = '"+bookModel.getId()+"'";
             dbHelper.QueryData(UPDATE_DATA);
@@ -315,8 +328,13 @@ public class ListBook
     public void LoadListDataFailed(String jsonMessage) {
         mPAGE--;
         isFinalPage = true;
-        Toast toastErr = Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT);
-        toastErr.show();
+        isShowingToast = isShowingToastNotification(jsonMessage);
+        pBarBottom.setVisibility(View.GONE);
     }
-
+    private boolean isShowingToastNotification(String jsonMessage){
+        String mMessage = "DONE";
+        mToast = Toast.makeText(activity, jsonMessage.isEmpty()?mMessage:jsonMessage, Toast.LENGTH_SHORT);
+        mToast.show();
+        return true;
+    }
 }

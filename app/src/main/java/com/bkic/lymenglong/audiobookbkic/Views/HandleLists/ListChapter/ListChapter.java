@@ -49,11 +49,15 @@ public class ListChapter extends AppCompatActivity
     private Activity activity = ListChapter.this;
     private DBHelper dbHelper;
     private ArrayList<Chapter> list;
-    private ProgressBar progressBar;
+    private ProgressBar pBarCenter, pBarBottom;
     private View imRefresh;
     private Book bookIntent;
     private int mPAGE = 1; // Default page load page 1 at the first time
+    private int mLastPAGE;
     private Boolean isFinalPage = false;
+    private boolean isLoadingData = false;
+    private Toast mToast;
+    private boolean isShowingToast = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +105,8 @@ public class ListChapter extends AppCompatActivity
         //unregister receiver
         unregisterReceiver(receiver);
         unregisterReceiver(downloadReceiver);
+        //Cancel Toast Notification
+        if(isShowingToast) mToast.cancel();
     }
 
     @Override
@@ -135,7 +141,8 @@ public class ListChapter extends AppCompatActivity
         CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, bookIntent.getTitle(), true);
         listChapter = findViewById(R.id.listView);
-        progressBar = findViewById(R.id.progressBar);
+        pBarCenter = findViewById(R.id.progressBar);
+        pBarBottom = findViewById(R.id.pb_bottom);
         imRefresh = findViewById(R.id.imRefresh);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.tvToolbar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
@@ -155,7 +162,7 @@ public class ListChapter extends AppCompatActivity
             SetRequestUpdateBookDetail();
             RequestLoadList();
         } else {
-            progressBar.setVisibility(View.GONE);
+            pBarCenter.setVisibility(View.GONE);
         }
         //endregion
 
@@ -165,7 +172,8 @@ public class ListChapter extends AppCompatActivity
             public void onClick(View v) {
                 if(ConnectivityReceiver.isConnected()) {
                     SetRequestUpdateBookDetail();
-//                RefreshChapterTable();
+                    RefreshChapterTable();
+                    isFinalPage = false;
                     mPAGE = 1;
                     RequestLoadList();
                 } else
@@ -174,18 +182,13 @@ public class ListChapter extends AppCompatActivity
         });
     }
 
-/*    private void RefreshChapterTable() {
+    private void RefreshChapterTable() {
         String DELETE_DATA =
-                "UPDATE chapter " +
-                "SET " +
-//                        "ChapterId = NULL, " +
-                        "ChapterTitle = NULL, " +
-                        "ChapterUrl = NULL, " +
-                        "ChapterLength = NULL " +
+                "DELETE FROM chapter "+
                 "WHERE BookId = '"+bookIntent.getId()+"'";
         dbHelper.QueryData(DELETE_DATA);
         dbHelper.close();
-    }*/
+    }
 
     private void SetRequestUpdateBookDetail() {
         HashMap<String, String> ResultHash = new HashMap<>();
@@ -200,6 +203,8 @@ public class ListChapter extends AppCompatActivity
     }
 
     private void RequestLoadList() {
+        isLoadingData = true;
+        pBarBottom.setVisibility(View.VISIBLE);
         HashMap<String, String> ResultHash = new HashMap<>();
         int BookId = bookIntent.getId();
         String keyPost = "json";
@@ -230,10 +235,21 @@ public class ListChapter extends AppCompatActivity
                         "\nSCROLL_STATE_DRAGGING ="+SCROLL_STATE_DRAGGING+" " +
                         "\nSCROLL_STATE_SETTLING = "+SCROLL_STATE_SETTLING+""
                 );
-                if(newState == SCROLL_STATE_DRAGGING && !isFinalPage){
-                    mPAGE++;
-                    RequestLoadList();
+                if(!isLoadingData){
+                    if(newState == SCROLL_STATE_DRAGGING && !isFinalPage){
+                        mPAGE++;
+                        Cursor cursor = dbHelper.GetData
+                                (
+                                        "SELECT MAX(Page) AS LastPage " +
+                                                "FROM chapter " +
+                                                "WHERE BookId = '"+bookIntent.getId()+"';"
+                                );
+                        if(cursor.moveToFirst()) mLastPAGE = cursor.getInt(0);
+                        if(mPAGE < mLastPAGE) mPAGE = mLastPAGE;
+                        RequestLoadList();
+                    }
                 }
+
 
             }
 
@@ -261,7 +277,9 @@ public class ListChapter extends AppCompatActivity
         cursor.close();
         chapterAdapter.notifyDataSetChanged();
         dbHelper.close();
-        progressBar.setVisibility(View.GONE);
+        pBarCenter.setVisibility(View.GONE);
+        isLoadingData = false;
+        pBarBottom.setVisibility(View.GONE);
     }
     //endregion
 
@@ -283,26 +301,44 @@ public class ListChapter extends AppCompatActivity
         bookModel.setFileUrl(jsonObject.getString("BookURL"));
         bookModel.setCategoryList(jsonObject.getString("CategoryList"));
         bookModel.setNumOfChapter(Integer.parseInt(jsonObject.getString("NumOfChapter")));
-        String UPDATE_DATA = null;
-        try {
-            UPDATE_DATA =
-                    "UPDATE book SET " +
-                            "BookTitle = '"+bookModel.getTitle()+"', " +
-                            "BookAuthor = '"+bookModel.getAuthor()+"', " +
-                            "BookPublishDate = '"+bookModel.getPublishDate()+"', " +
-                            "BookImage = '"+bookModel.getUrlImage()+"', " +
-                            "BookContent = '"+bookModel.getContent()+"', " +
-                            "BookLength = '"+bookModel.getLength()+"', " +
-                            "BookURL = '"+bookModel.getFileUrl()+"', " +
+        Cursor cursor = dbHelper.GetData("SELECT BookId FROM book WHERE BookId = '"+bookModel.getId()+"'");
+        cursor.moveToFirst();
+        if(cursor.getCount()==0){
+            String INSERT_DATA =
+                    "INSERT INTO book VALUES" +
+                            "(" +
+                            "'"+bookModel.getId()+"', " +
+                            "'"+bookModel.getTitle()+"', " +
+                            "'"+bookModel.getAuthor()+"', " +
+                            "'"+bookModel.getPublishDate()+"', " +
+                            "'"+bookModel.getUrlImage()+"', " +
+                            "'"+bookModel.getContent()+"', " +
+                            "'"+bookModel.getLength()+"', " +
+                            "'"+bookModel.getFileUrl()+"', " +
+                            "'"+bookModel.getCategoryId()+"', " +
+                            "'"+bookModel.getNumOfChapter()+"', " +
+                            "'"+0+"', " + //book Status default = 0
+                            "'null'"+ //page
+                            ");";
+            dbHelper.QueryData(INSERT_DATA);
+        } else{
+            String UPDATE_DATA =
+                        "UPDATE book SET " +
+                                "BookTitle = '"+bookModel.getTitle()+"', " +
+                                "BookAuthor = '"+bookModel.getAuthor()+"', " +
+                                "BookPublishDate = '"+bookModel.getPublishDate()+"', " +
+                                "BookImage = '"+bookModel.getUrlImage()+"', " +
+                                "BookContent = '"+bookModel.getContent()+"', " +
+                                "BookLength = '"+bookModel.getLength()+"', " +
+                                "BookURL = '"+bookModel.getFileUrl()+"', " +
 //                            "CategoryId = '"+bookModel.getCategoryId()+"', " +
-                            "NumOfChapter = '"+bookModel.getNumOfChapter()+"' " +
-                                    "WHERE " +
-                                            "BookId = '"+bookModel.getId()+"'" +
-                    ";";
-            dbHelper.QueryData(UPDATE_DATA);
-        } catch (Exception ignored) {
-            Log.d(TAG, "SetUpdateBookDetail: " + UPDATE_DATA);
-        }
+                                "NumOfChapter = '"+bookModel.getNumOfChapter()+"' " +
+                                "WHERE " +
+                                "BookId = '"+bookModel.getId()+"'" +
+                                ";";
+                dbHelper.QueryData(UPDATE_DATA);
+            }
+        dbHelper.close();
     }
 
     @Override
@@ -323,7 +359,8 @@ public class ListChapter extends AppCompatActivity
                             "'"+chapterModel.getFileUrl() +"', " +
                             "'"+chapterModel.getLength() +"', " +
                             "'"+BookId+"', " + //BookId
-                            "'"+0+"'" + // Status Chapter is equal 0 which mean chapter have not downloaded yet
+                            "'"+0+"', " + // Status Chapter is equal 0 which mean chapter have not downloaded yet
+                            "'"+mPAGE+"'"+
                             ")";
             dbHelper.QueryData(INSERT_DATA);
         } catch (Exception e) {
@@ -347,6 +384,12 @@ public class ListChapter extends AppCompatActivity
     public void LoadListDataFailed(String jsonMessage) {
         mPAGE--;
         isFinalPage = true;
-        Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT).show();
+        isShowingToast = isShowingToastNotification(jsonMessage);
+    }
+
+    private boolean isShowingToastNotification(String jsonMessage){
+        mToast = Toast.makeText(activity, jsonMessage, Toast.LENGTH_SHORT);
+        mToast.show();
+        return true;
     }
 }

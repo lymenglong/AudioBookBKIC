@@ -57,6 +57,8 @@ public class ListCategory extends AppCompatActivity
     private int categoryParent;
     private int numOfChild;*/
     private Category categoryFromIntent;
+    private boolean isLoading = false;
+    private ProgressBar pBarBottom;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +154,7 @@ public class ListCategory extends AppCompatActivity
      */
     private void initView() {
         progressBar = findViewById(R.id.progressBar);
+        pBarBottom = findViewById(R.id.pb_bottom);
         imRefresh = findViewById(R.id.imRefresh);
         CustomActionBar actionBar = new CustomActionBar();
         actionBar.eventToolbar(this, title, true);
@@ -190,13 +193,17 @@ public class ListCategory extends AppCompatActivity
         cursor.close();
         adapter.notifyDataSetChanged();
         dbHelper.close();
+        progressBar.setVisibility(View.GONE);
+        isLoading = false;
+        pBarBottom.setVisibility(View.GONE);
     }
 
     private void initObject() {
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                RefreshLoadingData();
+                if(ConnectivityReceiver.isConnected() && !isLoading)
+                    RefreshLoadingData();
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
@@ -214,6 +221,8 @@ public class ListCategory extends AppCompatActivity
     }
 
     private void RefreshLoadingData() {
+        isLoading = true;
+        pBarBottom.setVisibility(View.VISIBLE);
         HashMap<String, String> ResultHash = new HashMap<>();
         String keyPost = "json";
         String postValue = "{\"Action\":\"getListCategory\"}";
@@ -240,7 +249,6 @@ public class ListCategory extends AppCompatActivity
 
     @Override
     public void ShowListFromSelected() {
-        progressBar.setVisibility(View.GONE);
         int parentId = categoryFromIntent.getId(); //getIntent
         GetCursorData(parentId);
         Log.d(TAG, "onPostExecute: "+ title);

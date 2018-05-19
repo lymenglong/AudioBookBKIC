@@ -207,4 +207,23 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
         startActivity(intentLogin);
         registerActivity.finish();
     }
+
+
+    private static final int TIME_INTERVAL = 2000; // # milliseconds, desired time passed between two back presses.
+    private long mBackPressed;
+    private Toast backToast;
+    @Override
+    public void onBackPressed()
+    {
+        if (mBackPressed + TIME_INTERVAL > System.currentTimeMillis())
+        {
+            backToast.cancel();
+            super.onBackPressed();
+            return;
+        } else {
+            backToast = Toast.makeText(getBaseContext(), R.string.message_exit, Toast.LENGTH_SHORT);
+            backToast.show();
+        }
+        mBackPressed = System.currentTimeMillis();
+    }
 }

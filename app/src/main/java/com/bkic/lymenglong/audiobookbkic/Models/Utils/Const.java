@@ -74,7 +74,8 @@ public final class Const {
                             "BookURL VARCHAR(255), " +
                             "CategoryId INTEGER, " +
                             "NumOfChapter INTEGER, " +
-                            "BookStatus INTEGER" +
+                            "BookStatus INTEGER, " +
+                            "Page INTEGER" +
                     ");";
     public static final String CREATE_TABLE_CHAPTER =
             "CREATE TABLE IF NOT EXISTS chapter " +
@@ -84,7 +85,8 @@ public final class Const {
                             "ChapterUrl VARCHAR(255), " +
                             "ChapterLength INTEGER, " +
                             "BookId INTEGER, " +
-                            "ChapterStatus INTEGER" +
+                            "ChapterStatus INTEGER, " +
+                            "Page INTEGER" +
                     ");";
     public static final String CREATE_TABLE_DOWNLOAD_STATUS =
             "CREATE TABLE IF NOT EXISTS downloadStatus " +

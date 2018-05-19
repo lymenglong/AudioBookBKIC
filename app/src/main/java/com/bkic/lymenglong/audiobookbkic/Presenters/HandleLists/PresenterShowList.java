@@ -132,90 +132,99 @@ public class PresenterShowList implements PresenterShowListImp{
         @Override
         protected void onPostExecute(Void result)
         {
-            if (logSuccess) {
-                switch (jsonAction){
-                    //region ListCategory : getListCategory
-                    case "getListCategory":
+            switch (jsonAction){
+                //region ListCategory : getListCategory
+                case "getListCategory":
+                    if (logSuccess) {
                         try {
                             JSONArray jsonArray = new JSONArray(jsonResult);
-                            if (jsonArray.length()!=0) {
+                            if (jsonArray.length() != 0) {
                                 try {
                                     listCategoryActivity.SetTableSelectedData(jsonArray);
                                 } catch (JSONException ignored) {
-                                    Log.d(TAG, "onPostExecute: "+jsonArray.toString());
+                                    Log.d(TAG, "onPostExecute: " + jsonArray.toString());
                                 }
                             } else {
                                 listCategoryActivity.LoadListDataFailed(jsonMessage);
                             }
                         } catch (JSONException ignored) {
-                            Log.d(TAG, "onPostExecute: "+ jsonResult);
+                            Log.d(TAG, "onPostExecute: " + jsonResult);
                         }
                         listCategoryActivity.ShowListFromSelected();
-                        break;
-                    //endregion
-                    //region ListChapter : getChapterList
-                    case "getChapterList":
+                    } else Log.e(TAG, "onPostExecute: jsonLog = " +jsonLog);
+                    break;
+                //endregion
+                //region ListChapter : getChapterList
+                case "getChapterList":
+                    if (logSuccess) {
                         try {
                             JSONArray jsonArrayChapter = new JSONArray(jsonResult);
-                            if (jsonArrayChapter.length()!=0) {
-                                for (int i = 0; i< jsonArrayChapter.length(); i++){
+                            if (jsonArrayChapter.length() != 0) {
+                                for (int i = 0; i < jsonArrayChapter.length(); i++) {
                                     try {
                                         listChapterActivity.SetTableSelectedData(jsonArrayChapter.getJSONObject(i));
                                     } catch (JSONException ignored) {
-                                        Log.d(TAG, "onPostExecute: "+jsonArrayChapter.getJSONObject(i));
+                                        Log.d(TAG, "onPostExecute: " + jsonArrayChapter.getJSONObject(i));
                                     }
                                 }
                             } else {
                                 listChapterActivity.LoadListDataFailed(jsonMessage);
                             }
                         } catch (JSONException ignored) {
-                            Log.d(TAG, "onPostExecute: "+ jsonResult);
+                            Log.d(TAG, "onPostExecute: " + jsonResult);
                         }
                         listChapterActivity.ShowListFromSelected();
-                        break;
-                    //endregion
-                    //region ListChapter : getBookDetail
-                    case "getBookDetail":
+                    } else Log.e(TAG, "onPostExecute: jsonLog = " +jsonLog);
+                    break;
+                //endregion
+                //region ListChapter : getBookDetail
+                case "getBookDetail":
+                    if (logSuccess) {
                         try {
                             JSONObject jsonObjectBookDetail = new JSONObject(jsonResult);
-                            if (jsonObjectBookDetail.length()!=0) {
+                            if (jsonObjectBookDetail.length() != 0) {
                                 try {
                                     listChapterActivity.SetUpdateBookDetail(jsonObjectBookDetail);
                                 } catch (JSONException ignored) {
-                                    Log.d(TAG, "onPostExecute: "+jsonObjectBookDetail);
+                                    Log.d(TAG, "onPostExecute: " + jsonObjectBookDetail);
                                 }
                             } else {
                                 listChapterActivity.LoadListDataFailed(jsonMessage);
                             }
                         } catch (JSONException ignored) {
-                            Log.d(TAG, "onPostExecute: "+ jsonResult);
+                            Log.d(TAG, "onPostExecute: " + jsonResult);
                         }
-                        break;
-                    //endregion
-                    //region ListBook : getBooksByCategory
-                    case "getBooksByCategory":
+                    } else Log.e(TAG, "onPostExecute: jsonLog = " +jsonLog);
+                    break;
+                //endregion
+                //region ListBook : getBooksByCategory
+                case "getBooksByCategory":
+                    if(logSuccess) {
                         try {
                             JSONArray jsonArrayResult = new JSONArray(jsonResult);
-                            if(jsonArrayResult.length()!=0) {
+                            if (jsonArrayResult.length() != 0) {
                                 for (int j = 0; j < jsonArrayResult.length(); j++) {
                                     try {
                                         listBookActivity.SetTableSelectedData(jsonArrayResult.getJSONObject(j));
                                     } catch (JSONException ignored) {
-                                        Log.d(TAG, "onPostExecute: "+jsonArrayResult.getJSONObject(j));
+                                        Log.d(TAG, "onPostExecute: " + jsonArrayResult.getJSONObject(j));
                                     }
                                 }
-                            } else{
-                                listBookActivity.LoadListDataFailed(jsonMessage);
+                            } else {
+                                String mMessage = !jsonLog.equals("Success")?jsonLog:jsonMessage;
+                                listBookActivity.LoadListDataFailed(mMessage);
                             }
                         } catch (JSONException e) {
-                            Log.e(TAG, "onPostExecute: "+ jsonResult+ "e: "+ e.getMessage());
+                            Log.e(TAG, "onPostExecute: " + jsonResult + "e: " + e.getMessage());
                         }
                         listBookActivity.ShowListFromSelected();
-                        break;
-                    //endregion
-                }
-            } else {
-                Log.e(TAG, "onPostExecute: jsonMessage: " + jsonMessage);
+                    } else {
+                        Log.e(TAG, "onPostExecute: jsonLog = " +jsonLog);
+                        String mMessage = !jsonLog.equals("Success")?jsonLog:jsonMessage;
+                        listBookActivity.LoadListDataFailed(mMessage);
+                    }
+                    break;
+                //endregion
             }
 //            pDialog.dismiss(); // khong thuc hien duoc dialog dismiss
         }
