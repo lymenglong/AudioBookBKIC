@@ -431,6 +431,7 @@ public class PlayControl extends AppCompatActivity
         txtSongTotal = findViewById(R.id.text_total_duration_label);
         txtCurrentDuration = findViewById(R.id.text_current_duration_label);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.seekBar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        //todo fix talk back read wrong mm:ss
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.text_current_duration_label), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.text_total_duration_label), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
@@ -532,6 +533,8 @@ public class PlayControl extends AppCompatActivity
         // register status listener
         MyApplication.getInstance().setConnectivityListener(this);
         MyApplication.getInstance().setDownloadListener(this);
+        // resume media
+        presenterPlayer.PlayMedia();
     }
 
     @Override
@@ -541,7 +544,7 @@ public class PlayControl extends AppCompatActivity
         unregisterReceiver(receiver);
         unregisterReceiver(downloadReceiver);
         //Pause Media
-//        presenterPlayer.PauseMedia();
+        presenterPlayer.PauseMedia();
     }
 
     @Override
@@ -644,11 +647,16 @@ public class PlayControl extends AppCompatActivity
         //<editor-fold desc="Remove event handler from seek bar">
         presenterPlayer.RemoveCallBacksUpdateHandler();
         //</editor-fold>
-        UpdateHistoryData();
         presenterPlayer.ReleaseMediaPlayer();
         //StopService
 //        stopService(new Intent(this, MyDownloadService.class));
         super.onDestroy();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        UpdateHistoryData();
     }
 
     @NonNull

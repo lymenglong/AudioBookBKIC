@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.R;
-import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter.ListChapter;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.History.ListHistoryChapter;
 
 import java.util.ArrayList;
 
@@ -80,7 +80,7 @@ public class HistoryAdapter extends RecyclerView.Adapter {
                     bookImage = books.get(getAdapterPosition()).getUrlImage();
                     bookLength = books.get(getAdapterPosition()).getLength();
                     bookAuthor = books.get(getAdapterPosition()).getAuthor();
-                    IntentActivity(activity,ListChapter.class);
+                    IntentActivity(activity,ListHistoryChapter.class);
 //                    showAlertDialog();
                 }
             }

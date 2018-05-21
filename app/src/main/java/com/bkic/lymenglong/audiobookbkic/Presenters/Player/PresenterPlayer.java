@@ -26,12 +26,13 @@ public class PresenterPlayer
     private PlayControl playControlActivity;
     private ProgressDialog progressDialog;
     private static String TAG = "PresenterPlayer";
-    private MediaPlayer mediaPlayer = new MediaPlayer();
+    private MediaPlayer mediaPlayer;
     private int intSoundMax;
     private Boolean mediaIsPrepared = false;
     private Boolean isDownloaded = false;
     private Boolean isBufferComplete = false;
     private Boolean isMissingMp3 = false;
+    private Boolean isPreparingCancel = false;
 
     public PresenterPlayer(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
@@ -47,13 +48,18 @@ public class PresenterPlayer
                 mediaIsPrepared = false;
                 progressDialog = ProgressDialog.show(playControlActivity,null,playControlActivity.getString(R.string.buffering_data),true,true);
                 progressDialog.show();
-                progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialog) {
-                        StopMedia();
-                    }
-                });
+                mediaPlayer = new MediaPlayer();
                 isDownloaded = isDownloadedAudio;
+                if(!isDownloaded) {
+                    progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            mediaIsPrepared = false;
+                            isPreparingCancel = true;
+                            StopMedia();
+                        }
+                    });
+                }
             }
             @Override
             protected Boolean doInBackground(String... strings) {
@@ -68,6 +74,17 @@ public class PresenterPlayer
                         try {
                             mediaPlayer.setDataSource(playControlActivity.getApplicationContext(), Uri.parse(strings[0]));
                             mediaPlayer.prepare();
+                            mediaPlayer.setOnPreparedListener(new OnPreparedListener() {
+                                @Override
+                                public void onPrepared(MediaPlayer mp) {
+                                    if(isPreparingCancel) {
+                                        mp.release();
+                                        mediaIsPrepared = false;
+                                        isPreparingCancel = false;
+                                    }
+                                }
+
+                            });
                         } catch (Exception e) {
                             Log.e(TAG, "doInBackground: mediaPlayer.setDataSource "+e.getMessage());
                             mediaIsPrepared = false;
@@ -78,6 +95,17 @@ public class PresenterPlayer
                     } else {
                         mediaPlayer.setDataSource(playControlActivity.getApplicationContext(), Uri.parse(strings[0]));
                         mediaPlayer.prepare();
+                        mediaPlayer.setOnPreparedListener(new OnPreparedListener() {
+                            @Override
+                            public void onPrepared(MediaPlayer mp) {
+                                if(isPreparingCancel) {
+                                    mp.release();
+                                    mediaIsPrepared = false;
+                                    isPreparingCancel = false;
+                                }
+                            }
+
+                        });
                     }
                     mediaIsPrepared = true;
                     /*final String path = strings[0];
@@ -134,8 +162,12 @@ public class PresenterPlayer
                 if (mediaIsPrepared) {
                     PlayMedia();
                 } else{
-                    String message = "Vui lòng kiểm tra lại mạng";
-                    Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
+                    if(!isPreparingCancel) {
+                        String message = "Vui lòng kiểm tra lại mạng";
+                        Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
+                        isPreparingCancel = false;
+                    }
+
                 }
 //                initialStage = false;
             }
@@ -202,11 +234,8 @@ public class PresenterPlayer
     public void StopMedia() {
         playControlActivity.getSeekBar().setProgress(0);
         mUpdateHandler.removeCallbacks(mUpdate);
-        if(mediaPlayer.isPlaying()) mediaPlayer.stop();
-        mediaPlayer.reset();
-        mediaPlayer.release();
-        mediaPlayer = null;
-        mediaPlayer = new MediaPlayer();
+        ReleaseMediaPlayer();
+//        mediaPlayer = new MediaPlayer();
     }
 
     @Override
@@ -219,7 +248,7 @@ public class PresenterPlayer
     }
     @Override
     public void PlayMedia() {
-        if (mediaIsPrepared) {
+        if (mediaIsPrepared && !isPreparingCancel) {
             if (!mediaPlayer.isPlaying()) {
                 intSoundMax = mediaPlayer.getDuration();
                 playControlActivity.getSeekBar().setMax(intSoundMax);
@@ -275,10 +304,14 @@ public class PresenterPlayer
     private Runnable mUpdate= new Runnable() {
         @Override
         public void run() {
+            //todo fix talk back read wrong mm:ss
+//            @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("00:mm:ss");
             @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
-            playControlActivity.getTxtCurrentDuration().setText(simpleDateFormat.format(mediaPlayer.getCurrentPosition()));
-            playControlActivity.getTxtSongTotal().setText(simpleDateFormat.format(mediaPlayer.getDuration()));
-            playControlActivity.getSeekBar().setProgress(mediaPlayer.getCurrentPosition());
+            if(mediaIsPrepared) {
+                playControlActivity.getTxtCurrentDuration().setText(simpleDateFormat.format(mediaPlayer.getCurrentPosition()));
+                playControlActivity.getTxtSongTotal().setText(simpleDateFormat.format(mediaPlayer.getDuration()));
+                playControlActivity.getSeekBar().setProgress(mediaPlayer.getCurrentPosition());
+            }
             mUpdateHandler.postDelayed(this, 1000);
         }
     };
@@ -286,6 +319,8 @@ public class PresenterPlayer
 
     @Override
     public void ReleaseTimeLabel(){
+        //todo fix talk back read wrong mm:ss
+//        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm minutes ss seconds");
         @SuppressLint("SimpleDateFormat") SimpleDateFormat simpleDateFormat = new SimpleDateFormat("mm:ss");
         playControlActivity.getTxtCurrentDuration().setText(simpleDateFormat.format(0));
         playControlActivity.getTxtSongTotal().setText(simpleDateFormat.format(0));
@@ -315,10 +350,12 @@ public class PresenterPlayer
 
     @Override
     public void ReleaseMediaPlayer() {
-        mediaPlayer.stop();
-        mediaPlayer.reset();
-        mediaPlayer.release();
-//        mediaPlayer = null;
+        if (mediaIsPrepared && !isPreparingCancel) {
+            if(mediaPlayer.isPlaying()) mediaPlayer.stop();
+            mediaPlayer.reset();
+            mediaPlayer.release();
+        }
+        mediaPlayer = null;
     }
 
     @Override

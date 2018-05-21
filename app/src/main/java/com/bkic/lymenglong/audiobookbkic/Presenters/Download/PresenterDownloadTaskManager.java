@@ -232,9 +232,14 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
         //Setting description of request
         request.setDescription("Sách Đang Tải Xuống");
 
+        //Check if file exists
+        /*String filePath = Utils.downloadDirectory+"/"+bookId+"/"+chapterId+".mp3";
+        File file = new File(filePath);
+        if(!file.exists())*/
+
         //Set the local destination for the downloaded file to a path within the application's external files directory
 //          request.setDestinationInExternalFilesDir(MainActivityDownloadManager.this, Environment.DIRECTORY_DOWNLOADS,"AndroidTutorialPoint.mp3");
-            request.setDestinationInExternalPublicDir(Utils.downloadDirectory+"/"+bookId,chapterId+".mp3");
+        request.setDestinationInExternalPublicDir(Utils.downloadDirectory+"/"+bookId,chapterId+".mp3");
 
         //Enqueue download and save the referenceId
         assert downloadManager != null;
