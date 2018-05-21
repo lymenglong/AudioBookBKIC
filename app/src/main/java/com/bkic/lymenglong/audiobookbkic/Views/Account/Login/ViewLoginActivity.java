@@ -41,6 +41,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     // variable to track event time
     private long mLastClickTime = 0;
     private Toast mToast;
+    private boolean isShowToast = false;
 
 
     @Override
@@ -88,7 +89,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     @Override
     protected void onPause() {
         super.onPause();
-        mToast.cancel();
+        if(isShowToast)mToast.cancel();
     }
 
     @Override
@@ -122,8 +123,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                 } else {
                     textPassword = textInputEditTextPassword.getText().toString();
                 }
-                mToast = Toast.makeText(activity, "Please Wait..", Toast.LENGTH_LONG);
-                mToast.show();
+                isShowToast = isShowToastNotification();
                 //check internet connection before request to server
                 if (ConnectivityReceiver.isConnected()) {
                     findViewById(R.id.appCompatButtonLogin).setEnabled(false);
@@ -173,6 +173,12 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
             backToast.show();
         }
         mBackPressed = System.currentTimeMillis();
+    }
+
+    public boolean isShowToastNotification() {
+        mToast = Toast.makeText(activity, "Please Wait..", Toast.LENGTH_LONG);
+        mToast.show();
+        return true;
     }
 }
 

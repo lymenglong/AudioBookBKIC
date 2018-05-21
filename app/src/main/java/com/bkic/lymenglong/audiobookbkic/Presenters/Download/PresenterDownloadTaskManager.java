@@ -32,8 +32,6 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
     private int BookId, ChapterId;
     private Button buttonText;
     private static HashMap<String,DownloadingIndex> downloadingIndexHashMap = new HashMap<>();
-    private long downloadId;
-    private DownloadManager downloadManager;
 
     public class DownloadingIndex {
         private int bookId;
@@ -74,6 +72,7 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
     public class DownloadingTask extends AsyncTask<Void, Void, Void> {
 
         File apkStorage = null;
+        File apkSubStorage = null;
 
         @Override
         protected void onPreExecute() {
@@ -88,26 +87,52 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
         @Override
         protected Void doInBackground(Void... arg0) {
                 //Get File if SD card is present
-                if (new CheckForSDCard().isSDCardPresent()) apkStorage = new File(
+                /*if (new CheckForSDCard().isSDCardPresent()) apkStorage = new File(
                         Environment.getExternalStorageDirectory() + "/"
-                                + Utils.downloadDirectory + "/" + subFolderPath);
-                else
-                    Toast.makeText(context, "Oops!! There is no SD Card.", Toast.LENGTH_SHORT).show();
+                                + Utils.downloadDirectory + "/" + subFolderPath);*/
+            if (new CheckForSDCard().isSDCardPresent()) apkStorage = new File(
+                    Environment.getExternalStorageDirectory() + "/"
+                            + Utils.downloadDirectory);
+            else
+                Toast.makeText(context, "Oops!! There is no SD Card.", Toast.LENGTH_SHORT).show();
 
-                //Check permission for api 24 or higher
-                int code = context.getPackageManager().checkPermission(
-                        android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        context.getPackageName());
-                if (code == PackageManager.PERMISSION_GRANTED) {
-                    //If File is not present create directory
-                    boolean isDirectoryCreated=apkStorage.exists();
-                    if (!isDirectoryCreated) {
-                        isDirectoryCreated = apkStorage.mkdir();
-                        Log.e(TAG, "Directory Created.");
+            //Check permission for api 24 or higher
+            int code = context.getPackageManager().checkPermission(
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    context.getPackageName());
+            if (code == PackageManager.PERMISSION_GRANTED) {
+                //If File is not present create directory
+                boolean isDirectoryCreated=apkStorage.exists();
+                if (!isDirectoryCreated) {
+                    isDirectoryCreated = apkStorage.mkdir();
+                    Log.d(TAG, "Directory Created.");
+                }
+                if(isDirectoryCreated) {
+                    //Create subdirectory
+                    apkSubStorage = new File(
+                            Environment.getExternalStorageDirectory() + "/"
+                                    + Utils.downloadDirectory + "/" + subFolderPath);
+                    boolean isSubDirectoryCreated = apkSubStorage.exists();
+                    if(!isSubDirectoryCreated) {
+                        isSubDirectoryCreated = apkSubStorage.mkdir();
+                        Log.d(TAG, "Sub Directory: " + subFolderPath + " is created");
+                        /*//Create .nomedia file
+                        if(writeNoMediaFile(subFolderPath)) {
+                            Log.d(TAG, ".nomedia file created");
+                        }*/
+                        /*
+                        File dir = context.getCacheDir();
+                        File output = new File(dir, ".nomedia");
+                        try {
+                            boolean fileCreated = output.createNewFile();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        */
                     }
-                    if(isDirectoryCreated) {
+                    if(isSubDirectoryCreated){
                         //download file using download manager
-                        downloadId = DownloadData(Uri.parse(downloadUrl), BookId, ChapterId);
+                        long downloadId = DownloadData(Uri.parse(downloadUrl), BookId, ChapterId);
                         DownloadingIndex index = new DownloadingIndex
                                 (
                                         BookId,
@@ -116,9 +141,61 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
                         downloadingIndexHashMap.put(String.valueOf(downloadId),index);
                     }
                 }
+            }
             return null;
         }
     }
+
+//    /**
+//     *
+//     * @param   directoryPath   The full path to the directory to place the .nomedia file
+//     * @return   Returns true if the file was successfully written or appears to already exist
+//     * Notes:
+//            - the TAG varible is just the name of the class (in this case "FileUtil")
+//            - the D varible is just a boolen to indicate you want to debug or not
+//     */
+
+
+
+
+/*    private boolean writeNoMediaFile(String directoryPath)
+    {
+//        String storageState = Environment.getExternalStorageState();
+        String storageState = Environment.getExternalStorageDirectory() + "/"
+                + Utils.downloadDirectory + "/" + directoryPath;
+
+        if ( Environment.MEDIA_MOUNTED.equals( storageState ) )
+        {
+            try
+            {
+                File noMedia = new File ( directoryPath, ".nomedia" );
+
+                if ( noMedia.exists() )
+                {
+                    Log.i ( TAG, ".no media appears to exist already, returning without writing a new file" );
+                    return true;
+                }
+
+                FileOutputStream noMediaOutStream = new FileOutputStream( noMedia );
+                noMediaOutStream.write ( 0 );
+                noMediaOutStream.close ( );
+            }
+            catch ( Exception e )
+            {
+                Log.e( TAG, "error writing file" );
+                return false;
+            }
+        }
+        else
+        {
+            Log.e( TAG, "storage appears unwritable" );
+            return false;
+        }
+
+        return true;
+
+    }*/
+
 
     private boolean isMyServiceRunning(Class<?> serviceClass) {
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -145,7 +222,7 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
 
         long downloadReference;
 
-        downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
 
         DownloadManager.Request request = new DownloadManager.Request(uri);
 

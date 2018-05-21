@@ -80,6 +80,9 @@ public class ListOfflineChapter
         // register status listener
         MyApplication.getInstance().setConnectivityListener(this);
         MyApplication.getInstance().setDownloadListener(this);
+        // Update
+        initUpdateBookDownloadStatus();
+        GetCursorData();
     }
 
     @Override

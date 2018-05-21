@@ -310,8 +310,7 @@ public class ListBook
                             "BookTitle = '"+bookModel.getTitle()+"', " +
                             "BookImage = '"+bookModel.getUrlImage()+"', " +
                             "BookLength = '"+bookModel.getLength()+"' ," +
-                            "CategoryId = '"+bookModel.getCategoryId()+"', " + //CategoryId
-                            "Page = '"+mPAGE+"'"+
+                            "CategoryId = '"+bookModel.getCategoryId()+"' " + //CategoryId
                     "WHERE " +
                             "BookId = '"+bookModel.getId()+"'";
             dbHelper.QueryData(UPDATE_DATA);

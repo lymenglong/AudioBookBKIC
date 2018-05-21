@@ -46,7 +46,7 @@
     <string name="hint_phone_number">Số điện thoại</string>
     <string name="hint_birthday">Birthday</string>
     <string name="hint_identity_number">ID Number</string>
-    <string name="hint_password">Mật khầu</string>
+    <string name="hint_password">Mật khẩu</string>
     <string name="hint_confirm_password">Xác nhận mật khẩu</string>
     <string name="text_register">Đăng ký</string>
     <string name="error_message_first_name">Điền tên của bạn</string>
@@ -99,7 +99,7 @@
     <string name="previousChapter">Chương trước đây</string>
     <string name="download">Tải xuống</string>
     <string name="backward">Lùi lại 10 giây</string>
-    <string name="forward">Lùi đi 10 giây</string>
+    <string name="forward">Tiến tới 10 giây</string>
     <string name="add_book_to_favorite">Ghim sách vào yêu thích</string>
     <string name="add_favorite_book">Ghim Sách Vào Yêu Thích</string>
     <string name="time">00:00</string>
@@ -154,7 +154,7 @@
     <string name="text_5_star">năm sao</string>
     <string name="update">Cập Nhật</string>
     <string name="text_cancel">Hủy</string>
-    <string name="edit">Chỉnh sử</string>
+    <string name="edit">Chỉnh sửa</string>
     <string name="change_password">Đổi Mật Khẩu</string>
     <string name="text_confirm_password">Xác Nhận Mật Khẩu</string>
     <string name="text_update_password">Cập Nhật Mật Khẩu Mới</string>

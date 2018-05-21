@@ -21,4 +21,6 @@ public interface PlayerImp {
     void UpdateReviewSuccess(String message);
 
     void UpdateReviewFailed(String message);
+
+    void UpdateChapterStatus();
 }

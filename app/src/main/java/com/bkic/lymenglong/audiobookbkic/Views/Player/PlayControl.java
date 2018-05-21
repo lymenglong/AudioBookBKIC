@@ -351,6 +351,43 @@ public class PlayControl extends AppCompatActivity
         }
     }
 
+    //Update when file mp3 is missing
+    @Override
+    public void UpdateChapterStatus() {
+        Toast.makeText(playControlActivity, "file offline đã bị mất", Toast.LENGTH_SHORT).show();
+        dbHelper.QueryData(
+                "UPDATE chapter " +
+                        "SET ChapterStatus = '0' " +
+                        "WHERE " +
+                            "ChapterId = '"+chapterFromIntent.getId()+"' " +
+                            "AND " +
+                            "BookId = '"+chapterFromIntent.getBookId()+"'" +
+                        ";"
+        );
+        dbHelper.QueryData(
+                "UPDATE downloadStatus " +
+                        "SET DownloadedStatus = '0' " +
+                        "WHERE " +
+                        "ChapterId = '"+chapterFromIntent.getId()+"' " +
+                        "AND " +
+                        "BookId = '"+chapterFromIntent.getBookId()+"'" +
+                        ";"
+        );
+       /* Cursor cursor = dbHelper.GetData(
+                "SELECT BookId " +
+                        "FROM downloadStatus " +
+                        "WHERE " +
+                        "ChapterId = '1' " +
+                        "AND " +
+                        "BookId = '"+chapterFromIntent.getBookId()+"'");
+        if(cursor.moveToFirst())
+            if(cursor.getCount()!=0)
+        dbHelper.QueryData(
+                "UPDATE "
+        );
+        dbHelper.close();*/
+    }
+
     private void initObject() {
         session = new Session(playControlActivity);
         dbHelper = new DBHelper(this,DB_NAME,null,DB_VERSION);
@@ -394,7 +431,8 @@ public class PlayControl extends AppCompatActivity
         txtSongTotal = findViewById(R.id.text_total_duration_label);
         txtCurrentDuration = findViewById(R.id.text_current_duration_label);
         ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.seekBar), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
-        ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.timeLabel), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.text_current_duration_label), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        ViewCompat.setImportantForAccessibility(getWindow().findViewById(R.id.text_total_duration_label), ViewCompat.IMPORTANT_FOR_ACCESSIBILITY_NO);
     }
 
     private void intListener() {
@@ -464,16 +502,6 @@ public class PlayControl extends AppCompatActivity
                             DownloadTask();
                         }
                     }else {
-                        /*new DownloadTask
-                                (
-                                        playControlActivity,
-                                        btnDownload,
-                                        AudioUrl,
-                                        String.valueOf(chapterFromIntent.getBookId()),
-                                        String.valueOf(chapterFromIntent.getId()),
-                                        chapterFromIntent.getBookId(),
-                                        chapterFromIntent.getId()
-                                );*/
                         DownloadTask();
                     }
                     break;
@@ -518,10 +546,10 @@ public class PlayControl extends AppCompatActivity
 
     @Override
     public void onNetworkConnectionChanged(boolean isConnected) {
-        ToastConnectionMessage(isConnected);
+//        ToastConnectionMessage(isConnected);
     }
 
-    private void ToastConnectionMessage(boolean isConnected) {
+    /*private void ToastConnectionMessage(boolean isConnected) {
         String message;
         if (isConnected) {
             message = getString(R.string.message_internet_connected);
@@ -529,7 +557,7 @@ public class PlayControl extends AppCompatActivity
             message = getString(R.string.message_internet_not_connected);
         }
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-    }
+    }*/
 
     @Override
     public void AddReviewBookToServer() {

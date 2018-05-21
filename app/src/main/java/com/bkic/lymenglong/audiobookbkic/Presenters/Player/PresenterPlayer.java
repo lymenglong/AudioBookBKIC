@@ -31,6 +31,7 @@ public class PresenterPlayer
     private Boolean mediaIsPrepared = false;
     private Boolean isDownloaded = false;
     private Boolean isBufferComplete = false;
+    private Boolean isMissingMp3 = false;
 
     public PresenterPlayer(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
@@ -63,8 +64,21 @@ public class PresenterPlayer
                     }
                     mediaPlayer.reset();
                     mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                    mediaPlayer.setDataSource(playControlActivity.getApplicationContext(), Uri.parse(strings[0]));
-                    mediaPlayer.prepare();
+                    if(isDownloadedAudio){
+                        try {
+                            mediaPlayer.setDataSource(playControlActivity.getApplicationContext(), Uri.parse(strings[0]));
+                            mediaPlayer.prepare();
+                        } catch (Exception e) {
+                            Log.e(TAG, "doInBackground: mediaPlayer.setDataSource "+e.getMessage());
+                            mediaIsPrepared = false;
+                            isDownloaded = false;
+                            isMissingMp3 = true;
+                            return false;
+                        }
+                    } else {
+                        mediaPlayer.setDataSource(playControlActivity.getApplicationContext(), Uri.parse(strings[0]));
+                        mediaPlayer.prepare();
+                    }
                     mediaIsPrepared = true;
                     /*final String path = strings[0];
                     new AudioStreamWorkerTask(playControlActivity, new OnCacheCallBack() {
@@ -108,9 +122,15 @@ public class PresenterPlayer
             protected void onPostExecute(Boolean mediaIsPrepared) {
                 super.onPostExecute(mediaIsPrepared);
 
-                if (progressDialog.isShowing()) {
-                    progressDialog.dismiss();
+                if (progressDialog.isShowing()) progressDialog.dismiss();
+
+                if(isMissingMp3) {
+                    playControlActivity.UpdateChapterStatus();
+                    isMissingMp3 = false;
+                    playControlActivity.PrepareChapter();
+                    return;
                 }
+
                 if (mediaIsPrepared) {
                     PlayMedia();
                 } else{
