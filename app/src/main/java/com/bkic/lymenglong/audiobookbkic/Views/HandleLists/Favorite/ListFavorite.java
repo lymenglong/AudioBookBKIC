@@ -185,10 +185,9 @@ public class ListFavorite
         GetCursorData();
         //get data from json parsing
         if(list.isEmpty()) {
-            RequestLoadingData();
-        } else {
-            progressBar.setVisibility(View.GONE);
-        }
+            if(ConnectivityReceiver.isConnected()) RequestLoadingData();
+            else progressBar.setVisibility(View.GONE);
+        } else progressBar.setVisibility(View.GONE);
     }
 
     private void RequestLoadingData() {

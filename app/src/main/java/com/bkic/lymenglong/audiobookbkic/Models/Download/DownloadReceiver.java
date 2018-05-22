@@ -32,8 +32,9 @@ public class DownloadReceiver
         long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
         String downloadId = String.valueOf(referenceId);
         //Update data
-        UpdateChapterTable(downloadId);
+        UpdateDownloadTable(downloadId);
         UpdateBookTable(downloadId);
+        UpdateChapterTable(downloadId);
         //Toast Message
         String message =
                 ChapterDownloadedTitle(downloadId)+" "+
@@ -66,19 +67,23 @@ public class DownloadReceiver
         dbHelper.close();
     }
 
-    private void UpdateChapterTable(String downloadId) {
+    private void UpdateChapterTable(String downloadId){
         DBHelper dbHelper = new DBHelper(context, Const.DB_NAME,null, Const.DB_VERSION);
-        /*String UPDATE_STATUS =
-                "UPDATE " +
-                        "chapter " +
-                "SET " +
-                        "ChapterStatus = '1' " +
-                "WHERE " +
-                        "BookId = '"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getBookId()+"' " +
-                        "AND " +
-                        "ChapterId = '"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getChapterId()+"'"
-                ;
-                dbHelper.QueryData(UPDATE_STATUS);*/
+        String UPDATE_STATUS =
+        "UPDATE " +
+                "chapter " +
+        "SET " +
+                "ChapterStatus = '1' " +
+        "WHERE " +
+                "BookId = '"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getBookId()+"' " +
+                "AND " +
+                "ChapterId = '"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getChapterId()+"'"
+        ;
+        dbHelper.QueryData(UPDATE_STATUS);
+    }
+
+    private void UpdateDownloadTable(String downloadId) {
+        DBHelper dbHelper = new DBHelper(context, Const.DB_NAME,null, Const.DB_VERSION);
         try {
             String INSERT_STATUS =
                     "INSERT INTO downloadStatus " +
@@ -91,7 +96,16 @@ public class DownloadReceiver
                     ";" ;
             dbHelper.QueryData(INSERT_STATUS);
         } catch (Exception e) {
-            Log.e(TAG, "UpdateChapterTable: " +e.getMessage());
+            Log.e(TAG, "UpdateDownloadTable: " +e.getMessage());
+            String UPDATE_STATUS =
+                    "UPDATE downloadStatus " +
+                            "SET DownloadedStatus = '1' " +
+                            "WHERE " +
+                            "ChapterId = '"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getChapterId()+"' " +
+                            "AND " +
+                            "BookId = '"+presenterDownloadTaskManager.DownloadingIndexHashMap().get(downloadId).getBookId()+"'" +
+                            ";" ;
+            dbHelper.QueryData(UPDATE_STATUS);
         }
         dbHelper.close();
     }

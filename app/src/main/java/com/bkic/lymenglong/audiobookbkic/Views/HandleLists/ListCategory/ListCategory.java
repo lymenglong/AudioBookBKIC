@@ -204,6 +204,7 @@ public class ListCategory extends AppCompatActivity
             public void onClick(View v) {
                 if(ConnectivityReceiver.isConnected() && !isLoading)
                     RefreshLoadingData();
+                else Toast.makeText(activity, getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);

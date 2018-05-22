@@ -59,11 +59,17 @@ public class ListOfflineBook
         String SELECT_DATA = "SELECT BookId FROM downloadStatus WHERE DownloadedStatus = '1'";
         Cursor cursor = dbHelper.GetData(SELECT_DATA);
         while (cursor.moveToNext()){
-            String UPDATE_DATA =
-                    "UPDATE book " +
-                    "SET BookStatus = '1' " +
-                    "WHERE BookId = '"+cursor.getInt(0)+"'";
-            dbHelper.QueryData(UPDATE_DATA);
+            Cursor mCursor = dbHelper.GetData("SELECT BookStatus FROM book WHERE BookStatus = 1 AND BookId = '"+cursor.getInt(0)+"'");
+            if(mCursor.moveToFirst()){
+                if(mCursor.getCount()!=0)return;
+                else {
+                    String UPDATE_DATA =
+                            "UPDATE book " +
+                                    "SET BookStatus = '1' " +
+                                    "WHERE BookId = '"+cursor.getInt(0)+"'";
+                    dbHelper.QueryData(UPDATE_DATA);
+                }
+            }
         }
         dbHelper.close();
     }

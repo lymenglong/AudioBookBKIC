@@ -533,8 +533,6 @@ public class PlayControl extends AppCompatActivity
         // register status listener
         MyApplication.getInstance().setConnectivityListener(this);
         MyApplication.getInstance().setDownloadListener(this);
-        // resume media
-        presenterPlayer.PlayMedia();
     }
 
     @Override

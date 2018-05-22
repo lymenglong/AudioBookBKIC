@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.Session;
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Utils.User;
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.R;
@@ -282,7 +283,10 @@ public class PresenterUserInfo implements PresenterUserInfoImp {
                     return;
                 }
                 if(editTextNewPassword.getText().toString().equals(editTextConfirmPassword.getText().toString())){
-                    RequestUpdateUserPassword(editTextOldPassword, editTextNewPassword);
+                    if (ConnectivityReceiver.isConnected())
+                        RequestUpdateUserPassword(editTextOldPassword, editTextNewPassword);
+                    else
+                        Toast.makeText(context, context.getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                 } else {
                     Toast.makeText(context, "Xác Nhận Mật Khẩu Chưa Đúng", Toast.LENGTH_SHORT).show();
@@ -324,7 +328,9 @@ public class PresenterUserInfo implements PresenterUserInfoImp {
             @Override
             public void onClick(View v) {
                 if(!editTextConfirmPassword.getText().toString().isEmpty())
-                    RequestConfirmPassword(editTextConfirmPassword);
+                    if (ConnectivityReceiver.isConnected())
+                        RequestConfirmPassword(editTextConfirmPassword);
+                    else Toast.makeText(context, context.getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
                 else {
                     Toast.makeText(context, "Please enter password", Toast.LENGTH_SHORT).show();
                     return;

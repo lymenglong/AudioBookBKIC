@@ -177,7 +177,7 @@ public class ListChapter extends AppCompatActivity
                     mPAGE = 1;
                     RequestLoadList();
                 } else
-                    Toast.makeText(activity, "Please Check Internet Connection", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -235,21 +235,22 @@ public class ListChapter extends AppCompatActivity
                         "\nSCROLL_STATE_DRAGGING ="+SCROLL_STATE_DRAGGING+" " +
                         "\nSCROLL_STATE_SETTLING = "+SCROLL_STATE_SETTLING+""
                 );
-                if(!isLoadingData){
-                    if(newState == SCROLL_STATE_DRAGGING && !isFinalPage){
-                        mPAGE++;
-                        Cursor cursor = dbHelper.GetData
-                                (
-                                        "SELECT MAX(Page) AS LastPage " +
-                                                "FROM chapter " +
-                                                "WHERE BookId = '"+bookIntent.getId()+"';"
-                                );
-                        if(cursor.moveToFirst()) mLastPAGE = cursor.getInt(0);
-                        if(mPAGE < mLastPAGE) mPAGE = mLastPAGE;
-                        RequestLoadList();
-                    }
+                if (!isLoadingData) {
+                    if(ConnectivityReceiver.isConnected()) {
+                        if (newState == SCROLL_STATE_DRAGGING && !isFinalPage) {
+                            mPAGE++;
+                            Cursor cursor = dbHelper.GetData
+                                    (
+                                            "SELECT MAX(Page) AS LastPage " +
+                                                    "FROM chapter " +
+                                                    "WHERE BookId = '" + bookIntent.getId() + "';"
+                                    );
+                            if (cursor.moveToFirst()) mLastPAGE = cursor.getInt(0);
+                            if (mPAGE < mLastPAGE) mPAGE = mLastPAGE;
+                            RequestLoadList();
+                        }
+                    }/*else Toast.makeText(activity, getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();*/
                 }
-
 
             }
 

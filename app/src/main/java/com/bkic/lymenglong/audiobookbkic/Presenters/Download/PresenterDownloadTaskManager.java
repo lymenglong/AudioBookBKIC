@@ -232,10 +232,12 @@ public class PresenterDownloadTaskManager implements PresenterDownloadTaskManage
         //Setting description of request
         request.setDescription("Sách Đang Tải Xuống");
 
-        //Check if file exists
-        /*String filePath = Utils.downloadDirectory+"/"+bookId+"/"+chapterId+".mp3";
+        //Check if file exists delete old file
+        String filePath = Environment.getExternalStorageDirectory()+"/"+Utils.downloadDirectory+"/"+bookId+"/"+chapterId+".mp3"; //i.e. /sdcard/AudioBookBKIC/2162/2168.mp3
+        boolean isFileDeleted = false;
         File file = new File(filePath);
-        if(!file.exists())*/
+        if(file.exists()) isFileDeleted = file.delete();
+        Log.e(TAG, filePath+" Deleted: "+ isFileDeleted);
 
         //Set the local destination for the downloaded file to a path within the application's external files directory
 //          request.setDestinationInExternalFilesDir(MainActivityDownloadManager.this, Environment.DIRECTORY_DOWNLOADS,"AndroidTutorialPoint.mp3");

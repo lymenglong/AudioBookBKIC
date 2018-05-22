@@ -50,7 +50,7 @@ public class ListOfflineChapter
         initView();
         setTitle(bookIntent.getTitle());
         initDatabase();
-        initUpdateBookDownloadStatus();
+//        initUpdateBookDownloadStatus();
         initObject();
     }
 
@@ -81,7 +81,7 @@ public class ListOfflineChapter
         MyApplication.getInstance().setConnectivityListener(this);
         MyApplication.getInstance().setDownloadListener(this);
         // Update
-        initUpdateBookDownloadStatus();
+//        initUpdateBookDownloadStatus();
         GetCursorData();
     }
 
@@ -100,7 +100,7 @@ public class ListOfflineChapter
 
     @Override
     public void onDownloadCompleted(long downloadId) {
-        initUpdateBookDownloadStatus();
+//        initUpdateBookDownloadStatus();
         GetCursorData();
     }
     //endregion
@@ -149,19 +149,6 @@ public class ListOfflineChapter
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         listChapter.setLayoutManager(mLinearLayoutManager);
         listChapter.setAdapter(chapterAdapter);
-    }
-
-    private void initUpdateBookDownloadStatus(){
-        String SELECT_DATA = "SELECT ChapterId FROM downloadStatus WHERE DownloadedStatus = '1'";
-        Cursor cursor = dbHelper.GetData(SELECT_DATA);
-        while (cursor.moveToNext()){
-            String UPDATE_DATA =
-                    "UPDATE chapter " +
-                            "SET ChapterStatus = '1' " +
-                            "WHERE ChapterId = '"+cursor.getInt(0)+"'";
-            dbHelper.QueryData(UPDATE_DATA);
-        }
-        dbHelper.close();
     }
 
     //region Method to get data for database
