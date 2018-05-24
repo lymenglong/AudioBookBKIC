@@ -1,6 +1,8 @@
 package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.History.Adapter;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -10,14 +12,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
+import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.History.ListHistoryChapter;
 
 import java.util.ArrayList;
-
-//import android.widget.ImageView;
-
 
 public class HistoryAdapter extends RecyclerView.Adapter {
     private ArrayList<Book> books;
@@ -88,7 +89,15 @@ public class HistoryAdapter extends RecyclerView.Adapter {
         View.OnLongClickListener onLongClickListener = new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View view) {
-                Toast.makeText(activity, "Onlongclicklistener", Toast.LENGTH_SHORT).show();
+                bookModel = new Book(
+                        books.get(getAdapterPosition()).getId(),
+                        books.get(getAdapterPosition()).getTitle(),
+                        books.get(getAdapterPosition()).getUrlImage(),
+                        books.get(getAdapterPosition()).getLength(),
+                        books.get(getAdapterPosition()).getAuthor()
+                );
+                adapterPosition = getAdapterPosition();
+                showAlertDialog();
                 return true;
             }
         };
@@ -103,42 +112,65 @@ public class HistoryAdapter extends RecyclerView.Adapter {
         intent.putExtra("BookAuthor", bookAuthor);
         activity.startActivity(intent);
     }
-
-/*    private void showAlertDialog(){
+    private Book bookModel;
+    private int adapterPosition;
+    private void showAlertDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 //        builder.setTitle("Chọn Dạng Sách");
-        builder.setMessage("Bạn muốn chọn dạng nào?");
+        builder.setMessage("Bạn muốn xóa khỏi danh sách không?");
         builder.setCancelable(false);
-        builder.setPositiveButton("Văn bản", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Toast.makeText(activity, "Dạng văn bản", Toast.LENGTH_SHORT).show();
+                books.remove(adapterPosition);
+                notifyDataSetChanged();
+                Toast.makeText(activity, bookModel.getTitle()+ " Đã Xóa", Toast.LENGTH_SHORT).show();
+                RemoveHistoryData(bookModel.getId());
                 dialogInterface.dismiss();
-                Intent intent = new Intent(activity, ViewReading.class);
-                intent.putExtra("idChapter", bookId);
-                intent.putExtra("titleChapter", bookTitle);
-                intent.putExtra("content", bookImage);
-                intent.putExtra("fileUrl", bookAuthor);
-                activity.startActivity(intent);
-
             }
         });
-        builder.setNegativeButton("Ghi âm", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Không", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Toast.makeText(activity, "Dạng ghi âm", Toast.LENGTH_SHORT).show();
-                dialogInterface.dismiss();
-                IntentActivity(activity, ListChapter.class);
-            }
-        });
-        builder.setNeutralButton("Thoát", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+                Toast.makeText(activity, "Đã Kích Không", Toast.LENGTH_SHORT).show();
                 dialogInterface.dismiss();
             }
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+    private void RemoveHistoryData(int bookId){
+        DBHelper dbHelper = new DBHelper(activity, Const.DB_NAME, null, Const.DB_VERSION);
+        /*dbHelper.QueryData(
+                "UPDATE history " +
+                        "SET BookRemoved = '"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"' " +
+                        "WHERE BookId = '"+bookId+"'"
+        );*/
 
-    }*/
+        try {
+            dbHelper.QueryData(
+                    "INSERT INTO bookHistorySyncs " +
+                            "VALUES " +
+                            "(" +
+                            "'"+bookId+"', " +
+                            "'"+Const.BOOK_SYNCED_WITH_SERVER+"', " +
+                            "'"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"'" +
+                            ")" +
+                        ";"
+            );
+        } catch (Exception ignored) {
+            dbHelper.QueryData(
+                    "UPDATE bookHistorySyncs " +
+                            "SET " +
+                            "BookSync = '"+Const.BOOK_SYNCED_WITH_SERVER+"', " +
+                            "BookRemoved = '"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"' " +
+                            "WHERE BookId = '"+bookId+"'" +
+                            ";"
+            );
+        }
+
+        dbHelper.QueryData("DELETE FROM history WHERE BookId = '"+bookId+"'");
+
+        dbHelper.close();
+    }
 }

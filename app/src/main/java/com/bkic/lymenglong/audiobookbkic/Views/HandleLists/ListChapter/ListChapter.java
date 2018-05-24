@@ -343,6 +343,48 @@ public class ListChapter extends AppCompatActivity
     }
 
     @Override
+    public void SetTableSelectedData(JSONArray jsonArrayChapter) {
+        for (int i = 0; i < jsonArrayChapter.length(); i++) {
+            try {
+                JSONObject jsonObject = jsonArrayChapter.getJSONObject(i);
+                Chapter chapterModel = new Chapter();
+                chapterModel.setId(Integer.parseInt(jsonObject.getString("ChapterId")));
+                chapterModel.setTitle(jsonObject.getString("ChapterTitle"));
+                chapterModel.setFileUrl(jsonObject.getString("ChapterURL"));
+                chapterModel.setLength(Integer.parseInt(jsonObject.getString("ChapterLength")));
+                int BookId = bookIntent.getId();
+                String INSERT_DATA;
+                try {
+                    INSERT_DATA =
+                            "INSERT INTO chapter VALUES" +
+                                    "(" +
+                                    "'"+chapterModel.getId()+"', " +
+                                    "'"+chapterModel.getTitle()+"', " +
+                                    "'"+chapterModel.getFileUrl() +"', " +
+                                    "'"+chapterModel.getLength() +"', " +
+                                    "'"+BookId+"', " + //BookId
+                                    "'"+0+"', " + // Status Chapter is equal 0 which mean chapter have not downloaded yet
+                                    "'"+mPAGE+"'"+
+                                    ")";
+                    dbHelper.QueryData(INSERT_DATA);
+                } catch (Exception e) {
+                    String UPDATE_DATA = "UPDATE chapter SET " +
+                            "ChapterTitle = '"+chapterModel.getTitle()+"', " +
+                            "ChapterUrl = '"+chapterModel.getFileUrl()+"', " +
+                            "ChapterLength = '"+chapterModel.getLength()+"', " +
+                            "BookId = '"+BookId+"' " + //BookId
+                            "WHERE ChapterId = '"+chapterModel.getId()+"'";
+                    dbHelper.QueryData(UPDATE_DATA);
+                }
+            } catch (JSONException ignored) {
+                Log.e(TAG, "onPostExecute: " + jsonArrayChapter);
+            }
+        }
+        if(jsonArrayChapter.length()<10) isFinalPage = true;
+    }
+
+    //Now I Don't Use It Any More
+    @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
         Chapter chapterModel = new Chapter();
         chapterModel.setId(Integer.parseInt(jsonObject.getString("ChapterId")));

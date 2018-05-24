@@ -1,6 +1,8 @@
 package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Favorite.Adapters;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -8,17 +10,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
+import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter.ListChapter;
 
 import java.util.ArrayList;
 
-
 public class FavoriteAdapter extends RecyclerView.Adapter {
     private ArrayList<Book> books;
     private Activity activity;
+    private Book bookModel;
+    private int adapterPosition;
     //    private int getIdChapter;
 //    private String getTitleChapter,getContentChapter, getFileUrlChapter;
 
@@ -55,7 +61,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
         return books.size();
     }
 
-    class ChapterHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ChapterHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
         private TextView name;
 //        private ImageView imgNext;
@@ -66,18 +72,33 @@ public class FavoriteAdapter extends RecyclerView.Adapter {
 //            imgNext = itemView.findViewById(R.id.imgNext);
 
             itemView.setOnClickListener(this);
+            itemView.setOnLongClickListener(this);
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            bookModel = new Book(
+                    books.get(getAdapterPosition()).getId(),
+                    books.get(getAdapterPosition()).getTitle(),
+                    books.get(getAdapterPosition()).getUrlImage(),
+                    books.get(getAdapterPosition()).getLength(),
+                    books.get(getAdapterPosition()).getAuthor()
+            );
+            adapterPosition = getAdapterPosition();
+            showAlertDialog();
+            return true;
         }
 
         @Override
         public void onClick(View view) {
             if(view == itemView) {
-/*
-getIdChapter = books.get(getAdapterPosition()).getId();
-getTitleChapter = books.get(getAdapterPosition()).getTitle();
-getContentChapter = books.get(getAdapterPosition()).getContent();
-getFileUrlChapter = books.get(getAdapterPosition()).getFileUrl();
-showAlertDialog();
-*/
+                /*
+                getIdChapter = books.get(getAdapterPosition()).getId();
+                getTitleChapter = books.get(getAdapterPosition()).getTitle();
+                getContentChapter = books.get(getAdapterPosition()).getContent();
+                getFileUrlChapter = books.get(getAdapterPosition()).getFileUrl();
+                showAlertDialog();
+                */
                 Intent intent = new Intent(activity, ListChapter.class);
                 intent.putExtra("BookId", books.get(getAdapterPosition()).getId());
                 intent.putExtra("BookTitle", books.get(getAdapterPosition()).getTitle());
@@ -89,46 +110,59 @@ showAlertDialog();
         }
     }
 
-    /*private void showAlertDialog(){
+    private void showAlertDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 //        builder.setTitle("Chọn Dạng Sách");
-        builder.setMessage("Bạn muốn chọn dạng nào?");
+        builder.setMessage("Bạn muốn xóa khỏi danh sách không?");
         builder.setCancelable(false);
-        builder.setPositiveButton("Văn bản", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Toast.makeText(activity, "Dạng văn bản", Toast.LENGTH_SHORT).show();
+                books.remove(adapterPosition);
+                notifyDataSetChanged();
+                Toast.makeText(activity, bookModel.getTitle()+" Đã Xóa", Toast.LENGTH_SHORT).show();
+                RemoveFavoriteData(bookModel.getId());
                 dialogInterface.dismiss();
-                Intent intent = new Intent(activity, ViewReading.class);
-                intent.putExtra("idChapter", getIdChapter);
-                intent.putExtra("titleChapter", getTitleChapter);
-                intent.putExtra("content", getContentChapter);
-                intent.putExtra("fileUrl", getFileUrlChapter);
-                activity.startActivity(intent);
-
             }
         });
-        builder.setNegativeButton("Ghi âm", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Không", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                Toast.makeText(activity, "Dạng ghi âm", Toast.LENGTH_SHORT).show();
-                dialogInterface.dismiss();
-                Intent intent = new Intent(activity, PlayControl.class);
-                intent.putExtra("idChapter", getIdChapter);
-                intent.putExtra("titleChapter", getTitleChapter);
-                intent.putExtra("content", getContentChapter);
-                intent.putExtra("fileUrl", getFileUrlChapter);
-                activity.startActivity(intent);
-            }
-        });
-        builder.setNeutralButton("Thoát", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+                Toast.makeText(activity, "Đã Kích Không", Toast.LENGTH_SHORT).show();
                 dialogInterface.dismiss();
             }
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+    private void RemoveFavoriteData(int bookId){
+        DBHelper dbHelper = new DBHelper(activity, Const.DB_NAME, null, Const.DB_VERSION);
+        dbHelper.QueryData("UPDATE favorite SET BookRemoved = '"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"' WHERE BookId = '"+bookId+"'");
 
-    }*/
+        try {
+            dbHelper.QueryData(
+                    "INSERT INTO bookFavoriteSyncs " +
+                            "VALUES " +
+                            "(" +
+                                    "'"+bookId+"', " +
+                                    "'"+Const.BOOK_SYNCED_WITH_SERVER+"', " +
+                                    "'"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"'" +
+                            ")" +
+                        ";"
+            );
+        } catch (Exception ignored) {
+            dbHelper.QueryData(
+                    "UPDATE bookFavoriteSyncs " +
+                            "SET " +
+                            "BookSync = '"+Const.BOOK_SYNCED_WITH_SERVER+"', " +
+                            "BookRemoved = '"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"' " +
+                            "WHERE BookId = '"+bookId+"'" +
+                            ";"
+            );
+        }
+
+        dbHelper.QueryData("DELETE FROM favorite WHERE BookId = '"+bookId+"'");
+
+        dbHelper.close();
+    }
 }

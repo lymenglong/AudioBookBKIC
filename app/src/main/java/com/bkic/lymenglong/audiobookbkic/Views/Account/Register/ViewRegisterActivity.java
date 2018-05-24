@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatTextView;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.InputValidation;
@@ -55,6 +56,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
     private InputValidation inputValidation;
 
     private AppCompatTextView textViewLinkLogin;
+    private ProgressBar progressBar;
     private long mLastClickTime = 0;
 
 
@@ -75,6 +77,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
     @SuppressLint("CutPasteId")
     private void initView() {
         textViewLinkLogin = findViewById(R.id.appCompatTextViewLoginLink);
+        progressBar = findViewById(R.id.progressBarRegister);
 //        nestedScrollView = findViewById(R.id.nestedScrollView);
 
         textInputLayoutFirstName = findViewById(R.id.textInputLayoutFirstName);
@@ -105,8 +108,15 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
         appCompatButtonRegister.setOnClickListener(this);
     }
 
+    private void SetWaitingRegister(Boolean aBoolean){
+        textViewLinkLogin.setEnabled(!aBoolean);
+        progressBar.setVisibility(aBoolean?View.VISIBLE:View.GONE);
+        findViewById(R.id.appCompatButtonRegister).setEnabled(!aBoolean);
+    }
+
     @Override
     public void RegisterSuccess(String message) {
+        SetWaitingRegister(false);
         Toast.makeText(registerActivity,message.isEmpty()?"Thành Công":message,Toast.LENGTH_SHORT).show();
         startActivity(new Intent(registerActivity,ViewLoginActivity.class));
         registerActivity.finish();
@@ -114,7 +124,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
 
     @Override
     public void RegisterFailed(String message) {
-        findViewById(R.id.appCompatButtonLogin).setEnabled(true);
+        SetWaitingRegister(false);
         Toast.makeText(registerActivity, message, Toast.LENGTH_SHORT).show();
     }
 
@@ -173,9 +183,7 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
                         textInputLayoutConfirmPassword, getString(R.string.error_password_match))) {
                     break;
                 } else userModel.setConfirmPassword(textInputEditTextConfirmPassword.getText().toString());
-                Toast.makeText(registerActivity, "Please Wait..", Toast.LENGTH_SHORT).show();
                 if (ConnectivityReceiver.isConnected()) {
-                    findViewById(R.id.appCompatButtonRegister).setEnabled(false);
                     HashMap<String, String> ResultHash = new HashMap<>();
                     // GetUserDetail
                     String keyPost = "json";
@@ -191,10 +199,11 @@ public class ViewRegisterActivity extends AppCompatActivity implements ViewRegis
                                     "\"UserPhone\":\""+ userModel.getPhonenumber()+"\" " +
                             "}";
                     ResultHash.put(keyPost,valuePost);
-
+                    Toast.makeText(registerActivity, "Please Wait..", Toast.LENGTH_SHORT).show();
                     presenterRegisterLogic.Register(registerActivity, ResultHash, HttpURL_API);
+                    SetWaitingRegister(true);
                 } else {
-                    String message = "Please check internet connection";
+                    String message = getString(R.string.message_internet_not_connected);
                     Toast.makeText(registerActivity, message, Toast.LENGTH_SHORT).show();
                 }
 

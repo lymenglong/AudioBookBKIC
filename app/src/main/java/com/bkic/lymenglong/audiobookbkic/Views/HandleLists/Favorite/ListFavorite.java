@@ -21,10 +21,10 @@ import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Favorite.Adapters.FavoriteAdapter;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Favorite.Utils.Favorite;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.Favorite.ShowListFavorite.PresenterShowListFavorite;
+import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.Favorite.UpdateFavorite.PresenterUpdateFavorite;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 import org.json.JSONArray;
@@ -48,6 +48,7 @@ public class ListFavorite
 
     private static final String TAG = "ListFavorite";
     PresenterShowListFavorite presenterShowList = new PresenterShowListFavorite(this);
+    PresenterUpdateFavorite presenterUpdateFavorite = new PresenterUpdateFavorite(this);
     private RecyclerView listChapter;
     private View imRefresh;
     private FavoriteAdapter favoriteAdapter;
@@ -137,16 +138,6 @@ public class ListFavorite
         actionBar.eventToolbar(this, menuTitle, true);
         listChapter = findViewById(R.id.listView);
     }
-    private void SetUpdateTableData(Book arrayModel) {
-        String UPDATE_DATA = "UPDATE favorite SET " +
-                                    "BookTitle = '"+arrayModel.getTitle()+"', " +
-                                    "BookImage = '"+arrayModel.getUrlImage()+"', " +
-                                    "BookLength = '"+arrayModel.getLength()+"', " +
-                                    "BookAuthor = '"+arrayModel.getAuthor()+"' " +
-                                        "WHERE " +
-                                            "BookId = '"+arrayModel.getId()+"'; ";
-        dbHelper.QueryData(UPDATE_DATA);
-}
 
     private void initDatabase() {
         dbHelper = new DBHelper(this,DB_NAME ,null,DB_VERSION);
@@ -155,7 +146,7 @@ public class ListFavorite
     private void GetCursorData() {
         Cursor cursor;
         list.clear();
-        cursor = dbHelper.GetData("SELECT * FROM favorite");
+        cursor = dbHelper.GetData("SELECT * FROM favorite WHERE BookRemoved = '"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"'");
         while (cursor.moveToNext()) {
             int bookId = cursor.getInt(0);
             String bookTitle = cursor.getString(1);
@@ -174,8 +165,11 @@ public class ListFavorite
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(ConnectivityReceiver.isConnected())RequestLoadingData();
-                else Toast.makeText(activity, getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
+                if(ConnectivityReceiver.isConnected()) {
+                    RemoveFavoriteDataInSQLite();
+                    SyncRemoveBooks();
+                    RequestLoadingData();
+                } else Toast.makeText(activity, getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
             }
         });
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
@@ -188,6 +182,21 @@ public class ListFavorite
             if(ConnectivityReceiver.isConnected()) RequestLoadingData();
             else progressBar.setVisibility(View.GONE);
         } else progressBar.setVisibility(View.GONE);
+    }
+
+    private void SyncRemoveBooks() {
+        Cursor cursor = dbHelper.GetData(
+                "SELECT BookId FROM bookFavoriteSyncs WHERE BookRemoved = '"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"'"
+        );
+        while (cursor.moveToNext()){
+            //calling the method to save the unsynced books to MySQL server
+            presenterUpdateFavorite.RequestToRemoveBookById
+                    (
+                            String.valueOf(session.getUserIdLoggedIn()),
+                            String.valueOf(cursor.getInt(0))
+                    );
+        }
+        cursor.close();
     }
 
     private void RequestLoadingData() {
@@ -218,27 +227,20 @@ public class ListFavorite
         dbHelper.QueryData(INSERT_DATA);
     }
 
-    @Override
-    public void CompareDataPhoneWithServer(JSONArray jsonArray) {
-        // if list of database in sqlite on phone we delete all data in favorite table in sqlite phone
-        Cursor cursor = dbHelper.GetData("SELECT * FROM favorite, book WHERE favorite.IdBook = book.Id");
-        ArrayList<Favorite> arrayList = new ArrayList<>();
-        while (cursor.moveToNext()) {
-//                int userId = cursor.getInt(0);
-//                int historybookId = cursor.getInt(1);
-            int insertTime = cursor.getInt(2);
-            int status = cursor.getInt(3);
-            int bookId = cursor.getInt(4);
-            String bookName = cursor.getString(5);
-            int categoryId = cursor.getInt(6);
-            String content = cursor.getString(8);
-            String fileURL = cursor.getString(7);
-            arrayList.add(new Favorite(bookId, bookName, content, insertTime, fileURL, categoryId,status));
-        }
-        if (arrayList.size() > jsonArray.length()) {
-            dbHelper.QueryData("DELETE FROM favorite");
-        }
+    private void SetUpdateTableData(Book arrayModel) {
+        String UPDATE_DATA = "UPDATE favorite SET " +
+                "BookTitle = '"+arrayModel.getTitle()+"', " +
+                "BookImage = '"+arrayModel.getUrlImage()+"', " +
+                "BookLength = '"+arrayModel.getLength()+"', " +
+                "BookAuthor = '"+arrayModel.getAuthor()+"', " +
+                "BookSync = '"+Const.BOOK_SYNCED_WITH_SERVER+"' " +
+                "WHERE " +
+                "BookId = '"+arrayModel.getId()+"'; ";
+        dbHelper.QueryData(UPDATE_DATA);
     }
+
+    @Override
+    public void CompareDataPhoneWithServer(JSONArray jsonArray) { }
 
     @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
@@ -266,7 +268,7 @@ public class ListFavorite
 
     @Override
     public void LoadListDataFailed(String jsonMessage){
-        RemoveFavoriteDataInSQLite();
+//        RemoveFavoriteDataInSQLite();
         GetCursorData();
         Log.d(TAG, "LoadListDataFailed: "+ jsonMessage);
     }

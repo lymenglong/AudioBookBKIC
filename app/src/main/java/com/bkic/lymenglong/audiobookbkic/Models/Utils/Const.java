@@ -128,6 +128,21 @@ public final class Const {
                             "BookRemoved INTEGER" +
                     ");";
 
+    public static final String CREATE_TABLE_BOOK_HISTORY_SYNC =
+            "CREATE TABLE IF NOT EXISTS bookHistorySyncs " +
+                    "(" +
+                            "BookId INTEGER PRIMARY KEY, " +
+                            "BookSync INTEGER, " +
+                            "BookRemoved INTEGER" +
+                    ");";
+    public static final String CREATE_TABLE_BOOK_FAVORITE_SYNC =
+            "CREATE TABLE IF NOT EXISTS bookFavoriteSyncs " +
+                    "(" +
+                            "BookId INTEGER PRIMARY KEY, " +
+                            "BookSync INTEGER, " +
+                            "BookRemoved INTEGER" +
+                    ");";
+
     public static final String CREATE_TABLE_REVIEW =
             "CREATE TABLE IF NOT EXISTS review" +
                     "(" +
@@ -179,7 +194,7 @@ public final class Const {
     public static final int BOOK_SYNCED_WITH_SERVER = 1;
     public static final int BOOK_NOT_SYNCED_WITH_SERVER = 0;
     //1 means data is request to remove and 0 means data is not request to remove
-//    public static final int BOOK_REQUEST_REMOVE_WITH_SERVER = 1;
+    public static final int BOOK_REQUEST_REMOVE_WITH_SERVER = 1;
     public static final int BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER = 0;
 
 }

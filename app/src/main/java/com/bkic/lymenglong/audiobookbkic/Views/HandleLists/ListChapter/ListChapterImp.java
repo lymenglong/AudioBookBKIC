@@ -14,4 +14,7 @@ public interface ListChapterImp {
     void LoadListDataFailed(String jsonMessage);
 
     void SetUpdateBookDetail(JSONObject jsonObject) throws JSONException;
+
+    void SetTableSelectedData(JSONArray jsonArrayChapter);
+
 }

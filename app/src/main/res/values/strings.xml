@@ -166,15 +166,19 @@
     <string name="download_video">Download Video</string>
     <string name="download_mp3">Download MP3</string>
     <string name="openFolder">Open Downloaded Folder</string>
-    <string name="downloadStarted">Download Started…</string>
-    <string name="downloadCompleted">Download Completed…</string>
-    <string name="downloadFailed">Download Failed…</string>
-    <string name="downloadAgain">Download Again</string>
+    <string name="downloadStarted">Bắt Đầu Tải Xuống</string>
+    <string name="downloadCompleted">Đã Tải Xuống</string>
+    <string name="downloadFailed">Tải Xuống Thất Bại</string>
+    <string name="downloadAgain">Tải Xuống Lại</string>
+    <!--EndDownloadDemo-->
+    <!--Message-->
     <string name="message_exit">Nhấn lần nữa để thoát ứng dụng</string>
     <string name="message_internet_connected">\"Đã kết nối mạng\"</string>
     <string name="message_internet_not_connected">Chưa kết nối mạng</string>
     <string name="message_download_complete">đã tải xuống thành công</string>
     <string name="message_success">Thành công</string>
-    <!--EndDownloadDemo-->
+    <string name="message_chapter_not_exists">Chương bạn đã yêu cầu không tồn tại</string>
+    <string name="message_thank_review">Cảm ơn bạn đã đánh giá</string>
+    <string name="message_please_wait">Vui lòng chờ..</string>
 
 </resources>

@@ -24,6 +24,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.History.Adapter.Hist
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.History.ShowListHistory.PresenterShowListHistory;
+import com.bkic.lymenglong.audiobookbkic.Presenters.HandleLists.History.UpdateHistory.PresenterUpdateHistory;
 import com.bkic.lymenglong.audiobookbkic.R;
 
 import org.json.JSONArray;
@@ -46,6 +47,7 @@ public class ListHistory
                 DownloadReceiver.DownloadReceiverListener{
     private static final String TAG = "ListHistory";
     private PresenterShowListHistory presenterShowList = new PresenterShowListHistory(this);
+    private PresenterUpdateHistory presenterUpdateHistory = new PresenterUpdateHistory(this);
     private RecyclerView listChapter;
     private View imRefresh;
     private HistoryAdapter historyAdapter;
@@ -143,10 +145,12 @@ public class ListHistory
                         "BookTitle = '"+arrayModel.getTitle()+"', " +
                         "BookImage = '"+arrayModel.getUrlImage()+"', " +
                         "BookLength = '"+arrayModel.getLength()+"', " +
-                        "BookAuthor = '"+arrayModel.getAuthor()+"' " +
+                        "BookAuthor = '"+arrayModel.getAuthor()+"', " +
+                        "BookSync = '"+Const.BOOK_SYNCED_WITH_SERVER+"' " +
                 "WHERE " +
                         "BookId = '"+arrayModel.getId()+"'; ";
         dbHelper.QueryData(UPDATE_DATA);
+        dbHelper.close();
     }
 
     private void initDatabase() {
@@ -175,8 +179,11 @@ public class ListHistory
         imRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ConnectivityReceiver.isConnected()) RequestLoadingData();
-                else Toast.makeText(activity, getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
+                if (ConnectivityReceiver.isConnected()) {
+                    RemoveHistoryDataInSQLite();
+                    SyncRemoveBooks();
+                    RequestLoadingData();
+                } else Toast.makeText(activity, getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
 //                presenterUpdateHistory.RequestToRemoveBookById("16","2162");
             }
         });
@@ -191,6 +198,21 @@ public class ListHistory
         } else {
             progressBar.setVisibility(View.GONE);
         }
+    }
+
+    private void SyncRemoveBooks() {
+        Cursor cursor = dbHelper.GetData(
+                "SELECT BookId FROM bookHistorySyncs WHERE BookRemoved = '"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"'"
+        );
+        while (cursor.moveToNext()){
+            //calling the method to save the unsynced books to MySQL server
+            presenterUpdateHistory.RequestToRemoveBookById
+                    (
+                            String.valueOf(session.getUserIdLoggedIn()),
+                            String.valueOf(cursor.getInt(0))
+                    );
+        }
+        cursor.close();
     }
 
     private void RequestLoadingData() {
@@ -219,6 +241,7 @@ public class ListHistory
                                 "'"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"'"+
                         ");";
         dbHelper.QueryData(INSERT_DATA);
+        dbHelper.close();
     }
 
     @Override
@@ -252,7 +275,6 @@ public class ListHistory
 
     @Override
     public void LoadListDataFailed(String jsonMessage) {
-        RemoveHistoryDataInSQLite();
         GetCursorData();
         Log.d(TAG, "LoadListDataFailed: "+ jsonMessage);
     }

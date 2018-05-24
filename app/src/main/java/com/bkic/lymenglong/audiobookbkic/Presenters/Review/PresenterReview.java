@@ -15,6 +15,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
 import com.bkic.lymenglong.audiobookbkic.Models.Https.HttpParse;
 import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.R;
@@ -197,7 +198,9 @@ public class PresenterReview
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.button_submit:
-                SubmitFromDialog();
+                if(ConnectivityReceiver.isConnected())
+                    SubmitFromDialog();
+                else Toast.makeText(playControlActivity, playControlActivity.getString(R.string.message_internet_not_connected), Toast.LENGTH_SHORT).show();
 //                SubmitFromDialog3();
                 break;
             case R.id.button_dismiss:

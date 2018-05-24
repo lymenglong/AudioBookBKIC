@@ -1,6 +1,8 @@
 package com.bkic.lymenglong.audiobookbkic.Models.HandleLists.History.Adapter;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -10,7 +12,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
+import com.bkic.lymenglong.audiobookbkic.Models.Utils.Const;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 
@@ -42,8 +46,8 @@ public class HistoryChapterAdapter extends RecyclerView.Adapter {
             ChapterHolder chapterHolder = (ChapterHolder) holder;
 
             chapterHolder.name.setText(chapters.get(position).getTitle());
-        }
 
+        }
     }
 
     @Override
@@ -69,6 +73,7 @@ public class HistoryChapterAdapter extends RecyclerView.Adapter {
 
             itemView.setOnClickListener(this);
             itemView.setOnLongClickListener(this);
+
         }
 
         @Override
@@ -79,22 +84,26 @@ public class HistoryChapterAdapter extends RecyclerView.Adapter {
                 ChapterLength = chapters.get(getAdapterPosition()).getLength();
                 ChapterUrl = chapters.get(getAdapterPosition()).getFileUrl();
                 BookId = chapters.get(getAdapterPosition()).getBookId();
-                IntentToPlayerControl();
+                IntentToActivity(PlayControl.class);
 //                showAlertDialog();
             }
         }
 
         @Override
         public boolean onLongClick(View v) {
-            if(v == itemView) {
-                Toast.makeText(activity, "Onlongclicklistener", Toast.LENGTH_SHORT).show();
-            }
+            ChapterId = chapters.get(getAdapterPosition()).getId();
+            ChapterTitle = chapters.get(getAdapterPosition()).getTitle();
+            ChapterLength = chapters.get(getAdapterPosition()).getLength();
+            ChapterUrl = chapters.get(getAdapterPosition()).getFileUrl();
+            BookId = chapters.get(getAdapterPosition()).getBookId();
+            adapterPosition = getAdapterPosition();
+            showAlertDialog();
             return true;
         }
     }
 
-    private void IntentToPlayerControl() {
-        Intent intent = new Intent(activity, PlayControl.class);
+    private void IntentToActivity(Class<?> cls) {
+        Intent intent = new Intent(activity, cls);
         intent.putExtra("ChapterId", ChapterId);
         intent.putExtra("ChapterTitle", ChapterTitle);
         intent.putExtra("ChapterUrl", ChapterUrl);
@@ -102,52 +111,37 @@ public class HistoryChapterAdapter extends RecyclerView.Adapter {
         intent.putExtra("BookId", BookId);
         activity.startActivity(intent);
     }
-
-
-    //region ShowDialog
-    /*private void showAlertDialog(){
+    private int adapterPosition;
+    private void showAlertDialog(){
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 //        builder.setTitle("Chọn Dạng Sách");
-        builder.setMessage("Bạn muốn chọn dạng nào?");
+        builder.setMessage("Bạn muốn xóa khỏi danh sách không?");
         builder.setCancelable(false);
-        builder.setPositiveButton("Văn bản", new DialogInterface.OnClickListener() {
+        builder.setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-//                Toast.makeText(activity, "Dạng văn bản", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(activity, ViewReading.class);
-                intent.putExtra("idChapter", ChapterId);
-                intent.putExtra("titleChapter", ChapterTitle);
-                intent.putExtra("content", ChapterLength);
-                intent.putExtra("fileUrl", ChapterUrl);
+                chapters.remove(adapterPosition);
+                notifyDataSetChanged();
+                RemoveChapterHistoryData(BookId,ChapterId);
+                Toast.makeText(activity, ChapterTitle + " Đã Xóa", Toast.LENGTH_SHORT).show();
                 dialogInterface.dismiss();
-                activity.startActivity(intent);
-
             }
         });
-        builder.setNegativeButton("Ghi âm", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton("Không", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-//                Toast.makeText(activity, "Dạng ghi âm", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(activity, PlayControl.class);
-                intent.putExtra("ChapterId", ChapterId);
-                intent.putExtra("ChapterTitle", ChapterTitle);
-                intent.putExtra("ChapterUrl", ChapterLength);
-                intent.putExtra("ChapterLength", ChapterUrl);
-                intent.putExtra("BookId", BookId);
-                dialogInterface.dismiss();
-                activity.startActivity(intent);
-            }
-        });
-        builder.setNeutralButton("Thoát", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
+                Toast.makeText(activity, "Đã Kích Không", Toast.LENGTH_SHORT).show();
                 dialogInterface.dismiss();
             }
         });
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
 
-    }*/
-    //endregion
+    private void RemoveChapterHistoryData(int bookId, int chapterId){
+        DBHelper dbHelper = new DBHelper(activity, Const.DB_NAME, null, Const.DB_VERSION);
+        dbHelper.QueryData("DELETE FROM playHistory WHERE ChapterId = '"+chapterId+"' AND BookId = '"+bookId+"'");
+        dbHelper.close();
+    }
 
 }

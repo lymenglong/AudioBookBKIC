@@ -160,13 +160,7 @@ public class PresenterShowList implements PresenterShowListImp{
                         try {
                             JSONArray jsonArrayChapter = new JSONArray(jsonResult);
                             if (jsonArrayChapter.length() != 0) {
-                                for (int i = 0; i < jsonArrayChapter.length(); i++) {
-                                    try {
-                                        listChapterActivity.SetTableSelectedData(jsonArrayChapter.getJSONObject(i));
-                                    } catch (JSONException ignored) {
-                                        Log.d(TAG, "onPostExecute: " + jsonArrayChapter.getJSONObject(i));
-                                    }
-                                }
+                                listChapterActivity.SetTableSelectedData(jsonArrayChapter);
                             } else {
                                 listChapterActivity.LoadListDataFailed(jsonMessage);
                             }
@@ -203,13 +197,7 @@ public class PresenterShowList implements PresenterShowListImp{
                         try {
                             JSONArray jsonArrayResult = new JSONArray(jsonResult);
                             if (jsonArrayResult.length() != 0) {
-                                for (int j = 0; j < jsonArrayResult.length(); j++) {
-                                    try {
-                                        listBookActivity.SetTableSelectedData(jsonArrayResult.getJSONObject(j));
-                                    } catch (JSONException ignored) {
-                                        Log.d(TAG, "onPostExecute: " + jsonArrayResult.getJSONObject(j));
-                                    }
-                                }
+                                listBookActivity.SetTableSelectedData(jsonArrayResult);
                             } else {
                                 String mMessage = !jsonLog.equals("Success")?jsonLog:jsonMessage;
                                 listBookActivity.LoadListDataFailed(mMessage);

@@ -22,6 +22,7 @@ public class PresenterLogin implements PresenterLoginImp {
     private ViewLoginActivity loginActivity;
     private String Email;
     private String TAG = getClass().getSimpleName();
+    private String messageSuccess;
 
     public PresenterLogin(ViewLoginActivity loginActivity) {
         this.loginActivity = loginActivity;
@@ -108,7 +109,7 @@ public class PresenterLogin implements PresenterLoginImp {
 
         String ResultJsonObject;
 
-        String message;
+        String jsonMessage;
 
         GetHttpResponseFromHttpWebCall(Activity activity)
         {
@@ -138,7 +139,7 @@ public class PresenterLogin implements PresenterLoginImp {
 
                     LogSuccess = jsonObject.getString("Log").equals("Success");
 
-                    message = jsonObject.getString("Message");
+                    jsonMessage = jsonObject.getString("Message");
 
                 }
                 catch (JSONException e) {
@@ -159,9 +160,9 @@ public class PresenterLogin implements PresenterLoginImp {
                         session.setLoggedin(true);
                         session.setNameLoggedIn(Email);
                         UserDetail(Email);
-                        loginActivity.LoginSuccess(message);
+                        messageSuccess = jsonMessage;
                     } else {
-                        loginActivity.LoginFailed(message);
+                        loginActivity.LoginFailed(jsonMessage);
                     }
                     break;
                 case "getUserDetail":
@@ -203,6 +204,7 @@ public class PresenterLogin implements PresenterLoginImp {
 //            session.setUserIdLoggedIn(String.valueOf(userModel.getId()));
 //            session.setNameLoggedIn(userModel.getName());
             session.getListUserInfo();
+            loginActivity.LoginSuccess(messageSuccess);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.bkic.lymenglong.audiobookbkic.Views.HandleLists.History;
 
 import android.app.DownloadManager;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -20,6 +21,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.History.Adapter.Hist
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.R;
+import com.bkic.lymenglong.audiobookbkic.Views.HandleLists.ListChapter.ListChapter;
 
 import java.util.ArrayList;
 
@@ -151,19 +153,6 @@ public class ListHistoryChapter
         listChapter.setAdapter(historyChapterAdapter);
     }
 
-    /*private void initUpdateBookDownloadStatus(){
-        String SELECT_DATA = "SELECT ChapterId FROM downloadStatus WHERE DownloadedStatus = '1'";
-        Cursor cursor = dbHelper.GetData(SELECT_DATA);
-        while (cursor.moveToNext()){
-            String UPDATE_DATA =
-                    "UPDATE chapter " +
-                            "SET ChapterStatus = '1' " +
-                            "WHERE ChapterId = '"+cursor.getInt(0)+"'";
-            dbHelper.QueryData(UPDATE_DATA);
-        }
-        dbHelper.close();
-    }*/
-
     //region Method to get data for database
     private void GetCursorData() {
         list.clear();
@@ -190,5 +179,15 @@ public class ListHistoryChapter
         dbHelper.close();
         historyChapterAdapter.notifyDataSetChanged();
         progressBar.setVisibility(View.GONE);
+        if(ConnectivityReceiver.isConnected() && list.size() == 0){
+            Intent intent = new Intent(ListHistoryChapter.this, ListChapter.class);
+            intent.putExtra("BookId", bookIntent.getId());
+            intent.putExtra("BookTitle", bookIntent.getTitle());
+            intent.putExtra("BookImage", bookIntent.getUrlImage());
+            intent.putExtra("BookLength", bookIntent.getLength());
+            intent.putExtra("BookAuthor", bookIntent.getAuthor());
+            startActivity(intent);
+            this.finish();
+        }
     }
 }

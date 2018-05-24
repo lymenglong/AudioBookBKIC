@@ -63,9 +63,11 @@ public class PresenterUpdateHistory implements PresenterUpdateHistoryImp {
 
         Boolean LogSuccess = false;
 
-        String ResultJsonObject;
+        String jsonResult;
 
-        String message;
+        String jsonMessage;
+
+        String jsonLog;
 
         GetHttpResponseFromHttpWebCall(Activity activity)
         {
@@ -92,11 +94,13 @@ public class PresenterUpdateHistory implements PresenterUpdateHistoryImp {
 
                         jsonAction = jsonObject.getString("Action");
 
-                        ResultJsonObject = jsonObject.getString("Result");
+                        jsonResult = jsonObject.getString("Result");
+
+                        jsonLog = jsonObject.getString("Log");
 
                         LogSuccess = jsonObject.getString("Log").equals("Success");
 
-                        message = jsonObject.getString("Message");
+                        jsonMessage = jsonObject.getString("Message");
 
                     }
                     catch (JSONException e) {
@@ -118,16 +122,16 @@ public class PresenterUpdateHistory implements PresenterUpdateHistoryImp {
         {
             switch (jsonAction){
                 case "addHistory":
-                    if (LogSuccess) playControlActivity.UpdateHistorySuccess(message);
-                    else playControlActivity.UpdateHistoryFailed(message);
+                    if (LogSuccess) playControlActivity.UpdateHistorySuccess(jsonMessage);
+                    else playControlActivity.UpdateHistoryFailed(jsonMessage);
                     break;
                 case "removeHistory":
-                    if (LogSuccess) listHistoryActivity.RemoveHistorySuccess(message);
-                    else listHistoryActivity.RemoveHistoryFailed(message);
+                    if (LogSuccess) listHistoryActivity.RemoveHistorySuccess(jsonMessage);
+                    else listHistoryActivity.RemoveHistoryFailed(jsonMessage);
                     break;
                 case "removeAllHistory":
-                    if (LogSuccess) listHistoryActivity.RemoveAllHistorySuccess(message);
-                    else listHistoryActivity.RemoveAllHistoryFailed(message);
+                    if (LogSuccess) listHistoryActivity.RemoveAllHistorySuccess(jsonMessage);
+                    else listHistoryActivity.RemoveAllHistoryFailed(jsonMessage);
 
             }
 

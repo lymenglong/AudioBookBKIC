@@ -342,11 +342,11 @@ public class PlayControl extends AppCompatActivity
             InitialState = false;
         } else if(indexChapterMap < 0 ) {
             indexChapterMap = 0;
-            String message = "Chương bạn đã yêu cầu không tồn tại";
+            String message = getString(R.string.message_chapter_not_exists);
             Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
         } else {
             indexChapterMap = hashMapChapter.size()-1;
-            String message = "Chương bạn đã yêu cầu không tồn tại";
+            String message = getString(R.string.message_chapter_not_exists);
             Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
         }
     }
@@ -606,6 +606,7 @@ public class PlayControl extends AppCompatActivity
                     cursor.getString(4)
             );
         }
+        cursor.close();
         if (bookModel.getLength() != 0) {
             try {
                 String INSERT_BOOK_INTO_TABLE_FAVORITE =
@@ -620,6 +621,7 @@ public class PlayControl extends AppCompatActivity
                                         "'"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"'" +// BookRemoved Is Default Equal 0
                                 ");";
                 dbHelper.QueryData(INSERT_BOOK_INTO_TABLE_FAVORITE);
+                dbHelper.close();
             } catch (Exception ignored) {
                 String UPDATE_BOOK_IN_TABLE_FAVORITE =
                         "UPDATE " +
@@ -628,11 +630,14 @@ public class PlayControl extends AppCompatActivity
                                 "BookTitle = '"+bookModel.getTitle()+"', " +
                                 "BookImage = '"+bookModel.getUrlImage()+"', " +
                                 "BookLength = '"+bookModel.getLength()+"', " +
-                                "BookAuthor = '"+bookModel.getAuthor()+"' " +
+                                "BookAuthor = '"+bookModel.getAuthor()+"', " +
+                                "BookRemoved = '"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"', "+
+                                "BookSync = '"+Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"' " +
                         "WHERE " +
                                 "BookId = '"+bookModel.getId()+"'" +
                         ";";
                 dbHelper.QueryData(UPDATE_BOOK_IN_TABLE_FAVORITE);
+                dbHelper.close();
             }
         }
         dbHelper.close();
@@ -670,6 +675,7 @@ public class PlayControl extends AppCompatActivity
         while (cursor.moveToNext()){
             BookSync = cursor.getInt(0);
         }
+        cursor.close();
         return BookSync == 1;
     }
 
@@ -700,6 +706,7 @@ public class PlayControl extends AppCompatActivity
                                         "'"+InsertTimeHolder+"'"+
                                 ");";
                 dbHelper.QueryData(INSERT_PLAY_HISTORY);
+                dbHelper.close();
             } catch (Exception ignored) {
                 String UPDATE_PLAY_HISTORY =
                         "UPDATE " +
@@ -713,6 +720,7 @@ public class PlayControl extends AppCompatActivity
                                 "BookId = '"+chapterFromIntent.getBookId()+"'" +
                         ";";
                 dbHelper.QueryData(UPDATE_PLAY_HISTORY);
+                dbHelper.close();
             }
             //endregion
             //region INSERT BOOK VALUE TO HISTORY (SQLite)
@@ -740,6 +748,7 @@ public class PlayControl extends AppCompatActivity
                     );
                 }while (cursor.moveToNext());
             }
+            cursor.close();
             if(bookModel.getLength() != 0) {
                 try {
                     String INSERT_BOOK_INTO_TABLE_HISTORY =
@@ -754,6 +763,7 @@ public class PlayControl extends AppCompatActivity
                                     "'" + Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER + "'" +
                                     ");";
                     dbHelper.QueryData(INSERT_BOOK_INTO_TABLE_HISTORY);
+                    dbHelper.close();
                 } catch (Exception ignored) {
                     String UPDATE_BOOK_IN_TABLE_HISTORY =
                             "UPDATE " +
@@ -767,10 +777,10 @@ public class PlayControl extends AppCompatActivity
                                     "BookId = '" + bookModel.getId() + "'" +
                                     ";";
                     dbHelper.QueryData(UPDATE_BOOK_IN_TABLE_HISTORY);
+                    dbHelper.close();
                 }
                 //endregion
             }
-            dbHelper.close();
             //endregion
             //todo Rating Book
         }
@@ -812,12 +822,13 @@ public class PlayControl extends AppCompatActivity
 
     @Override
     public void UpdateFavoriteFailed(String message) {
+        UpdateBookSyncStatus("favorite");
         Log.d(TAG, "UpdateFavoriteSuccess: "+message);
     }
 
     @Override
     public void UpdateReviewSuccess(String message) {
-        String ms = "Cảm ơn bạn đã đánh giá";
+        String ms = getString(R.string.message_thank_review);
         Toast.makeText(playControlActivity, message.isEmpty()?ms:message , Toast.LENGTH_SHORT).show();
         Log.d(TAG, "UpdateReviewSuccess: "+message);
     }

@@ -58,8 +58,12 @@ public class ConnectivityReceiver
             if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI || activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE) {
                 //history
                 GetUnSyncDataAndSync("addHistory", "history", insertTime);
+                //removeHistory
+                GetUnSyncDataAndSync("removeHistory", "bookHistorySyncs",insertTime);
                 //favorite
                 GetUnSyncDataAndSync("addFavourite", "favorite",insertTime);
+                //removeFavorite
+                GetUnSyncDataAndSync("removeFavourite", "bookFavoriteSyncs",insertTime);
             }
         }
 
@@ -69,18 +73,74 @@ public class ConnectivityReceiver
     }
 
     private void GetUnSyncDataAndSync(String jsonAction, String tableName, String insertTime) {
-        //getting all the unsynced names
-        String GET_UNSYNC_DATA = "SELECT BookId FROM "+tableName+" WHERE BookSync = '"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"'";
-        Cursor cursor = dbHelper.GetData(GET_UNSYNC_DATA);
-        while (cursor.moveToNext()){
-                //calling the method to save the unsynced name to MySQL
-                syncBook(
-                        jsonAction,
-                        tableName,
-                        cursor.getInt(0),
-                        insertTime
+        Cursor cursor;
+        switch (jsonAction){
+            case "addHistory":
+                //getting all the unsynced books
+                cursor = dbHelper.GetData(
+                        "SELECT BookId FROM "+tableName+" WHERE BookSync = '"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"'"
                 );
+                while (cursor.moveToNext()){
+                    //calling the method to save the unsynced books to MySQL server
+                    syncBook(
+                            jsonAction,
+                            tableName,
+                            cursor.getInt(0), // BookId
+                            insertTime
+                    );
+                }
+                cursor.close();
+                break;
+            case "addFavourite":
+                //getting all the unsynced books to mysql server
+                cursor = dbHelper.GetData(
+                        "SELECT BookId FROM "+tableName+" WHERE BookSync = '"+Const.BOOK_NOT_SYNCED_WITH_SERVER+"'"
+                        );
+                while (cursor.moveToNext()){
+                    //calling the method to save the unsynced books to MySQL server
+                    syncBook(
+                            jsonAction,
+                            tableName,
+                            cursor.getInt(0), // BookId
+                            insertTime
+                    );
+                }
+                cursor.close();
+                break;
+            case "removeHistory":
+                //getting all the removed books to mysql server
+                cursor = dbHelper.GetData(
+                        "SELECT BookId FROM "+tableName+" WHERE BookRemoved = '"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"'"
+                );
+                while (cursor.moveToNext()){
+                    //calling the method to save the removed books to MySQL server
+                    syncBook(
+                            jsonAction,
+                            tableName,
+                            cursor.getInt(0), // BookId
+                            insertTime
+                    );
+                }
+                cursor.close();
+                break;
+            case "removeFavourite":
+                //getting all the removed books to mysql server
+                cursor = dbHelper.GetData(
+                        "SELECT BookId FROM "+tableName+" WHERE BookRemoved = '"+Const.BOOK_REQUEST_REMOVE_WITH_SERVER+"'"
+                );
+                while (cursor.moveToNext()){
+                    //calling the method to save the removed books to MySQL server
+                    syncBook(
+                            jsonAction,
+                            tableName,
+                            cursor.getInt(0), // BookId
+                            insertTime
+                    );
+                }
+                cursor.close();
+                break;
         }
+
     }
 
     public static boolean isConnected() {
@@ -111,23 +171,62 @@ public class ConnectivityReceiver
         dbHelper.QueryData(UPDATE_BOOK_SYNC);
         dbHelper.close();
     }
+    //SyncBook Update SQLite Status For removeHistory & removeFavorite
+    private void UpdateBookRemovedStatus(String tableName, int bookId) {
+        /*String UPDATE_BOOK_REMOVED =
+                "UPDATE " +
+                        "'"+tableName+"' " +
+                        "SET " +
+                        "BookRemoved = '"+ Const.BOOK_NOT_REQUEST_REMOVE_SYNCED_WITH_SERVER+"' ," +
+                        "BookSync = '"+Const.BOOK_SYNCED_WITH_SERVER+"' " +
+                        "WHERE " +
+                        "BookId = '"+bookId+"'" +
+                        ";";
+        dbHelper.QueryData(UPDATE_BOOK_REMOVED);*/
+        dbHelper.QueryData(
+                "DELETE FROM "+tableName+" WHERE BookId = '"+bookId+"';"
+        );
+        dbHelper.close();
+    }
 
 
-    private void syncBook(final String jsonAction, final String tableName, final int bookId, final String insertTime) {
+    public void syncBook(final String jsonAction, final String tableName, final int bookId, final String insertTime) {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, Const.HttpURL_API,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         try {
                             JSONObject obj = new JSONObject(response);
-                            if (obj.getString("Log").equals("Success")) {
-                                //updating the status in sqlite
-//                                db.updateNameStatus(id, MainActivity.NAME_SYNCED_WITH_SERVER);
-                                UpdateBookSyncStatus(tableName, bookId);
-
-                                //sending the broadcast to refresh the list
-//                                context.sendBroadcast(new Intent(MainActivity.DATA_SAVED_BROADCAST));
+                            switch (jsonAction){
+                                case "addHistory":
+                                    if (obj.getString("Log").equals("Success")) {
+                                        //updating the status in sqlite
+//                                      db.updateNameStatus(id, MainActivity.NAME_SYNCED_WITH_SERVER);
+                                        UpdateBookSyncStatus(tableName, bookId);
+                                        //sending the broadcast to refresh the list
+//                                      context.sendBroadcast(new Intent(MainActivity.DATA_SAVED_BROADCAST));
+                                    }
+                                    break;
+                                case "addFavorite":
+                                    if (obj.getString("Log").equals("Success")) {
+                                        //updating the status in sqlite
+                                        UpdateBookSyncStatus(tableName, bookId);
+                                    }
+                                    break;
+                                case "removeHistory":
+                                    if (obj.getString("Log").equals("Success")) {
+                                        //updating the status in sqlite
+                                        UpdateBookRemovedStatus(tableName, bookId);
+                                    }
+                                    break;
+                                case "removeFavorite":
+                                    if (obj.getString("Log").equals("Success")) {
+                                        //updating the status in sqlite
+                                        UpdateBookRemovedStatus(tableName, bookId);
+                                    }
+                                    break;
                             }
+
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -141,16 +240,49 @@ public class ConnectivityReceiver
                 }) {
             @Override
             protected Map<String, String> getParams() {
-                Session session = new Session(context);
                 Map<String, String> params = new HashMap<>();
-                String valuePost =
-                        "{" +
-                                "\"Action\":\""+jsonAction+"\", " +
-                                "\"UserId\":\""+session.getUserIdLoggedIn()+"\", " +
-                                "\"BookId\":\""+bookId+"\", " +
-                                "\"InsertTime\":\""+insertTime+"\"" +
-                        "}";
-                params.put("json", valuePost);
+                Session session = new Session(context);
+                String valuePost;
+                switch (jsonAction){
+                    case "addHistory":
+                        valuePost =
+                                "{" +
+                                        "\"Action\":\""+jsonAction+"\", " +
+                                        "\"UserId\":\""+session.getUserIdLoggedIn()+"\", " +
+                                        "\"BookId\":\""+bookId+"\", " +
+                                        "\"InsertTime\":\""+insertTime+"\"" +
+                                        "}";
+                        params.put("json", valuePost);
+                        break;
+                    case "addFavourite":
+                        valuePost =
+                                "{" +
+                                        "\"Action\":\""+jsonAction+"\", " +
+                                        "\"UserId\":\""+session.getUserIdLoggedIn()+"\", " +
+                                        "\"BookId\":\""+bookId+"\", " +
+                                        "\"InsertTime\":\""+insertTime+"\"" +
+                                        "}";
+                        params.put("json", valuePost);
+                        break;
+                    case "removeHistory":
+                        valuePost =
+                                "{" +
+                                        "\"Action\":\""+jsonAction+"\", " +
+                                        "\"UserId\":\""+session.getUserIdLoggedIn()+"\", " +
+                                        "\"BookId\":\""+bookId+"\""+
+                                        "}";
+                        params.put("json", valuePost);
+                        break;
+                    case "removeFavourite":
+                        valuePost =
+                                "{" +
+                                        "\"Action\":\""+jsonAction+"\", " +
+                                        "\"UserId\":\""+session.getUserIdLoggedIn()+"\", " +
+                                        "\"BookId\":\""+bookId+"\""+
+                                        "}";
+                        params.put("json", valuePost);
+                        break;
+                }
                 return params;
             }
         };

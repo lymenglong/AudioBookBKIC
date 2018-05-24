@@ -46,11 +46,10 @@ public class PresenterPlayer
             protected void onPreExecute() {
                 super.onPreExecute();
                 mediaIsPrepared = false;
-                progressDialog = ProgressDialog.show(playControlActivity,null,playControlActivity.getString(R.string.buffering_data),true,true);
-                progressDialog.show();
-                mediaPlayer = new MediaPlayer();
                 isDownloaded = isDownloadedAudio;
                 if(!isDownloaded) {
+                    progressDialog = ProgressDialog.show(playControlActivity,null,playControlActivity.getString(R.string.buffering_data),true,true);
+                    progressDialog.show();
                     progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                         @Override
                         public void onCancel(DialogInterface dialog) {
@@ -68,6 +67,7 @@ public class PresenterPlayer
                         mediaIsPrepared = false;
                         return false;
                     }
+                    mediaPlayer = new MediaPlayer();
                     mediaPlayer.reset();
                     mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                     if(isDownloadedAudio){
@@ -140,7 +140,7 @@ public class PresenterPlayer
 
                 } catch (Exception e) {
                     mediaIsPrepared = false;
-                    progressDialog.dismiss();
+                    if(progressDialog!=null && progressDialog.isShowing()) progressDialog.dismiss();
                 }
 
                 return mediaIsPrepared;
@@ -150,7 +150,7 @@ public class PresenterPlayer
             protected void onPostExecute(Boolean mediaIsPrepared) {
                 super.onPostExecute(mediaIsPrepared);
 
-                if (progressDialog.isShowing()) progressDialog.dismiss();
+                if (progressDialog!=null && progressDialog.isShowing()) progressDialog.dismiss();
 
                 if(isMissingMp3) {
                     playControlActivity.UpdateChapterStatus();
@@ -370,6 +370,6 @@ public class PresenterPlayer
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-        mediaPlayer.seekTo(seekBar.getProgress());
+        if(mediaPlayer != null) mediaPlayer.seekTo(seekBar.getProgress());
     }
 }

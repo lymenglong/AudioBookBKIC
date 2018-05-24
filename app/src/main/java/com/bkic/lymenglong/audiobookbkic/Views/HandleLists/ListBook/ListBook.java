@@ -280,6 +280,55 @@ public class ListBook
     }
 
     @Override
+    public void SetTableSelectedData(JSONArray jsonArrayResult) {
+        for (int j = 0; j < jsonArrayResult.length(); j++) {
+            try {
+                JSONObject jsonObject = jsonArrayResult.getJSONObject(j);
+                Book bookModel = new Book();
+                bookModel.setId(Integer.parseInt(jsonObject.getString("BookId")));
+                bookModel.setTitle(jsonObject.getString("BookTitle"));
+                bookModel.setUrlImage(jsonObject.getString("BookImage"));
+                bookModel.setLength(Integer.parseInt(jsonObject.getString("BookLength")));
+                bookModel.setCategoryId(categoryIntent.getId());
+                String INSERT_DATA;
+                try {
+                    INSERT_DATA =
+                            "INSERT INTO book VALUES(" +
+                                    "'"+bookModel.getId()+"', " +
+                                    "'"+bookModel.getTitle()+"', " +
+                                    "'"+bookModel.getAuthor()+"', " +
+                                    "'"+bookModel.getPublishDate()+"', " +
+                                    "'"+bookModel.getUrlImage() +"', " +
+                                    "'"+bookModel.getContent() +"', " +
+                                    "'"+bookModel.getLength()+"', " +
+                                    "'"+bookModel.getFileUrl() +"', " +
+                                    "'"+bookModel.getCategoryId()+"', " + //CategoryID
+                                    "'"+bookModel.getNumOfChapter()+"', " +
+                                    "'"+0+"', " +
+                                    "'"+mPAGE+"'" +
+                                    ")";
+                    dbHelper.QueryData(INSERT_DATA);
+                } catch (Exception e) {
+                    String UPDATE_DATA =
+                            "UPDATE " +
+                                    "book " +
+                                    "SET " +
+                                    "BookTitle = '"+bookModel.getTitle()+"', " +
+                                    "BookImage = '"+bookModel.getUrlImage()+"', " +
+                                    "BookLength = '"+bookModel.getLength()+"' ," +
+                                    "CategoryId = '"+bookModel.getCategoryId()+"' " + //CategoryId
+                                    "WHERE " +
+                                    "BookId = '"+bookModel.getId()+"'";
+                    dbHelper.QueryData(UPDATE_DATA);
+                }
+            } catch (JSONException ignored) {
+                Log.d(TAG, "onPostExecute: " + jsonArrayResult);
+            }
+        }
+        if(jsonArrayResult.length()<10) isFinalPage = true;
+    }
+
+    @Override
     public void SetTableSelectedData(JSONObject jsonObject) throws JSONException {
         Book bookModel = new Book();
         bookModel.setId(Integer.parseInt(jsonObject.getString("BookId")));

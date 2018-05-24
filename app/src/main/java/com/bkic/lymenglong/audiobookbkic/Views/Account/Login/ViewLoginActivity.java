@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatTextView;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.Account.Login.InputValidation;
@@ -37,6 +38,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     private InputValidation inputValidation;
 
     private AppCompatTextView textViewLinkRegister;
+    private ProgressBar progressBar;
 
     // variable to track event time
     private long mLastClickTime = 0;
@@ -67,6 +69,12 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
         }
     }
 
+    private void SetWaitingLogin(Boolean aBoolean){
+        textViewLinkRegister.setEnabled(!aBoolean);
+        progressBar.setVisibility(aBoolean?View.VISIBLE:View.GONE);
+        findViewById(R.id.appCompatButtonLogin).setEnabled(!aBoolean);
+    }
+
     /**
      * This method is to initialize views
      */
@@ -83,7 +91,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
         appCompatButtonLogin = findViewById(R.id.appCompatButtonLogin);
 
         textViewLinkRegister = findViewById(R.id.textViewLinkRegister);
-
+        progressBar = findViewById(R.id.progressBarLogin);
     }
 
     @Override
@@ -123,13 +131,14 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
                 } else {
                     textPassword = textInputEditTextPassword.getText().toString();
                 }
-                isShowToast = isShowToastNotification();
                 //check internet connection before request to server
                 if (ConnectivityReceiver.isConnected()) {
-                    findViewById(R.id.appCompatButtonLogin).setEnabled(false);
+                    isShowToast = isShowToastNotification();
                     presenter.Login(textEmail, textPassword);
+                    SetWaitingLogin(true);
                 } else {
-                    Toast.makeText(activity, "Please check internet connection", Toast.LENGTH_SHORT).show();
+                    String ms = getString(R.string.message_internet_not_connected);
+                    Toast.makeText(activity, ms, Toast.LENGTH_SHORT).show();
                 }
                 break;
             case R.id.textViewLinkRegister:
@@ -142,6 +151,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
 
     @Override
     public void LoginSuccess(String message) {
+        SetWaitingLogin(false);
         Toast.makeText(activity, message, Toast.LENGTH_SHORT).show();
         Intent accountsIntent = new Intent(activity, MainActivity.class);
         accountsIntent.putExtra("EMAIL", textInputEditTextEmail.getText().toString().trim());
@@ -152,8 +162,8 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     @Override
     public void LoginFailed(String message) {
         mToast.cancel();
-        findViewById(R.id.appCompatButtonLogin).setEnabled(true);
         Toast.makeText(ViewLoginActivity.this, message, Toast.LENGTH_SHORT).show();
+        SetWaitingLogin(false);
     }
 
 
@@ -176,7 +186,7 @@ public class ViewLoginActivity extends AppCompatActivity implements ViewLoginImp
     }
 
     public boolean isShowToastNotification() {
-        mToast = Toast.makeText(activity, "Please Wait..", Toast.LENGTH_LONG);
+        mToast = Toast.makeText(activity, R.string.message_please_wait, Toast.LENGTH_LONG);
         mToast.show();
         return true;
     }

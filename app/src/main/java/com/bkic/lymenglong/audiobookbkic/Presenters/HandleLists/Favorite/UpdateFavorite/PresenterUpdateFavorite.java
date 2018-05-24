@@ -63,9 +63,11 @@ public class PresenterUpdateFavorite implements PresenterUpdateFavoriteImp {
 
         Boolean LogSuccess = false;
 
-        String ResultJsonObject;
+        String jsonResult;
 
-        String message;
+        String jsonMessage;
+
+        String jsonLog;
 
         GetHttpResponseFromHttpWebCall(Activity activity)
         {
@@ -92,11 +94,13 @@ public class PresenterUpdateFavorite implements PresenterUpdateFavoriteImp {
 
                         jsonAction = jsonObject.getString("Action");
 
-                        ResultJsonObject = jsonObject.getString("Result");
+                        jsonResult = jsonObject.getString("Result");
+
+                        jsonLog = jsonObject.getString("Log");
 
                         LogSuccess = jsonObject.getString("Log").equals("Success");
 
-                        message = jsonObject.getString("Message");
+                        jsonMessage = jsonObject.getString("Message");
 
                     }
                     catch (JSONException e) {
@@ -117,17 +121,17 @@ public class PresenterUpdateFavorite implements PresenterUpdateFavoriteImp {
         protected void onPostExecute(Void aVoid)
         {
             switch (jsonAction){
-                case "addFavorite":
-                    if (LogSuccess) playControlActivity.UpdateFavoriteSuccess(message);
-                    else playControlActivity.UpdateFavoriteFailed(message);
+                case "addFavourite":
+                    if (LogSuccess) playControlActivity.UpdateFavoriteSuccess(jsonMessage.isEmpty()?jsonLog:jsonMessage);
+                    else playControlActivity.UpdateFavoriteFailed(jsonMessage.isEmpty()?jsonLog:jsonMessage);
                     break;
-                case "removeFavorite":
-                    if (LogSuccess) listFavoriteActivity.RemoveFavoriteSuccess(message);
-                    else listFavoriteActivity.RemoveFavoriteFailed(message);
+                case "removeFavourite":
+                    if (LogSuccess) listFavoriteActivity.RemoveFavoriteSuccess(jsonMessage.isEmpty()?jsonLog:jsonMessage);
+                    else listFavoriteActivity.RemoveFavoriteFailed(jsonMessage.isEmpty()?jsonLog:jsonMessage);
                     break;
                 case "removeAllFavorite":
-                    if (LogSuccess) listFavoriteActivity.RemoveAllFavoriteSuccess(message);
-                    else listFavoriteActivity.RemoveAllFavoriteFailed(message);
+                    if (LogSuccess) listFavoriteActivity.RemoveAllFavoriteSuccess(jsonMessage.isEmpty()?jsonLog:jsonMessage);
+                    else listFavoriteActivity.RemoveAllFavoriteFailed(jsonMessage.isEmpty()?jsonLog:jsonMessage);
 
             }
 
@@ -157,7 +161,7 @@ public class PresenterUpdateFavorite implements PresenterUpdateFavoriteImp {
         String keyPost = "json";
         String valuePost =
                 "{" +
-                        "\"Action\":\"removeFavorite\", " +
+                        "\"Action\":\"removeFavourite\", " +
                         "\"UserId\":\""+userId+"\", " +
                         "\"BookId\":\""+bookId+"\"" +
                         "}";
