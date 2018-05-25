@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -60,6 +61,8 @@ public class PlayControl extends AppCompatActivity
     private PresenterUpdateFavorite presenterUpdateFavorite = new PresenterUpdateFavorite(this);
     private PresenterReview presenterReview = new PresenterReview(this);
     private PresenterDownloadTaskManager presenterDownloadTaskManager = new PresenterDownloadTaskManager();
+    @SuppressLint("StaticFieldLeak")
+    public static Context context;
     private static final String TAG = "PlayControl";
     private Session session;
     private int ResumeTime;
@@ -389,6 +392,7 @@ public class PlayControl extends AppCompatActivity
     }
 
     private void initObject() {
+        context = PlayControl.this;
         session = new Session(playControlActivity);
         dbHelper = new DBHelper(this,DB_NAME,null,DB_VERSION);
         /*@SuppressLint("SimpleDateFormat") SimpleDateFormat timeFormat = new SimpleDateFormat("mm:ss");
@@ -462,6 +466,8 @@ public class PlayControl extends AppCompatActivity
                     break;
                 case R.id.btn_pause:
                     presenterPlayer.PauseMedia();
+//                    MyNotification myNotification = new MyNotification(playControlActivity);
+//                    myNotification.createNotification();
 //                    presenterReview.ReviewBookDialog(playControlActivity);
 //                presenterReview.ReviewBookDialog2(playControlActivity);
 //                presenterReview.ReviewBookDialog3(playControlActivity);
@@ -567,6 +573,16 @@ public class PlayControl extends AppCompatActivity
         int rateNumber = getRateNumber();
         String review = getReview();
         presenterReview.RequestReviewBook(playControlActivity,userId,bookId,rateNumber,review);
+    }
+
+    @Override
+    public void AddReviewChapterToServer() {
+        int userId = session.getUserIdLoggedIn();
+        int bookId = chapterFromIntent.getBookId();
+        int chapterId = chapterFromIntent.getId();
+        int rateNumber = getRateNumber();
+        String review = getReview();
+        presenterReview.RequestAddChapterReview(playControlActivity, userId, bookId, chapterId, rateNumber, review);
     }
 
     private void AddFavoriteBook() {
@@ -809,6 +825,7 @@ public class PlayControl extends AppCompatActivity
 
     @Override
     public void UpdateHistoryFailed(String message) {
+        UpdateBookSyncStatus("history");
         Log.d(TAG, "UpdateHistoryFailed: "+message);
     }
 
@@ -835,6 +852,18 @@ public class PlayControl extends AppCompatActivity
 
     @Override
     public void UpdateReviewFailed(String message) {
+        Log.d(TAG, "UpdateReviewFailed: "+message);
+    }
+
+    @Override
+    public void UpdateChapterReviewSuccess(String message) {
+        String ms = getString(R.string.message_thank_review);
+        Toast.makeText(playControlActivity, message.isEmpty()?ms:message , Toast.LENGTH_SHORT).show();
+        Log.d(TAG, "UpdateReviewSuccess: "+message);
+    }
+
+    @Override
+    public void UpdateChapterReviewFailed(String message) {
         Log.d(TAG, "UpdateReviewFailed: "+message);
     }
 

@@ -8,6 +8,8 @@ public interface PlayerImp {
 
     void AddReviewBookToServer();
 
+    void AddReviewChapterToServer();
+
     void UpdateHistoryData();
 
     void UpdateHistorySuccess(String message);
@@ -23,4 +25,8 @@ public interface PlayerImp {
     void UpdateReviewFailed(String message);
 
     void UpdateChapterStatus();
+
+    void UpdateChapterReviewSuccess(String message);
+
+    void UpdateChapterReviewFailed(String message);
 }

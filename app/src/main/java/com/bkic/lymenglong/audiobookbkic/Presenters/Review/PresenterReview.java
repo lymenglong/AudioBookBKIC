@@ -181,6 +181,36 @@ public class PresenterReview
     }
 
     @Override
+    public void RequestAddChapterReview(Activity activity, int userId, int bookId, int chapterId, int rateNumber, String review){
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"addChapterReview\", " +
+                        "\"BookId\": \""+bookId+"\", " +
+                        "\"ChapterId\":\""+chapterId+"\", " +
+                        "\"UserId\":\""+userId+"\", " +
+                        "\"Rate\":\""+rateNumber+"\", " +
+                        "\"Review\":\""+review+"\"" +
+                "}";
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put(keyPost, valuePost);
+        HttpWebCall(activity, hashMap,Const.HttpURL_API);
+    }
+    @Override
+    public void RequestGetReviewChapter(Activity activity, int bookId, int chapterId) {
+        String keyPost = "json";
+        String valuePost =
+                "{" +
+                        "\"Action\":\"getChapterReview\"," +
+                        "\"BookId\":\""+bookId+"\"," +
+                        "\"ChapterId\":\""+chapterId+"\"" +
+                "}";
+        HashMap<String,String> ResultHash = new HashMap<>();
+        ResultHash.put(keyPost,valuePost);
+        HttpWebCall(activity, ResultHash, Const.HttpURL_API);
+    }
+
+    @Override
     public void onShow(DialogInterface dialog) {
         Log.d(TAG, "onShow: " +dialog.toString());
     }
@@ -189,7 +219,8 @@ public class PresenterReview
     public void onDismiss(DialogInterface dialog) {
         Log.d(TAG, "onDismiss: " +dialog.toString());
         if(SubmitBntIsClicked){
-            playControlActivity.AddReviewBookToServer();
+//            playControlActivity.AddReviewBookToServer();
+            playControlActivity.AddReviewChapterToServer();
             SubmitBntIsClicked = false;
         }
     }
@@ -342,6 +373,16 @@ public class PresenterReview
                     break;
                 case "getReview":
                     //todo get review data
+                    break;
+                case "addChapterReview":
+                    if (LogSuccess) {
+                        playControlActivity.UpdateChapterReviewSuccess(message);
+                    } else {
+                        playControlActivity.UpdateChapterReviewFailed(message);
+                    }
+                    break;
+                case "getChapterReview":
+                    //todo get chapter review data
                     break;
             }
         }

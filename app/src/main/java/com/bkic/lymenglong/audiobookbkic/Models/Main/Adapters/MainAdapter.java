@@ -125,14 +125,14 @@ public class MainAdapter extends RecyclerView.Adapter {
             //        builder.setTitle("Exit");
                     builder.setMessage("Bạn có muốn thoát ứng dụng không?");
                     builder.setCancelable(false);
-                    builder.setPositiveButton("Thoát", new DialogInterface.OnClickListener() {
+                    builder.setPositiveButton("Có", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             ActivityCompat.finishAffinity(activity);
                             System.exit(0);
                         }
                     });
-                    builder.setNegativeButton("Huỷ Bỏ", new DialogInterface.OnClickListener() {
+                    builder.setNegativeButton("Không", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             dialogInterface.dismiss();

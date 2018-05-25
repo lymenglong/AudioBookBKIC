@@ -1,7 +1,9 @@
 package com.bkic.lymenglong.audiobookbkic.Presenters.Player;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -33,6 +35,7 @@ public class PresenterPlayer
     private Boolean isBufferComplete = false;
     private Boolean isMissingMp3 = false;
     private Boolean isPreparingCancel = false;
+    private Boolean isShownDialog = false;
 
     public PresenterPlayer(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
@@ -160,6 +163,7 @@ public class PresenterPlayer
                 }
 
                 if (mediaIsPrepared) {
+                    isShownDialog = true;
                     PlayMedia();
                 } else{
                     if(!isPreparingCancel) {
@@ -269,9 +273,12 @@ public class PresenterPlayer
                     }
                 });
                 if (mediaPlayer.getCurrentPosition() < playControlActivity.getResumeTime()) {
-                    mediaPlayer.seekTo(playControlActivity.getResumeTime());
-                    Log.d(TAG, "PlayMedia: playControlActivity.getResumeTime()= " + playControlActivity.getResumeTime());
-                    mediaPlayer.start();
+                    if(isShownDialog) {
+                        if(playControlActivity.getResumeTime()!=0) {
+                            ResumeMediaPlayer(playControlActivity);
+                            isShownDialog = false;
+                        }
+                    }
                 } else if (playControlActivity.getResumeTime() <= mediaPlayer.getCurrentPosition()
                         && mediaPlayer.getCurrentPosition() < mediaPlayer.getDuration()) {
                     mediaPlayer.start();
@@ -297,6 +304,53 @@ public class PresenterPlayer
         } else { //mediaIsPrepared = false;
             playControlActivity.PrepareChapter();
         }
+    }
+
+    //fix talk back read incorrectly
+    private String DurationContentDescription(long milliseconds){
+        long sec = (milliseconds / 1000) % 60;
+        long min = (milliseconds / (60 * 1000)) % 60;
+        long hour = milliseconds / (60 * 60 * 1000);
+
+        //Format HH:mm:ss
+        /*String s = (sec < 10) ? "0" + sec : "" + sec;
+        String m = (min < 10) ? "0" + min : "" + min;
+        String h = "" + hour;*/
+
+        String time;
+        if (hour > 0) time = hour + " giờ " + min + " phút " + sec + "giây";
+        else if (min > 0) time = min + " phút " + sec + " giây";
+        else time = sec + " giây";
+
+        return time;
+    }
+
+    private void ResumeMediaPlayer(final Context context){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//        builder.setTitle("Chọn Dạng Sách");
+        builder.setMessage("Bạn đã nghe tới "+DurationContentDescription(playControlActivity.getResumeTime())+","+" bạn có muốn nghe tiếp không?");
+        builder.setCancelable(false);
+        builder.setPositiveButton("Nghe tiếp", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mediaPlayer.seekTo(playControlActivity.getResumeTime());
+                Log.d(TAG, "PlayMedia: playControlActivity.getResumeTime()= " + playControlActivity.getResumeTime());
+                mediaPlayer.start();
+                dialogInterface.dismiss();
+            }
+        });
+        builder.setNegativeButton("Nghe lại", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mediaPlayer.seekTo(0);
+                playControlActivity.setResumeTime(0);
+                Log.d(TAG, "PlayMedia: playControlActivity.getResumeTime()= " + playControlActivity.getResumeTime());
+                mediaPlayer.start();
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     //region Method to update time
