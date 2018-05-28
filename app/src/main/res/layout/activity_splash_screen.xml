@@ -24,7 +24,7 @@
         android:layout_gravity="center"
         android:layout_marginTop="90dp"
         android:contentDescription="@string/application_icon"
-        android:src="@mipmap/ic_splash" />
+        android:src="@drawable/ic_splash" />
 
     <TextView
         android:id="@+id/secret_creator_splash"

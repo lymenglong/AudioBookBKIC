@@ -60,14 +60,14 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_margin="5dp"
-                android:background="@mipmap/ic_action_pause" />
+                android:background="@drawable/ic_action_pause" />
 
             <ImageButton
                 android:id="@+id/btnPlay"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_margin="5dp"
-                android:background="@mipmap/ic_action_play"
+                android:background="@drawable/ic_action_play"
                 android:visibility="gone" />
 
             <ImageButton
@@ -75,7 +75,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:layout_margin="5dp"
-                android:background="@mipmap/ic_action_next" />
+                android:background="@drawable/ic_action_next" />
         </LinearLayout>
 
         <ImageButton
@@ -83,7 +83,7 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_marginLeft="5dp"
-            android:background="@mipmap/ic_action_remove" />
+            android:background="@drawable/ic_action_remove" />
     </LinearLayout>
 
 </LinearLayout>

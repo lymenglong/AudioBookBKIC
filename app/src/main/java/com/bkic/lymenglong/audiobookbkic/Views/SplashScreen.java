@@ -28,7 +28,7 @@ public class SplashScreen extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        int SPLASH_TIME = 1500;
+        int SPLASH_TIME = 3000; // 3sec
         new Handler().postDelayed(new Runnable()
         {
             @Override
