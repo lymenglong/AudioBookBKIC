@@ -135,6 +135,7 @@
     <!--endregion-->
     <string name="prompt_review_question">bạn cảm thấy quyển sách này có chất lượng thế nào</string>
     <string name="text_review_book">Đánh giá sách</string>
+    <string name="text_review_chapter">Đánh giá chương</string>
     <string name="text_1">1</string>
     <string name="text_2">2</string>
     <string name="text_3">3</string>
@@ -180,5 +181,7 @@
     <string name="message_chapter_not_exists">Chương bạn đã yêu cầu không tồn tại</string>
     <string name="message_thank_review">Cảm ơn bạn đã đánh giá</string>
     <string name="message_please_wait">Vui lòng chờ..</string>
+    <string name="message_play_complete_chapter">Bạn đã nghe xong chương này</string>
+    <string name="message_play_next_chapter_or_not">Bạn có muốn nghe chương tiếp theo không?</string>
 
 </resources>

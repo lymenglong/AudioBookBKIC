@@ -6,6 +6,8 @@ public interface PlayerImp {
 
     void PrepareChapter();
 
+    void NextMedia();
+
     void AddReviewBookToServer();
 
     void AddReviewChapterToServer();
@@ -28,5 +30,9 @@ public interface PlayerImp {
 
     void UpdateChapterReviewSuccess(String message);
 
+    void UpdateReviewTable();
+
     void UpdateChapterReviewFailed(String message);
+
+    void MediaPlayerOnCompletion();
 }

@@ -15,7 +15,6 @@ import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.ConnectivityReceiver;
-import com.bkic.lymenglong.audiobookbkic.Presenters.Review.PresenterReview;
 import com.bkic.lymenglong.audiobookbkic.R;
 import com.bkic.lymenglong.audiobookbkic.Views.Player.PlayControl;
 
@@ -35,7 +34,7 @@ public class PresenterPlayer
     private Boolean isBufferComplete = false;
     private Boolean isMissingMp3 = false;
     private Boolean isPreparingCancel = false;
-    private Boolean isShownDialog = false;
+    private Boolean isShowingDialog = false;
 
     public PresenterPlayer(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
@@ -111,35 +110,6 @@ public class PresenterPlayer
                         });
                     }
                     mediaIsPrepared = true;
-                    /*final String path = strings[0];
-                    new AudioStreamWorkerTask(playControlActivity, new OnCacheCallBack() {
-
-                        @Override
-                        public void onSuccess(FileInputStream fileInputStream) {
-                            Log.i(getClass().getSimpleName() + ".MediaPlayer", "now playing...");
-                            if (fileInputStream != null) {
-                                // reset media player here if necessary
-                   *//* mediaPlayer = new MediaPlayer();
-                    try {
-                        mediaPlayer.setDataSource(fileInputStream.getFD());
-                        mediaPlayer.prepare();
-                        mediaPlayer.setVolume(1f, 1f);
-                        mediaPlayer.setLooping(false);
-                        mediaPlayer.start();
-                        fileInputStream.close();
-                    } catch (IOException | IllegalStateException e) {
-                        e.printStackTrace();
-                    }*//*
-                            } else {
-                                Log.e(getClass().getSimpleName() + ".MediaPlayer", "fileDescriptor is not valid");
-                            }
-                        }
-
-                        @Override
-                        public void onError() {
-                            Log.e(getClass().getSimpleName() + ".MediaPlayer", "Can't play audio file");
-                        }
-                    }).execute(path);*/
 
                 } catch (Exception e) {
                     mediaIsPrepared = false;
@@ -163,7 +133,7 @@ public class PresenterPlayer
                 }
 
                 if (mediaIsPrepared) {
-                    isShownDialog = true;
+                    isShowingDialog = true;
                     PlayMedia();
                 } else{
                     if(!isPreparingCancel) {
@@ -273,10 +243,12 @@ public class PresenterPlayer
                     }
                 });
                 if (mediaPlayer.getCurrentPosition() < playControlActivity.getResumeTime()) {
-                    if(isShownDialog) {
-                        if(playControlActivity.getResumeTime()!=0) {
-                            ResumeMediaPlayer(playControlActivity);
-                            isShownDialog = false;
+                    if(isShowingDialog) {
+                        if(0 < playControlActivity.getResumeTime() && playControlActivity.getResumeTime() < mediaPlayer.getDuration()-1000) {
+                            ResumeMediaDialog(playControlActivity);
+                            isShowingDialog = false;
+                        } else if(playControlActivity.getResumeTime() >= mediaPlayer.getDuration()-1000){
+                            NextMediaDialog(playControlActivity);
                         }
                     }
                 } else if (playControlActivity.getResumeTime() <= mediaPlayer.getCurrentPosition()
@@ -289,12 +261,7 @@ public class PresenterPlayer
                     @Override
                     public void onCompletion(MediaPlayer mp) {
                         if (isBufferComplete) {
-                            String message = "Chương này đã chạy xong";
-                            Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
-                            PresenterReview presenterReview = new PresenterReview(playControlActivity);
-//                        presenterReview.ReviewBookDialog2(playControlActivity);
-                            presenterReview.ReviewBookDialog(playControlActivity);
-//                        presenterReview.ReviewBookDialog3(playControlActivity);
+                            playControlActivity.MediaPlayerOnCompletion();
                         }
                     }
                 });
@@ -304,6 +271,35 @@ public class PresenterPlayer
         } else { //mediaIsPrepared = false;
             playControlActivity.PrepareChapter();
         }
+    }
+
+    private void NextMediaDialog(Context context){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//        builder.setTitle("Chọn Dạng Sách");
+        builder.setMessage(
+                context.getString(R.string.message_play_complete_chapter)+", "+
+                context.getString(R.string.message_play_next_chapter_or_not)
+        );
+        builder.setCancelable(false);
+        builder.setPositiveButton("Nghe tiếp", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                playControlActivity.NextMedia();
+                dialogInterface.dismiss();
+            }
+        });
+        builder.setNegativeButton("Nghe lại", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                mediaPlayer.seekTo(0);
+                playControlActivity.setResumeTime(0);
+                Log.d(TAG, "PlayMedia: playControlActivity.getResumeTime()= " + playControlActivity.getResumeTime());
+                mediaPlayer.start();
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     //fix talk back read incorrectly
@@ -325,7 +321,7 @@ public class PresenterPlayer
         return time;
     }
 
-    private void ResumeMediaPlayer(final Context context){
+    private void ResumeMediaDialog(final Context context){
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 //        builder.setTitle("Chọn Dạng Sách");
         builder.setMessage("Bạn đã nghe tới "+DurationContentDescription(playControlActivity.getResumeTime())+","+" bạn có muốn nghe tiếp không?");
@@ -389,17 +385,15 @@ public class PresenterPlayer
 
     @Override
     public int GetLastMediaData(){
-        int lastPlayDuration;
         if (mediaIsPrepared) {
             if(mediaPlayer.getCurrentPosition()==mediaPlayer.getDuration()){
-                lastPlayDuration = 0;
+                return mediaPlayer.getDuration();
             }else {
-                lastPlayDuration = mediaPlayer.getCurrentPosition();
+                return mediaPlayer.getCurrentPosition();
             }
         } else {
-            lastPlayDuration = playControlActivity.getResumeTime();
+            return playControlActivity.getResumeTime();
         }
-        return lastPlayDuration;
     }
 
     @Override

@@ -146,9 +146,10 @@ public final class Const {
     public static final String CREATE_TABLE_REVIEW =
             "CREATE TABLE IF NOT EXISTS review" +
                     "(" +
-                            "ReviewId INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                            "ChapterId INTEGER PRIMARY KEY, "+
                             "BookId INTEGER, " +
-                            "InsertTime INTEGER, " +
+                            "InsertTime VARCHAR(255), " +
+                            "RateNumber INTEGER, " +
                             "Review VARCHAR(255)" +
                     ");";
     public static final String CREATE_TABLE_SEARCH_BOOK =

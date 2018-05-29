@@ -100,6 +100,8 @@ public class ListOfflineBook
         // register status listener
         MyApplication.getInstance().setConnectivityListener(this);
         MyApplication.getInstance().setDownloadListener(this);
+        //update list
+        GetCursorData();
     }
 
     @Override
@@ -183,7 +185,6 @@ public class ListOfflineBook
         listChapter.setLayoutManager(mLinearLayoutManager);
         bookOfflineAdapter = new BookOfflineAdapter(activity, list);
         listChapter.setAdapter(bookOfflineAdapter);
-        GetCursorData();
     }
 
 }

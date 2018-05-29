@@ -16,7 +16,7 @@ import com.bkic.lymenglong.audiobookbkic.Models.CheckInternet.MyApplication;
 import com.bkic.lymenglong.audiobookbkic.Models.Customizes.CustomActionBar;
 import com.bkic.lymenglong.audiobookbkic.Models.Database.DBHelper;
 import com.bkic.lymenglong.audiobookbkic.Models.Download.DownloadReceiver;
-import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.ChapterAdapter;
+import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Adapters.ChapterOfflineAdapter;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Book;
 import com.bkic.lymenglong.audiobookbkic.Models.HandleLists.Utils.Chapter;
 import com.bkic.lymenglong.audiobookbkic.R;
@@ -34,7 +34,7 @@ public class ListOfflineChapter
         DownloadReceiver.DownloadReceiverListener{
 //    private static final String TAG = "ListChapter";
     private RecyclerView listChapter;
-    private ChapterAdapter chapterAdapter;
+    private ChapterOfflineAdapter chapterOfflineAdapter;
 //    private Activity activity = ListOfflineChapter.this;
     private DBHelper dbHelper;
     private ArrayList<Chapter> list;
@@ -136,19 +136,17 @@ public class ListOfflineChapter
 
     private void initObject() {
         //Update BookDetail
-        //set chapterAdapter to list view
+        //set chapterOfflineAdapter to list view
         SetAdapterToListView();
-        //update list
-        GetCursorData();
     }
 
 
     private void SetAdapterToListView() {
         list = new ArrayList<>();
-        chapterAdapter = new ChapterAdapter(ListOfflineChapter.this, list);
+        chapterOfflineAdapter = new ChapterOfflineAdapter(ListOfflineChapter.this, list);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         listChapter.setLayoutManager(mLinearLayoutManager);
-        listChapter.setAdapter(chapterAdapter);
+        listChapter.setAdapter(chapterOfflineAdapter);
     }
 
     //region Method to get data for database
@@ -160,17 +158,22 @@ public class ListOfflineChapter
                                 "FROM chapter " +
                                     "WHERE BookId = '"+ bookIntent.getId() +"' AND ChapterStatus = '1';"
                 );
-        while (cursor.moveToNext()){
-            Chapter chapterModel = new Chapter();
-            chapterModel.setId(cursor.getInt(0));
-            chapterModel.setTitle(cursor.getString(1));
-            chapterModel.setFileUrl(cursor.getString(2));
-            chapterModel.setLength(cursor.getInt(3));
-            chapterModel.setBookId(cursor.getInt(4));
-            list.add(chapterModel);
+        if(cursor.moveToFirst()){
+            do{
+                Chapter chapterModel = new Chapter();
+                chapterModel.setId(cursor.getInt(0));
+                chapterModel.setTitle(cursor.getString(1));
+                chapterModel.setFileUrl(cursor.getString(2));
+                chapterModel.setLength(cursor.getInt(3));
+                chapterModel.setBookId(cursor.getInt(4));
+                list.add(chapterModel);
+            }while (cursor.moveToNext());
         }
+        if(list.size() == 0) dbHelper.QueryData(
+                "UPDATE book SET BookStatus = '0' WHERE BookId = '"+bookIntent.getId()+"'"
+        );
         cursor.close();
-        chapterAdapter.notifyDataSetChanged();
+        chapterOfflineAdapter.notifyDataSetChanged();
         dbHelper.close();
         progressBar.setVisibility(View.GONE);
     }

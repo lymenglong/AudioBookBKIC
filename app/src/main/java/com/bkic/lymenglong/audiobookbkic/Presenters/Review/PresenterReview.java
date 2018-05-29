@@ -2,6 +2,7 @@ package com.bkic.lymenglong.audiobookbkic.Presenters.Review;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -42,7 +43,7 @@ public class PresenterReview
     private RadioButton radioButton5;
     private int rateNumber;
     private int clickCount = 0;
-    private Boolean SubmitBntIsClicked = false;
+
     public PresenterReview(PlayControl playControlActivity) {
         this.playControlActivity = playControlActivity;
     }
@@ -85,7 +86,6 @@ public class PresenterReview
                 final Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
-                        SubmitBntIsClicked = true;
                         switch (clickCount){
                             case 1:
                                 Toast.makeText(context, "Single Click", Toast.LENGTH_SHORT).show();
@@ -218,11 +218,27 @@ public class PresenterReview
     @Override
     public void onDismiss(DialogInterface dialog) {
         Log.d(TAG, "onDismiss: " +dialog.toString());
-        if(SubmitBntIsClicked){
-//            playControlActivity.AddReviewBookToServer();
-            playControlActivity.AddReviewChapterToServer();
-            SubmitBntIsClicked = false;
-        }
+        NextMediaDialog(playControlActivity);
+    }
+    private void NextMediaDialog(Context context){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage(context.getString(R.string.message_play_next_chapter_or_not));
+        builder.setCancelable(true);
+        builder.setPositiveButton("Nghe tiếp", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                playControlActivity.NextMedia();
+                dialogInterface.dismiss();
+            }
+        });
+        builder.setNegativeButton("Không", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
     }
 
     @Override
@@ -252,7 +268,6 @@ public class PresenterReview
     }*/
 
     private void SubmitFromDialog() {
-        SubmitBntIsClicked = true;
         if(radioButton.isChecked()){
             rateNumber = 1;
         } else if(radioButton2.isChecked()){
@@ -266,6 +281,9 @@ public class PresenterReview
         }
         playControlActivity.setRateNumber(rateNumber);
         playControlActivity.setReview("");//todo add Comment Review Of User
+//            playControlActivity.AddReviewBookToServer();
+        playControlActivity.UpdateReviewTable();
+        playControlActivity.AddReviewChapterToServer();
         dialog.dismiss();
     }
 
@@ -388,5 +406,7 @@ public class PresenterReview
         }
     }
     //endregion
+
+
 
 }

@@ -152,19 +152,21 @@ public class PlayControl extends AppCompatActivity
     }
     //Module requestForSpecificPermission() is implemented as :
     private void requestForSpecificPermission() {
-        ActivityCompat.requestPermissions
-                (
-                        this,
-                        new String[]
-                                {
-//                                        Manifest.permission.GET_ACCOUNTS,
-//                                        Manifest.permission.RECEIVE_SMS,
-//                                        Manifest.permission.READ_SMS,
-                                        Manifest.permission.READ_EXTERNAL_STORAGE,
-                                        Manifest.permission.WRITE_EXTERNAL_STORAGE
-                                },
-                        101
-                );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            ActivityCompat.requestPermissions
+                    (
+                            this,
+                            new String[]
+                                    {
+    //                                        Manifest.permission.GET_ACCOUNTS,
+    //                                        Manifest.permission.RECEIVE_SMS,
+    //                                        Manifest.permission.READ_SMS,
+                                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                                            Manifest.permission.WRITE_EXTERNAL_STORAGE
+                                    },
+                            101
+                    );
+        }
     }
 
     @Override
@@ -476,11 +478,7 @@ public class PlayControl extends AppCompatActivity
                     presenterPlayer.ReplayMedia();
                     break;
                 case R.id.btn_next:
-                    presenterPlayer.ReleaseTimeLabel();
-
-                    UpdateHistoryData();
-                    indexChapterMap++;
-                    PrepareChapter();
+                    NextMedia();
                     break;
                 case R.id.btn_previous:
                     presenterPlayer.ReleaseTimeLabel();
@@ -516,6 +514,14 @@ public class PlayControl extends AppCompatActivity
             //endregion
         }
     };
+
+    @Override
+    public void NextMedia() {
+        presenterPlayer.ReleaseTimeLabel();
+        UpdateHistoryData();
+        indexChapterMap++;
+        PrepareChapter();
+    }
 
     private void DownloadTask(){
         presenterDownloadTaskManager.DownloadTaskManager
@@ -659,6 +665,16 @@ public class PlayControl extends AppCompatActivity
         dbHelper.close();
         //endregion
         Toast.makeText(playControlActivity, getString(R.string.message_success), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void MediaPlayerOnCompletion() {
+        String message = "Chương này đã chạy xong";
+        Toast.makeText(playControlActivity, message, Toast.LENGTH_SHORT).show();
+        if(ConnectivityReceiver.isConnected()) {
+            presenterReview.ReviewBookDialog(playControlActivity);
+        }
+        UpdateHistoryData();
     }
 
     @Override
@@ -860,6 +876,40 @@ public class PlayControl extends AppCompatActivity
         String ms = getString(R.string.message_thank_review);
         Toast.makeText(playControlActivity, message.isEmpty()?ms:message , Toast.LENGTH_SHORT).show();
         Log.d(TAG, "UpdateReviewSuccess: "+message);
+    }
+
+    @Override
+    public void UpdateReviewTable() {
+        //Update review sqlite
+        Calendar calendar = Calendar.getInstance();
+        @SuppressLint("SimpleDateFormat") SimpleDateFormat simpledateformat =
+                new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+        String insertTime = simpledateformat.format(calendar.getTime());
+        int chapterId = chapterFromIntent.getId();
+        int bookId = chapterFromIntent.getBookId();
+        int rateNumber = getRateNumber();
+        String review = getReview();
+        Cursor cursor;
+        try {
+            cursor = dbHelper.GetData("SELECT * FROM review WHERE ChapterId = '"+chapterId+"'");
+            if(cursor.moveToFirst()){
+                if(cursor.getCount()!=0) return;
+            }
+        } catch (Exception e) {
+            dbHelper.QueryData("DROP TABLE IF EXISTS review");
+            dbHelper.QueryData(Const.CREATE_TABLE_REVIEW);
+        }
+        dbHelper.QueryData(
+                "INSERT INTO review VALUES" +
+                        "(" +
+                        "'"+chapterId+"', " +
+                        "'"+bookId+"', " +
+                        "'"+insertTime+"', " +
+                        "'"+rateNumber+"', " +
+                        "'"+review+"'" +
+                        ");"
+                );
+        dbHelper.close();
     }
 
     @Override
